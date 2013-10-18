@@ -1,0 +1,18 @@
+\BOOKMARK [1][-]{section.1}{The model}{}
+\BOOKMARK [1][-]{section.2}{Monte Carlo algorithm}{}
+\BOOKMARK [2][-]{subsection.2.1}{Topological interaction}{section.2}
+\BOOKMARK [1][-]{section.3}{Thermodinamic of the single polymer}{}
+\BOOKMARK [2][-]{subsection.3.1}{Square distance as a function of arc-length}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Scaling of the link length parameter , the ideal polymer}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{Free energy of the ideal polymer}{section.3}
+\BOOKMARK [2][-]{subsection.3.4}{Coil-globule transition}{section.3}
+\BOOKMARK [2][-]{subsection.3.5}{The globular phase}{section.3}
+\BOOKMARK [2][-]{subsection.3.6}{Free energy of the real polymer}{section.3}
+\BOOKMARK [1][-]{section.4}{Extimation of the parameters for E. coli nucleoid}{}
+\BOOKMARK [2][-]{subsection.4.1}{Comparison to a Worm-like-chain}{section.4}
+\BOOKMARK [3][-]{subsubsection.4.1.1}{Attraction box}{subsection.4.1}
+\BOOKMARK [2][-]{subsection.4.2}{Using experimental data}{section.4}
+\BOOKMARK [1][-]{section.5}{Localized interaction model}{}
+\BOOKMARK [2][-]{subsection.5.1}{Collapse due to localized interactions}{section.5}
+\BOOKMARK [2][-]{subsection.5.2}{Micelle size and properties}{section.5}
+\BOOKMARK [1][-]{section.6}{Binding profiles as a function of concentration and specificity}{}
