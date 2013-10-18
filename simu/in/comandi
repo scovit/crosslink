@@ -1,0 +1,4 @@
+seq 0 127 | awk '(NR == 1) {print 1, 1} (NR > 1 && NR < 128) { print 2, $1 - 1, $1 + 1} (NR == 128) { print 1,126}' > lpl.128 
+seq 0 127 | awk 'BEGIN {pi = 3.14159265; nbead = 128; radius = (nbead - 1) * 0.15 / 2 / pi ;} { print 1, radius * cos($1 * 2.0 * pi / nbead), radius * sin($1 * 2.0 * pi / nbead), -4.50 }' > circ.128
+seq 0 127 | awk '(NR == 1) {print 2, 1, 127} (NR > 1 && NR < 128) { print 2, $1 - 1, $1 + 1} (NR == 128) { print 2, 0, 126}' > circ.128.lpl
+seq 0 127 | awk 'BEGIN {pi = 3.14159265; nbead = 128; radius = (nbead - 1) * 0.15 / 8 / pi ;} { t=$1 * 2.0 * pi / nbead; print 1, radius * (sin(t) + 2 * sin(2*t)) , radius * (cos(t) - 2*cos(2*t)), -4.50 - sin(3*t)}' > trefoil.128
