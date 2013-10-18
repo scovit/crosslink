@@ -1,0 +1,35 @@
+\begin{thebibliography}{1}
+
+\bibitem{Cagliero2013}
+Cedric Cagliero, Ralph~S. Grand, M.~Beatrix Jones, Ding~J. Jin, and Justin~M.
+  O'Sullivan.
+\newblock Genome conformation capture reveals that the escherichia coli
+  chromosome is organized by replication and transcription.
+\newblock {\em Nucleic Acids Research}, 41(12):6058--6071, 2013.
+
+\bibitem{Imakaev2012}
+Maxim Imakaev, Geoffrey Fudenberg, Rachel~Patton {McCord}, Natalia Naumova,
+  Anton Goloborodko, Bryan~R Lajoie, Job Dekker, and Leonid~A Mirny.
+\newblock Iterative correction of hi-c data reveals hallmarks of chromosome
+  organization.
+\newblock {\em Nat Meth}, 9(10):999--1003, October 2012.
+
+\bibitem{Lieberman2009}
+Erez Lieberman-Aiden, Nynke~L. van Berkum, Louise Williams, Maxim Imakaev,
+  Tobias Ragoczy, Agnes Telling, Ido Amit, Bryan~R. Lajoie, Peter~J. Sabo,
+  Michael~O. Dorschner, Richard Sandstrom, Bradley Bernstein, M.~A. Bender,
+  Mark Groudine, Andreas Gnirke, John Stamatoyannopoulos, Leonid~A. Mirny,
+  Eric~S. Lander, and Job Dekker.
+\newblock Comprehensive mapping of long-range interactions reveals folding
+  principles of the human genome.
+\newblock {\em Science}, 326(5950):289--293, 2009.
+
+\bibitem{Umbarger2011}
+Mark A. Umbarger, Esteban Toro, Matthew~A. Wright, Gregory~J. Porreca, Davide
+  Baù, Sun-Hae Hong, Michael~J. Fero, Lihua~J. Zhu, Marc~A. Marti-Renom,
+  Harley~H. McAdams, Lucy Shapiro, Job Dekker, and George~M. Church.
+\newblock The three-dimensional architecture of a bacterial genome and its
+  alteration by genetic perturbation.
+\newblock {\em Molecular Cell}, 44(2):252 -- 264, 2011.
+
+\end{thebibliography}
