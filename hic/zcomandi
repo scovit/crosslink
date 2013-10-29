@@ -221,3 +221,15 @@ for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
 EOF
 done;
 pdftk *.map.corr.pdf cat output corr.pdf
+
+for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
+ echo $i;
+ scilab-cli <<EOF
+  W = fscanfMat("$i");
+
+  [v, d] = spec(W);
+
+  fprintfMat("$i.val", diag(d));
+  fprintfMat("$i.vec", v');
+EOF
+done;
