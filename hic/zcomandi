@@ -233,3 +233,23 @@ for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
   fprintfMat("$i.vec", v');
 EOF
 done;
+
+for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
+ echo $i;
+ scilab-cli <<EOF
+  W = fscanfMat("$i");
+  n = size(W,'r');
+
+  RES = zeros(1:int(n/2+1));
+
+  for i = 1:n
+    B=cat(2,W(i,:),W(i,:));
+    C=(B(i:i+n)+flipdim(B(i:i+n),2))/2;
+    RES = RES + C(1:int(n/2+1));
+  end;
+
+  RES = RES / n;
+
+  fprintfMat("$i.dst", RES);
+EOF
+done;
