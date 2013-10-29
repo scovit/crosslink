@@ -1,0 +1,223 @@
+
+
+# sum
+zcat SRR554454.classification.gz SRR554455.classification.gz SRR554456.classification.gz | gzip > ZL1.classification.gz
+zcat SRR554454.classification.gz SRR554455.classification.gz SRR554456.classification.gz SRR554457.classification.gz | gzip > ZL12.classification.gz
+zcat SRR554458.classification.gz SRR554459.classification.gz SRR554460.classification.gz | gzip > ZS1.classification.gz
+zcat SRR554458.classification.gz SRR554459.classification.gz SRR554460.classification.gz SRR557710.classification.gz | gzip > ZS12.classification.gz
+
+# Make statistics
+for i in *.classification.gz; do
+ echo -ne $i:;
+ zcat $i | perl -e '
+   use constant {FL_LEFT_NOTFOUND => 2, FL_RIGHT_NOTFOUND => 1, FL_LEFT_INVERSE => 8, 
+                 FL_RIGHT_INVERSE => 4, FL_INVERSE => 16,};
+   sub isnot { return ($_[0] & ($_[0] ^ $_[1])); }
+   sub is { return ($_[0] & $_[1]); }
+   sub dangling {
+      return ((isnot(FL_INVERSE, $_[0]) && is(FL_RIGHT_INVERSE, $_[0]) && isnot(FL_LEFT_INVERSE, $_[0])) ||
+              (is(FL_INVERSE, $_[0]) && is(FL_LEFT_INVERSE, $_[0]) && isnot(FL_RIGHT_INVERSE, $_[0])));
+   }
+   sub unaligned {
+      return (is(FL_LEFT_NOTFOUND, $_[0]) && is(FL_RIGHT_NOTFOUND, $_[0]));
+   }
+   sub single {
+      return ((is(FL_LEFT_NOTFOUND, $_[0]) || is(FL_RIGHT_NOTFOUND, $_[0])) && !unaligned($_[0]));
+   }
+   sub both {
+      return (isnot(FL_LEFT_NOTFOUND, $_[0]) && isnot(FL_RIGHT_NOTFOUND, $_[0]));
+   }
+   my $tot = 0; my $unal = 0; my $sin = 0; my $bo = 0;
+   while (<>) {
+      my @campi = split("\t");
+      my $flag = oct("0b".$campi[1]);
+      $tot++;
+      $unal++ if unaligned($flag);
+      $sin++ if single($flag);
+      $bo++ if both($flag);
+   }
+   print "  $tot Total, $unal Unaligned, $sin Single, $bo Both\n";';
+done | sed 's#.classification.gz#.sra#g';
+
+
+# remove duplicates
+for i in *.classification.gz; do
+ echo $i;
+ zcat $i | perl -pe '
+   my %hash = ();
+   while (<>) {
+      my @campi = split("\t");
+      my $left = $campi[2]; my $right = $campi[3];
+      next if (($left == -1) || ($right == -1));
+      next if exists $hash{ "$left~$right" };
+      $hash{ "$left~$right" } = 1;
+      $hash{ "$right~$left" } = 1;
+      print;
+   }' | gzip > $i.cl.gz
+done;
+
+# get read lenght
+for i in *.classification.gz.cl.gz; do
+ echo $i;
+ TMPFILE=`mktemp`
+ zcat $i | perl -e '
+   use constant {FL_LEFT_NOTFOUND => 2, FL_RIGHT_NOTFOUND => 1, FL_LEFT_INVERSE => 8, 
+                 FL_RIGHT_INVERSE => 4, FL_INVERSE => 16,};
+   sub isnot { return ($_[0] & ($_[0] ^ $_[1])); }
+   sub is { return ($_[0] & $_[1]); }
+   sub dangling {
+      return ((isnot(FL_INVERSE, $_[0]) && is(FL_RIGHT_INVERSE, $_[0]) && isnot(FL_LEFT_INVERSE, $_[0])) ||
+              (is(FL_INVERSE, $_[0]) && is(FL_LEFT_INVERSE, $_[0]) && isnot(FL_RIGHT_INVERSE, $_[0])));
+   }
+   while (<>) {
+      chomp; my @campi = split("\t");
+      my $flag = oct("0b".$campi[1]); my $rstdist= $campi[7]; my $distance = $campi[4];
+      if (($rstdist == 0) && dangling($flag)) {print $distance."\n";}
+   }' > $TMPFILE;
+ N=`cat $TMPFILE | wc -l`;
+ echo $N
+ cat $TMPFILE | histogrammator $N 10001 -1 10000 > $i.dangling.length
+ rm $TMPFILE;
+done;
+
+# remove dangling ends
+for i in *.classification.gz.cl.gz; do
+ echo $i;
+ zcat $i | perl -pe '
+   use constant {FL_LEFT_NOTFOUND => 2, FL_RIGHT_NOTFOUND => 1, FL_LEFT_INVERSE => 8, 
+                 FL_RIGHT_INVERSE => 4, FL_INVERSE => 16,};
+   sub isnot { return ($_[0] & ($_[0] ^ $_[1])); }
+   sub is { return ($_[0] & $_[1]); }
+   sub dangling {
+      return ((isnot(FL_INVERSE, $_[0]) && is(FL_RIGHT_INVERSE, $_[0]) && isnot(FL_LEFT_INVERSE, $_[0])) ||
+              (is(FL_INVERSE, $_[0]) && is(FL_LEFT_INVERSE, $_[0]) && isnot(FL_RIGHT_INVERSE, $_[0])));
+   }
+   while (<>) {
+      my @campi = split("\t");
+      my $flag = oct("0b".$campi[1]); my $rstdist = int($campi[7]); my $distance = int($campi[4]);
+      next if ($rstdist <= 1);
+      next if (dangling($flag) && $distance < 800);
+      print;
+   }' | gzip > $i.filtered.gz
+done;
+
+# count
+for i in *.classification.gz.cl.gz.filtered.gz; do
+ echo -ne "$i:  ";
+ zcat $i | wc -l;
+done | sed 's#.classification.gz.cl.gz.filtered.gz#.sra#g';
+
+# make histograms
+for i in *.classification.gz.cl.gz.filtered.gz; do zcat $i | cut -f 3,4 | tr "\t" "\n" | histogrammator $((2 * `zcat $i | wc -l`)) 1000 -1 4639660 > $i.ongenome; done
+
+for i in *.classification.gz.cl.gz.filtered.gz; do zcat $i | awk '{print ($2 - $1 > 0 ? $2 - $1 : $1 - $2)}' | histogrammator `zcat $i | wc -l` 1000 -1 2639660 > $i.dist; done
+
+
+# make a matrix 228x228 (114x114)
+for i in *.classification.gz.cl.gz.filtered.gz; do
+ echo $i;
+ zcat $i | perl -e '
+   my @matrix;
+   for (my $i = 0; $i < 114; $i++) {
+      for (my $j = 0; $j < 114; $j++) {
+         $matrix[$i][$j] = 0;
+      }
+   }
+   while (<>) {
+      my @campi = split("\t");
+      my $left = $campi[2]; my $right = $campi[3];
+      $matrix[int($left/40000)][int($right/40000)]++;
+      $matrix[int($right/40000)][int($left/40000)]++;
+   }
+   my $zeroes = 0;
+   for (my $i = 0; $i < 114; $i++) {
+      my $line = "";
+      for (my $j = 0; $j < 114; $j++) {
+         $zeroes++ if $matrix[$i][$j] == 0;
+         $line .= "$matrix[$i][$j]\t";
+      }
+      chop($line); print "$line\n";
+   }
+   print STDERR "$zeroes\n";
+' > $i.map
+done;
+
+# zr.R
+for i in *.classification.gz.cl.gz.filtered.gz.map; do
+ echo $i;
+ R --no-save <<EOF
+  library(grid)
+  library(lattice)
+
+  pdf(file = "$i.pdf", width= 8.3, height = 8.3)
+  pushViewport(viewport(layout = grid.layout(nrow = 1, ncol = 1)))
+
+  zlim=250
+
+  m <- matrix(scan("$i"), byrow=T, ncol=114)
+  pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
+  print(levelplot(m, xlab = NULL, ylab = NULL, zlim = zlim,
+                  par.settings=list(layout.heights=list(top.padding=-3,
+                                    bottom.padding=-1))
+                  ), newpage = FALSE)
+  grid.text("$i", x=unit(0.5,"npc"), y=unit(0.03,"npc"),
+            gp=gpar(col="darkred", fontsize=14));
+  popViewport()
+  popViewport()
+  dev.off()
+EOF
+done;
+pdftk *.map.pdf cat output out.pdf
+
+for i in *.classification.gz.cl.gz.filtered.gz.map; do
+ echo $i;
+ scilab-cli <<EOF
+  W = fscanfMat("$i");
+  N = size(W, 'r');
+  B = ones(1:N)';
+
+  K = 0;
+  while 1==1,
+    K = K + 1;
+    S = sum(W,'c');
+    DB = S/mean(S);
+    if variance(DB) < 1e-15 then
+       break
+    end;
+    DBDB = DB*DB';
+    W = W ./ DBDB;
+    B = B .* DB;
+  end;
+  K
+  fprintfMat("$i.corr", W);
+  fprintfMat("$i.bias", B);
+  fprintfMat("$i.check", sum(W,'c'));
+EOF
+done;
+
+# zr.R
+for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
+ echo $i;
+ R --no-save <<EOF
+  library(grid)
+  library(lattice)
+
+  pdf(file = "$i.pdf", width= 8.3, height = 8.3)
+  pushViewport(viewport(layout = grid.layout(nrow = 1, ncol = 1)))
+
+  zlim=250
+
+  m <- matrix(scan("$i"), byrow=T, ncol=114)
+  pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
+  print(levelplot(m, xlab = NULL, ylab = NULL, zlim = zlim,
+                  par.settings=list(layout.heights=list(top.padding=-3,
+                                    bottom.padding=-1))
+                  ), newpage = FALSE)
+  grid.text("$i", x=unit(0.5,"npc"), y=unit(0.03,"npc"),
+            gp=gpar(col="darkred", fontsize=14));
+  popViewport()
+  popViewport()
+  dev.off()
+EOF
+done;
+pdftk *.map.corr.pdf cat output corr.pdf
