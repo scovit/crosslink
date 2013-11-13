@@ -9,12 +9,12 @@ require 'bowtie2align.pl';
 # This the mapping pipeline (Mirny)
 #
 
-if ($#ARGV != 3) {
-	print "usage: ./map.pl fastqfile readlength leftmap rightmap\n";
+if ($#ARGV != 4) {
+	print "usage: ./map.pl fastqfile index readlength leftmap rightmap\n";
 	exit;
 };
 
-my ($fastqfilename, $readlength, $leftmapfn, $rightmapfn) = @ARGV;
+my ($fastqfilename, $indexfile, $readlength, $leftmapfn, $rightmapfn) = @ARGV;
 
 my $TMPDIR="/home/scolari/tmp";
 
@@ -68,11 +68,11 @@ open( my $rightmap, "| sort -g --temporary-directory=$TMPDIR | gzip > $rightmapf
 
 print "Starting trimmering\n";
 while (readtrimmer($origreads, $readlength, \@leftl, \@rightl, $leftreads, $rightreads) <= $readlength/2) {
-    my $alignedfile = bowtie2align($leftreads);
+    my $alignedfile = bowtie2align($leftreads, $indexfile);
     appendmap($leftmap, $alignedfile, \@leftl);
     close ($alignedfile);
 
-    $alignedfile = bowtie2align($rightreads);
+    $alignedfile = bowtie2align($rightreads, $indexfile);
     appendmap($rightmap, $alignedfile, \@rightl);
     close ($alignedfile);
 }
