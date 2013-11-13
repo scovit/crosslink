@@ -1,3 +1,10 @@
+# mapping
+for i in SRR557710 SRR554454 SRR554455 SRR554456 SRR554457 SRR554458 SRR554459 SRR554460; do 
+    echo $i; ./map.pl $i/$i.fastq.gz 200 $i/$i.left.map.gz $i/$i.right.map.gz ;
+done 
+for i in SRR554460 SRR557710 SRR554454 SRR554455 SRR554456 SRR554457 SRR554458 SRR554459; do 
+    echo $i; ./classify.pl $i/$i.left.map.gz $i/$i.right.map.gz restriction/RSTsites.table $i/$i.classification.gz ;
+done
 
 
 # sum
