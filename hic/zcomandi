@@ -51,7 +51,7 @@ for i in *.classification.gz; do
 done | sed 's#.classification.gz#.sra#g';
 
 
-# remove duplicates
+# remove duplicates (uses more then 4gb of memory)
 for i in *.classification.gz; do
  echo $i;
  zcat $i | perl -pe '
