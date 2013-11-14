@@ -90,7 +90,8 @@ done;
 # remove dangling ends
 for i in *.classification.gz.cl.gz; do
  echo $i;
- zcat $i | perl -pe '
+# cutoff at 800 for shitty ecoli, 580 per caulobacter
+ zcat $i | DISTCUT=580 perl -pe '
    use constant {FL_LEFT_NOTFOUND => 2, FL_RIGHT_NOTFOUND => 1, FL_LEFT_INVERSE => 8, 
                  FL_RIGHT_INVERSE => 4, FL_INVERSE => 16,};
    sub isnot { return ($_[0] & ($_[0] ^ $_[1])); }
@@ -103,7 +104,7 @@ for i in *.classification.gz.cl.gz; do
       my @campi = split("\t");
       my $flag = oct("0b".$campi[1]); my $rstdist = int($campi[7]); my $distance = int($campi[4]);
       next if ($rstdist <= 1);
-      next if (dangling($flag) && $distance < 800);
+      next if (dangling($flag) && $distance < $ENV{"DISTCUT"});
       print;
    }' | gzip > $i.filtered.gz
 done;
