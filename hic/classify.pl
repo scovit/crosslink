@@ -12,7 +12,11 @@ if ($#ARGV != 3) {
 
 my ($leftmapfn, $rightmapfn, $rsttablefn, $classificationfn) = @ARGV;
 
-my $genomel = 4639675;
+if (!defined $ENV{'GENOMELENGTH'}) {
+    die "GENOMELENGTH environment variable should be defined (4639660 eco, 4042929 caulo)\n";
+}
+
+my $genomel = $ENV{"GENOMELENGTH"};
 my $rstdistmin = 2;
 my $basedistmin = 30;
 
