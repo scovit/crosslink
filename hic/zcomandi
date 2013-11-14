@@ -92,10 +92,14 @@ for i in *.classification.gz.cl.gz; do
 done;
 
 # remove dangling ends
+# for ecoli shitty data
+# export DISTCUT=800
+# for caulo
+export DISTCUT=580
 for i in *.classification.gz.cl.gz; do
  echo $i;
 # cutoff at 800 for shitty ecoli, 580 per caulobacter
- zcat $i | DISTCUT=580 perl -pe '
+ zcat $i | perl -pe '
    use constant {FL_LEFT_NOTFOUND => 2, FL_RIGHT_NOTFOUND => 1, FL_LEFT_INVERSE => 8, 
                  FL_RIGHT_INVERSE => 4, FL_INVERSE => 16,};
    sub isnot { return ($_[0] & ($_[0] ^ $_[1])); }
