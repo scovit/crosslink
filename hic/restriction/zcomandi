@@ -1,0 +1,2 @@
+./find.pl eco.genome.singleline.txt GCGC > RSTsites.dat
+awk 'BEGIN {old = 0; OFS="\t"} {print NR - 1, old, $1; old= $1} END {print NR, old, 4639675}' RSTsites.dat > RSTsites.table
