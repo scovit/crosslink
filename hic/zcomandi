@@ -132,7 +132,7 @@ for i in *.classification.gz.cl.gz.filtered.gz; do
     zcat $i | cut -f 3,4 | tr "\t" "\n" | histogrammator $((2 * `zcat $i | wc -l`)) 1000 -1 $GENOMELENGTH > $i.ongenome;
 done
 for i in *.classification.gz.cl.gz.filtered.gz; do
-    zcat $i | awk '{print ($2 - $1 > 0 ? $2 - $1 : $1 - $2)}' | histogrammator `zcat $i | wc -l` 1000 -1 $((GENOMELENGTH / 2 + 1)) > $i.dist;
+    zcat $i | cut -f 3,4 | awk '{print ($2 - $1 > 0 ? $2 - $1 : $1 - $2)}' | histogrammator `zcat $i | wc -l` 1000 -1 $((GENOMELENGTH / 2 + 1)) > $i.dist;
 done
 
 
