@@ -136,26 +136,34 @@ for i in *.classification.gz.cl.gz.filtered.gz; do
 done
 
 
-# make a matrix 228x228 (114x114)
+# make a matrix
+# for ecoli
+# export GENOMELENGTH=4639660
+# export BINSIZE=40000
+# for caulo
+export GENOMELENGTH=4042929
+export BINSIZE=20000
 for i in *.classification.gz.cl.gz.filtered.gz; do
  echo $i;
  zcat $i | perl -e '
    my @matrix;
-   for (my $i = 0; $i < 114; $i++) {
-      for (my $j = 0; $j < 114; $j++) {
+   my $binsize = int($ENV{"BINSIZE"});
+   my $nbins = int($ENV{"GENOMELENGTH"} / $binsize) - 1;
+   for (my $i = 0; $i < $nbins; $i++) {
+      for (my $j = 0; $j < $nbins; $j++) {
          $matrix[$i][$j] = 0;
       }
    }
    while (<>) {
       my @campi = split("\t");
       my $left = $campi[2]; my $right = $campi[3];
-      $matrix[int($left/40000)][int($right/40000)]++;
-      $matrix[int($right/40000)][int($left/40000)]++;
+      $matrix[int($left/$binsize)][int($right/$binsize)]++;
+      $matrix[int($right/$binsize)][int($left/$binsize)]++;
    }
    my $zeroes = 0;
-   for (my $i = 0; $i < 114; $i++) {
+   for (my $i = 0; $i < $nbins; $i++) {
       my $line = "";
-      for (my $j = 0; $j < 114; $j++) {
+      for (my $j = 0; $j < $nbins; $j++) {
          $zeroes++ if $matrix[$i][$j] == 0;
          $line .= "$matrix[$i][$j]\t";
       }
@@ -166,6 +174,13 @@ for i in *.classification.gz.cl.gz.filtered.gz; do
 done;
 
 # zr.R
+# for ecoli
+# export GENOMELENGTH=4639660
+# export BINSIZE=40000
+# for caulo
+export GENOMELENGTH=4042929
+export BINSIZE=20000
+export nbins=$((GENOMELENGTH / BINSIZE - 1))
 for i in *.classification.gz.cl.gz.filtered.gz.map; do
  echo $i;
  R --no-save <<EOF
@@ -177,7 +192,7 @@ for i in *.classification.gz.cl.gz.filtered.gz.map; do
 
   zlim=250
 
-  m <- matrix(scan("$i"), byrow=T, ncol=114)
+  m <- matrix(scan("$i"), byrow=T, ncol=$nbins)
   pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
   print(levelplot(m, xlab = NULL, ylab = NULL, zlim = zlim,
                   par.settings=list(layout.heights=list(top.padding=-3,
@@ -219,6 +234,13 @@ EOF
 done;
 
 # zr.R
+# for ecoli
+# export GENOMELENGTH=4639660
+# export BINSIZE=40000
+# for caulo
+export GENOMELENGTH=4042929
+export BINSIZE=20000
+export nbins=$((GENOMELENGTH / BINSIZE - 1))
 for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
  echo $i;
  R --no-save <<EOF
@@ -230,7 +252,7 @@ for i in *.classification.gz.cl.gz.filtered.gz.map.corr; do
 
   zlim=250
 
-  m <- matrix(scan("$i"), byrow=T, ncol=114)
+  m <- matrix(scan("$i"), byrow=T, ncol=$nbins)
   pushViewport(viewport(layout.pos.col = 1, layout.pos.row = 1))
   print(levelplot(m, xlab = NULL, ylab = NULL, zlim = zlim,
                   par.settings=list(layout.heights=list(top.padding=-3,
