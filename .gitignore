@@ -1,1 +1,6 @@
 *~
+*.o
+simu/nucleoid
+simu/nucleoid.32
+simu/nucleoid.gl
+simu/nucleoid.npc
