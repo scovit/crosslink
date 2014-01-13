@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <signal.h>
 #include "simulazione.h"
@@ -12,13 +13,19 @@
 struct thread_data thread_data_array[NUM_THREADS];
 
 static void usage(int argc, char *argv[]) {
-  printf ("Usage: %s N outstring inconf inlpl inloc "
-	  "big_sigma beta_uniform beta_localized conf_volume\n"
+  printf ("Usage: %s { start N outstring inconf inlpl inloc "
+	  "big_sigma beta_uniform beta_localized conf_volume | "
+          "checkpoint file }\n"
 	  "\n"
-	  "Suggested parameters: 192 ciao NULL NULL NULL 0.05 0 0 1.0\n"
+	  "Suggested parameters: start 192 ciao NULL NULL NULL 0.05 0 0 1.0\n"
 	  "\n",
 	  argv[0]);
   exit (-1);
+}
+
+static int error_arguments(int argc, char *argv[]) {
+  return (argc < 2) || !((!strcmp(argv[1], "start") && (argc == 11)) ||
+			 (!strcmp(argv[1], "checkpoint") && (argc == 11)));
 }
 
 void sigusr_handler(int sig) {
@@ -61,7 +68,8 @@ static void install_sighandlers() {
 }
 
 int main (int argc, char **argv) {
-  if (argc != 10)
+
+  if (error_arguments(argc, argv))
     usage(argc, argv);
 
   // install the sigusr signal

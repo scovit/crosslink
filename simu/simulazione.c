@@ -940,22 +940,21 @@ void count_contacts() {
 
 void *simulazione(void *threadarg) {
 
+  // This sets all denormal numbers to zero - DAZ and FTZ flags
+  _mm_setcsr( _mm_getcsr() | 0x8040 );
+
   //
   // Initialization code, set global variables and files
   //
-
-  char *outstring = ((struct thread_data *) threadarg) -> argv[2];
-  char *cnffilepath = ((struct thread_data *) threadarg) -> argv[3];
-  char *lplfilepath = ((struct thread_data *) threadarg) -> argv[4];
-  char *locfilepath = ((struct thread_data *) threadarg) -> argv[5];
-  set_param_normalized(atoi(((struct thread_data *) threadarg) -> argv[1]),
-		       atof(((struct thread_data *) threadarg) -> argv[6]),
-		       atof(((struct thread_data *) threadarg) -> argv[7]),
-		       atof(((struct thread_data *) threadarg) -> argv[8]),
-		       atof(((struct thread_data *) threadarg) -> argv[9]));
-
-  // This sets all denormal numbers to zero - DAZ and FTZ flags
-  _mm_setcsr( _mm_getcsr() | 0x8040 );
+  char *outstring = ((struct thread_data *) threadarg) -> argv[3];
+  char *cnffilepath = ((struct thread_data *) threadarg) -> argv[4];
+  char *lplfilepath = ((struct thread_data *) threadarg) -> argv[5];
+  char *locfilepath = ((struct thread_data *) threadarg) -> argv[6];
+  set_param_normalized(atoi(((struct thread_data *)threadarg) -> argv[2]),
+		       atof(((struct thread_data *)threadarg) -> argv[7]),
+		       atof(((struct thread_data *)threadarg) -> argv[8]),
+		       atof(((struct thread_data *)threadarg) -> argv[9]),
+		       atof(((struct thread_data *)threadarg) -> argv[10]));
 
   openfiles(outstring);
 
