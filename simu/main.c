@@ -13,11 +13,10 @@
 struct thread_data thread_data_array[NUM_THREADS];
 
 static void usage(int argc, char *argv[]) {
-  printf ("Usage: %s { start N outstring inconf inlpl inloc "
-	  "big_sigma beta_uniform beta_localized conf_volume | "
-          "checkpoint file }\n"
+  printf ("Usage: %s { start | checkpoint } N outstring inconf.gz inlpl inloc "
+	  "big_sigma beta_uniform beta_localized conf_volume\n"
 	  "\n"
-	  "Suggested parameters: start 192 ciao NULL NULL NULL 0.05 0 0 1.0\n"
+	  "Suggested parameters: start 192 ciao RAND NULL NULL 0.05 0 0 1.0\n"
 	  "\n",
 	  argv[0]);
   exit (-1);
@@ -58,13 +57,20 @@ static void install_sighandlers() {
   if (sigaction(SIGUSR1, &sausr, NULL) == -1) {
     perror("couldn't set USR1 signal");
   }
-  // install the sigkill signal
+  // install the sigterm and sigint signal
   struct sigaction saterm;
   saterm.sa_handler = sigterm_handler;
   saterm.sa_flags = 0; // or SA_RESTART
   sigemptyset(&saterm.sa_mask);
   if (sigaction(SIGTERM, &saterm, NULL) == -1) {
     perror("couldn't set TERM signal");
+  }
+  struct sigaction saint;
+  saint.sa_handler = sigterm_handler;
+  saint.sa_flags = 0; // or SA_RESTART
+  sigemptyset(&saint.sa_mask);
+  if (sigaction(SIGINT, &saint, NULL) == -1) {
+    perror("couldn't set INT signal");
   }
 }
 

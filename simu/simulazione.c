@@ -519,7 +519,7 @@ void print_infos(int pN, char *pcnffile, char *plplfile,
 		 double psigma, double plambda, double pD,
 		 double palfa_uniform, double palfa_localized,
 		 double pbeta_uniform,  double pbeta_localized,
-		 double pconf_sqradius, int seed,
+		 double pconf_sqradius, unsigned int seed,
 		 unsigned long long int pRELAX_TIME,
 		 unsigned long long int pCORRL_TIME,
 		 int pSTATISTIC, unsigned long long int pDYN_STEPS) {
@@ -536,56 +536,6 @@ void print_infos(int pN, char *pcnffile, char *plplfile,
 	  pconf_sqradius, seed,
 	  pRELAX_TIME, pCORRL_TIME, pSTATISTIC, pDYN_STEPS);
   fflush(simufiles.inffile);
-}
-
-static __attribute__ ((noinline))
-void openfiles(char *outstring, const char *mode) {
-  const char *dir = "out/";
-  const char *xyzext = ".xyz.dat.gz";
-  const char *accext = ".acc.dat";
-  const char *ctcext = ".ctc.dat";
-  const char *infext = ".info";
-  const char *rndext = ".rndstate";
-  int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
-  char filename[lenght];
-
-  (void)mkdir(dir, 0775);
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, xyzext);
-  simufiles.xyzfile = gzopen(filename, mode);
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, accext);
-  simufiles.accfile = fopen(filename, mode);
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, ctcext);
-  simufiles.ctcfile = fopen(filename, mode);
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, infext);
-  simufiles.inffile = fopen(filename, mode);
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, rndext);
-
-  if (!strcmp(mode, "a")) {
-    FILE *temp = fopen(filename, "r");
-    fread(&dsfmt, sizeof(dsfmt), 1, temp);
-    fclose(temp);
-  }
-  simufiles.rndfile = fopen(filename, "w");
-}
-
-__attribute__ ((noinline))
-void closefiles() {
-  gzclose(simufiles.xyzfile);
-  fclose(simufiles.accfile);
-  fclose(simufiles.ctcfile);
-  fclose(simufiles.rndfile);
-
-  time_t tstamp = time(NULL);
-  char *timestr = ctime(&tstamp);
-  *strchr(timestr,'\n') = '\0';
-  fprintf(simufiles.inffile, "ENDTIME=\"%s\"\n", timestr);
-  fclose(simufiles.inffile);
 }
 
 static __attribute__ ((noinline))
@@ -859,29 +809,50 @@ void load_configuration_null() {
 }
 
 static __attribute__ ((noinline))
-void load_configuration(char *cnffilepath) {
-  if ((simufiles.cnffile = fopen(cnffilepath, "r")) == NULL) {
+unsigned long long int load_configuration(char *cnffilepath) {
+  // Attention: input should be gz compressed!!!
+  unsigned long long int filetime = 0ULL;
+  if ((simufiles.cnffile = gzopen(cnffilepath, "r")) == NULL) {
     if (!strcmp(cnffilepath, "RAND")) {
       load_configuration_rand();
     } else {
       if (strcmp(cnffilepath, "NULL")) {
-	fprintf(stderr, "Warning: file %s not found and not NULL "
-		"or RAND, setted to NULL\n",
+	fprintf(stderr, "Error: file %s not found and not NULL "
+		"or RAND, aborting\n",
 		cnffilepath);
-	cnffilepath = "NULL";
+	exit(-12);
       }
       load_configuration_null();
     }
   } else {
-    unsigned long long int bogus;
-    for (unsigned int i = 0; i < N; i++)
-      if (fscanf(simufiles.cnffile, "%llu%g%g%g", &bogus, 
-		 dots.x + i, dots.y + i, dots.z + i) != 4) {
+    unsigned long long int oldfiletime = 0;
+    z_off_t curpos = gztell(simufiles.cnffile);
+    z_off_t startpos = curpos;
+    char linebuffer[512];
+    // here it finds the last iteration
+    while(gzgets(simufiles.cnffile, linebuffer, sizeof(linebuffer))) {
+      if (sscanf(linebuffer, "%llu", &filetime) != 1) {
 	fprintf(stderr, "File format error %s\n", cnffilepath);
 	exit(-3);
       }
-    fclose(simufiles.cnffile);
+      if (filetime != oldfiletime) {
+	startpos = curpos;
+	oldfiletime = filetime;
+      }
+      curpos = gztell(simufiles.cnffile);
+    }
+    // it moves there and read the configuration
+    gzseek(simufiles.cnffile, startpos, SEEK_SET);
+    for (unsigned int i = 0; i < N; i++)
+      if(!gzgets(simufiles.cnffile, linebuffer, 512) || 
+	 (sscanf(linebuffer, "%llu%g%g%g", &filetime, 
+		 dots.x + i, dots.y + i, dots.z + i) != 4)) {
+	fprintf(stderr, "File format error %s\n", cnffilepath);
+	exit(-3);
+      }
+    gzclose(simufiles.cnffile);
   }
+  return filetime;
 }
 
 static __attribute__ ((noinline))
@@ -945,6 +916,99 @@ void count_contacts() {
   }
 }
 
+static __attribute__ ((noinline))
+unsigned int parse_info(char *filepath) {
+  FILE *tmpfile = fopen(filepath, "r");
+  unsigned int retval;
+  bool got_there = false;
+  char linebuffer[512];
+  while(fgets(linebuffer, sizeof(linebuffer), tmpfile)) {
+    if (!strncmp(linebuffer, "seed=", 5)) {
+      got_there = true;
+      if (sscanf(linebuffer + 5, "%u", &retval) != 1) {
+	fprintf(stderr, "Checkpoint, file format error %s\n", filepath);
+	exit(-4);
+      }
+    }
+  }
+  fclose(tmpfile);
+
+  if (!got_there) {
+    fprintf(stderr, "Checkpoint, no seed there in %s\n",
+	    filepath);
+    exit(-4);
+  }
+
+  return retval;
+}
+
+static __attribute__ ((noinline))
+void openfiles(char *outstring, const char *mode,
+	       unsigned long long int *oldtime,
+	       unsigned int *seed) {
+  const char *dir = "out/";
+  const char *xyzext = ".xyz.dat.gz";
+  const char *accext = ".acc.dat";
+  const char *ctcext = ".ctc.dat";
+  const char *infext = ".info";
+  const char *rndext = ".rndstate";
+  int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
+  char filename[lenght];
+  bool mode_is_a = !strcmp(mode, "a");
+
+  if (!mode_is_a)
+    (void)mkdir(dir, 0775);
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, xyzext);
+  if (mode_is_a) {
+    unsigned long long int temp = load_configuration(filename);
+    if (oldtime)
+      *oldtime = temp;
+  }
+  simufiles.xyzfile = gzopen(filename, mode);
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, accext);
+  simufiles.accfile = fopen(filename, mode);
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, ctcext);
+  simufiles.ctcfile = fopen(filename, mode);
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, infext);
+  if (mode_is_a) {
+    unsigned int temp = parse_info(filename);
+    if (seed)
+      *seed = temp;
+  }
+  simufiles.inffile = fopen(filename, "w");
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, rndext);
+  if (mode_is_a) {
+    FILE *temp = fopen(filename, "r");
+    fread(&dsfmt, sizeof(dsfmt), 1, temp);
+    fclose(temp);
+  }
+  simufiles.rndfile = fopen(filename, "w");
+}
+
+__attribute__ ((noinline))
+void closefiles() {
+  gzclose(simufiles.xyzfile);
+  fclose(simufiles.accfile);
+  fclose(simufiles.ctcfile);
+  fclose(simufiles.rndfile);
+
+  time_t tstamp = time(NULL);
+  char *timestr = ctime(&tstamp);
+  *strchr(timestr,'\n') = '\0';
+  fprintf(simufiles.inffile, "ENDTIME=\"%s\"\n", timestr);
+  fclose(simufiles.inffile);
+}
+
 void *simulazione(void *threadarg) {
 
   // This sets all denormal numbers to zero - DAZ and FTZ flags
@@ -966,24 +1030,28 @@ void *simulazione(void *threadarg) {
   // initialize seed
   struct timeval t1;
   gettimeofday(&t1, NULL);
-  int seed;
+  unsigned int seed;
   seed = t1.tv_usec * t1.tv_sec;
   dsfmt_init_gen_rand(&dsfmt, seed);
 
-  if (!strcmp(((struct thread_data *)threadarg) -> argv[1], "checkpoint"))
-    openfiles(outstring, "w");
-  else
-    openfiles(outstring, "a");
-  // TODO: seed should be put to old seed
-  // time should be put to old time
+  bool ischeckpoint = 
+    !strcmp(((struct thread_data *)threadarg) -> argv[1], "checkpoint");
 
   allocate_memory();
 
+  unsigned long long int checkpoint_elapsed = 0;
+  if (!ischeckpoint) {
+    load_configuration(cnffilepath);
+    openfiles(outstring, "w", NULL, NULL);
+  } else {
+    // Configuration is loaded there
+    openfiles(outstring, "a", &checkpoint_elapsed, &seed);
+  }
+
+  fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
+
   // put laplacian online from file or automatically
   load_laplacian(lplfilepath);
-
-  // put configuration online from file or automatically
-  load_configuration(cnffilepath);
 
   // put locally interacting beads from or automatically
   load_localized_stuff(locfilepath);
@@ -1053,12 +1121,6 @@ void *simulazione(void *threadarg) {
   pthread_barrier_wait(&firstbarr);
 #endif
 
-  unsigned int accepted = 0;
-  unsigned int total = 0;
-
-  unsigned long long int toprint = mc_time.DYN_STEPS -
-    (RELAX_TIME + CORRL_TIME);
-
 #if defined(GETPERF)
   displ = 0.0;
   struct timeval t2;
@@ -1067,7 +1129,15 @@ void *simulazione(void *threadarg) {
   gettimeofday(then, NULL);
 #endif
 
-  for ( mc_time.t = mc_time.DYN_STEPS; mc_time.t != 0; mc_time.t-- ) {
+  unsigned int accepted = 0;
+  unsigned int total = 0;
+
+  mc_time.t = mc_time.DYN_STEPS - checkpoint_elapsed;
+
+  unsigned long long int toprint = mc_time.t -
+    (RELAX_TIME + CORRL_TIME);
+
+  for ( ; mc_time.t != 0; mc_time.t-- ) {
 #if NUM_THREADS > 1
     pthread_spin_lock (&spinsum);
 #endif

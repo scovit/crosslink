@@ -18,7 +18,7 @@ extern "C" {
   // number of elements
   int N;
   // elements
-  void *restrict buffer;
+  __attribute__ ((aligned (16))) void *restrict buffer;
 
   __attribute__ ((aligned (16))) struct {
     float *x;
@@ -58,10 +58,10 @@ extern "C" {
 
   struct simufiles_t {
     gzFile *xyzfile;
+    gzFile *cnffile;
     FILE *accfile;
     FILE *ctcfile;
     FILE *inffile;
-    FILE *cnffile;
     FILE *lplfile;
     FILE *locfile;
     FILE *rndfile;
