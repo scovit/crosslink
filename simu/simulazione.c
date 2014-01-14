@@ -539,33 +539,39 @@ void print_infos(int pN, char *pcnffile, char *plplfile,
 }
 
 static __attribute__ ((noinline))
-void openfiles(char *outstring) {
+void openfiles(char *outstring, const char *mode) {
   const char *dir = "out/";
   const char *xyzext = ".xyz.dat.gz";
   const char *accext = ".acc.dat";
   const char *ctcext = ".ctc.dat";
   const char *infext = ".info";
+  const char *rndext = ".rndstate";
   int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
   char filename[lenght];
 
   (void)mkdir(dir, 0775);
 
-  strcpy(filename, dir);
-  strcat(filename, outstring);
+  strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, xyzext);
-  simufiles.xyzfile = gzopen(filename, "w");
-  strcpy(filename, dir);
-  strcat(filename, outstring);
+  simufiles.xyzfile = gzopen(filename, mode);
+  strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, accext);
-  simufiles.accfile = fopen(filename, "w");
-  strcpy(filename, dir);
-  strcat(filename, outstring);
+  simufiles.accfile = fopen(filename, mode);
+  strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, ctcext);
-  simufiles.ctcfile = fopen(filename, "w");
-  strcpy(filename, dir);
-  strcat(filename, outstring);
+  simufiles.ctcfile = fopen(filename, mode);
+  strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, infext);
-  simufiles.inffile = fopen(filename, "w");
+  simufiles.inffile = fopen(filename, mode);
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, rndext);
+
+  if (!strcmp(mode, "a")) {
+    FILE *temp = fopen(filename, "r");
+    fread(&dsfmt, sizeof(dsfmt), 1, temp);
+    fclose(temp);
+  }
+  simufiles.rndfile = fopen(filename, "w");
 }
 
 __attribute__ ((noinline))
@@ -573,6 +579,7 @@ void closefiles() {
   gzclose(simufiles.xyzfile);
   fclose(simufiles.accfile);
   fclose(simufiles.ctcfile);
+  fclose(simufiles.rndfile);
 
   time_t tstamp = time(NULL);
   char *timestr = ctime(&tstamp);
@@ -956,16 +963,21 @@ void *simulazione(void *threadarg) {
 		       atof(((struct thread_data *)threadarg) -> argv[9]),
 		       atof(((struct thread_data *)threadarg) -> argv[10]));
 
-  openfiles(outstring);
-
-  allocate_memory();
-
   // initialize seed
   struct timeval t1;
   gettimeofday(&t1, NULL);
   int seed;
   seed = t1.tv_usec * t1.tv_sec;
   dsfmt_init_gen_rand(&dsfmt, seed);
+
+  if (!strcmp(((struct thread_data *)threadarg) -> argv[1], "checkpoint"))
+    openfiles(outstring, "w");
+  else
+    openfiles(outstring, "a");
+  // TODO: seed should be put to old seed
+  // time should be put to old time
+
+  allocate_memory();
 
   // put laplacian online from file or automatically
   load_laplacian(lplfilepath);
@@ -1064,6 +1076,9 @@ void *simulazione(void *threadarg) {
 
     if ( unlikely(mc_time.t == toprint) ) {
       toprint -= CORRL_TIME;
+
+      rewind(simufiles.rndfile);
+      fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
 
 #if !defined(CONFINEMENT)
       recenter();

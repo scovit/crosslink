@@ -63,7 +63,8 @@ extern "C" {
     FILE *inffile;
     FILE *cnffile;
     FILE *lplfile;
-  FILE *locfile;
+    FILE *locfile;
+    FILE *rndfile;
   };
   __attribute__ ((aligned (16))) struct simufiles_t simufiles;
 

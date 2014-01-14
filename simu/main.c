@@ -39,6 +39,7 @@ void sigusr_handler(int sig) {
   gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
   fflush(simufiles.accfile);
   fflush(simufiles.ctcfile);
+  fflush(simufiles.rndfile);
 }
 
 void sigterm_handler(int sig) {
