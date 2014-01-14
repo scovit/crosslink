@@ -1039,6 +1039,9 @@ void *simulazione(void *threadarg) {
 
   allocate_memory();
 
+  // put laplacian online from file or automatically
+  load_laplacian(lplfilepath);
+
   unsigned long long int checkpoint_elapsed = 0;
   if (!ischeckpoint) {
     load_configuration(cnffilepath);
@@ -1049,9 +1052,6 @@ void *simulazione(void *threadarg) {
   }
 
   fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
-
-  // put laplacian online from file or automatically
-  load_laplacian(lplfilepath);
 
   // put locally interacting beads from or automatically
   load_localized_stuff(locfilepath);
