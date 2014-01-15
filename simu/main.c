@@ -27,12 +27,21 @@ static int error_arguments(int argc, char *argv[]) {
 			 (!strcmp(argv[1], "checkpoint") && (argc == 11)));
 }
 
-void sigusr_handler(int sig) {
+void sigusr1_handler(int sig) {
   fprintf(stderr,
 	  "TOTAL STEPS: %llu\n"
 	  "STEPS DONE:  %llu\n"
 	  "STEPS TO GO: %llu\n", 
 	  mc_time.DYN_STEPS, mc_time.DYN_STEPS - mc_time.t, mc_time.t);
+  fflush(stderr);
+  fflush(stdout);
+  gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
+  fflush(simufiles.accfile);
+  fflush(simufiles.ctcfile);
+  fflush(simufiles.rndfile);
+}
+
+void sigusr2_handler(int sig) {
   fflush(stderr);
   fflush(stdout);
   gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
@@ -50,12 +59,19 @@ void sigterm_handler(int sig) {
 }
 
 static void install_sighandlers() {
-  struct sigaction sausr;
-  sausr.sa_handler = sigusr_handler;
-  sausr.sa_flags = 0; // or SA_RESTART
-  sigemptyset(&sausr.sa_mask);
-  if (sigaction(SIGUSR1, &sausr, NULL) == -1) {
+  struct sigaction sausr1;
+  sausr1.sa_handler = sigusr1_handler;
+  sausr1.sa_flags = 0; // or SA_RESTART
+  sigemptyset(&sausr1.sa_mask);
+  if (sigaction(SIGUSR1, &sausr1, NULL) == -1) {
     perror("couldn't set USR1 signal");
+  }
+  struct sigaction sausr2;
+  sausr2.sa_handler = sigusr2_handler;
+  sausr2.sa_flags = 0; // or SA_RESTART
+  sigemptyset(&sausr2.sa_mask);
+  if (sigaction(SIGUSR1, &sausr2, NULL) == -1) {
+    perror("couldn't set USR2 signal");
   }
   // install the sigterm and sigint signal
   struct sigaction saterm;
