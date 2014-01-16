@@ -1034,21 +1034,21 @@ void *simulazione(void *threadarg) {
   seed = t1.tv_usec * t1.tv_sec;
   dsfmt_init_gen_rand(&dsfmt, seed);
 
-  bool ischeckpoint = 
-    !strcmp(((struct thread_data *)threadarg) -> argv[1], "checkpoint");
+  bool isresume = 
+    !strcmp(((struct thread_data *)threadarg) -> argv[1], "resume");
 
   allocate_memory();
 
   // put laplacian online from file or automatically
   load_laplacian(lplfilepath);
 
-  unsigned long long int checkpoint_elapsed = 0;
-  if (!ischeckpoint) {
+  unsigned long long int resume_elapsed = 0;
+  if (!isresume) {
     load_configuration(cnffilepath);
     openfiles(outstring, "w", NULL, NULL);
   } else {
     // Configuration is loaded there
-    openfiles(outstring, "a", &checkpoint_elapsed, &seed);
+    openfiles(outstring, "a", &resume_elapsed, &seed);
   }
 
   fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
@@ -1132,7 +1132,7 @@ void *simulazione(void *threadarg) {
   unsigned int accepted = 0;
   unsigned int total = 0;
 
-  mc_time.t = mc_time.DYN_STEPS - checkpoint_elapsed;
+  mc_time.t = mc_time.DYN_STEPS - resume_elapsed;
 
   unsigned long long int toprint = mc_time.t -
     (RELAX_TIME + CORRL_TIME);
