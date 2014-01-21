@@ -50,7 +50,7 @@ namespace renderer {
     pointsizeUniform = glGetUniformLocation(theProgram, "pointsize");
 
     glUseProgram(theProgram);
-    glUniform3f(colorUniform, 1.0f, 0.0f, 0.0f);
+    glUniform4f(colorUniform, color[0], color[1], color[2], color[3]);
     glUniform3f(lightdirUniform, 0.0f, 0.0f, 1.0f);
     glUniform1f(pointsizeUniform, pointsize);
     glUseProgram(0);

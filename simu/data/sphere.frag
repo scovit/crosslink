@@ -1,7 +1,7 @@
 #version 330
 out vec4 vFragColor;
 
-uniform vec3 Color;
+uniform vec4 Color;
 uniform vec3 lightDir;
 
 void main(void)
@@ -16,5 +16,5 @@ void main(void)
     // calculate lighting
     float diffuse = max(0.0, dot(lightDir, N));
 
-    vFragColor = vec4(Color,1) * diffuse;
+    vFragColor = vec4(vec3(Color) * diffuse, Color[3]);
 }

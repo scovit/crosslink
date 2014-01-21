@@ -25,6 +25,7 @@ namespace renderer {
   polymer *Poly;
 #ifdef LOCALIZED
   sphere  *Sph;
+  sphere  *SphUni;
 #endif
 
   const GLfloat fzNear = 1.0f;
@@ -66,14 +67,18 @@ namespace renderer {
   }
 
 #ifdef LOCALIZED
-  void interaction_data(GLfloat *bufdest) {
-    int k = 0;
+  void interaction_data(GLfloat *bufdestI, GLfloat *bufdestNI) {
+    int k1 = 0;
+    int k2 = 0;
     for (int i = 0; i < N; i ++)
       if (is_loc_interacting(i)) {
-	bufdest[k] = dots.x[i];
-	bufdest[k + 1] = dots.y[i];
-	bufdest[k + 2] = dots.z[i];
-	k += 3;
+	bufdestI[k1++] = dots.x[i];
+	bufdestI[k1++] = dots.y[i];
+	bufdestI[k1++] = dots.z[i];
+      } else {
+	bufdestNI[k2++] = dots.x[i];
+	bufdestNI[k2++] = dots.y[i];
+	bufdestNI[k2++] = dots.z[i];
       }
   }
 #endif
@@ -85,6 +90,7 @@ namespace renderer {
     Poly -> update_global_uniforms();
 #ifdef LOCALIZED
     Sph -> update_global_uniforms();
+    SphUni -> update_global_uniforms();
 #endif
 
     glViewport(0, 0, (GLsizei) x, (GLsizei) y);
@@ -111,12 +117,14 @@ namespace renderer {
 	perspectiveMatrix[15] /= zoomspeed;
 #ifdef LOCALIZED
 	Sph -> setPointsize(Sph -> getPointsize() * zoomspeed);
+	SphUni -> setPointsize(SphUni -> getPointsize() * zoomspeed);
 #endif
 	break;
       case 5:
 	perspectiveMatrix[15] *= zoomspeed;
 #ifdef LOCALIZED
 	Sph -> setPointsize(Sph -> getPointsize() / zoomspeed);
+	SphUni -> setPointsize(SphUni -> getPointsize() / zoomspeed);
 #endif
 	break;
       default:
@@ -143,6 +151,7 @@ namespace renderer {
     Poly -> update_global_uniforms();
 #ifdef LOCALIZED
     Sph -> update_global_uniforms();
+    SphUni -> update_global_uniforms();
 #endif
   }
 
@@ -154,7 +163,7 @@ namespace renderer {
 
     transpose_data(Poly -> buffer);
 #ifdef LOCALIZED
-    interaction_data(Sph -> buffer);
+    interaction_data(Sph -> buffer, SphUni -> buffer);
 #endif
     if (firsttime) {
       firsttime = 0;
@@ -172,6 +181,7 @@ namespace renderer {
     Poly -> draw();
 #ifdef LOCALIZED
     Sph -> draw();
+    SphUni -> draw();
 #endif
 
     glFlush();
@@ -196,6 +206,8 @@ extern "C" void *glumain(void *threadarg) {
   // Implement zoom with the mouse
 
   glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   renderer::Poly = new renderer::polymer(renderer::perspectiveMatrix,
 					 renderer::offsetVector, 
@@ -205,8 +217,15 @@ extern "C" void *glumain(void *threadarg) {
   renderer::Sph = new renderer::sphere(renderer::perspectiveMatrix,
 				       renderer::offsetVector, locnum,
 				       // CACCIUTO
-				         8);
-                                         // 24);
+				       10,
+                                       // 24,
+				       1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::SphUni = new renderer::sphere(renderer::perspectiveMatrix,
+					  renderer::offsetVector, N - locnum,
+					  // CACCIUTO
+					  10,
+                                          // 24,
+					  0.0f, 1.0f, 1.0f, 0.3f);
 #endif
 
   struct timespec tim, tim2;
@@ -218,7 +237,7 @@ extern "C" void *glumain(void *threadarg) {
 
     Window -> swap();
     
-    tim.tv_sec = 0;
+    tim.tv_sec = 1L;
     tim.tv_nsec = 100000000L;
     nanosleep(&tim , &tim2);
   }
