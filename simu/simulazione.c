@@ -624,7 +624,7 @@ static void allocate_memory() {
 }
 
 static __attribute__ ((noinline))
-void load_laplacian_null() {
+void set_laplacian_null() {
   // linear laplacian
   if (ODGRMAX < 2) {
     fputs("I need more memory, please modify constant ODGRMAX"
@@ -659,7 +659,7 @@ void load_laplacian(char *lplfilepath) {
 	      lplfilepath);
       lplfilepath = "NULL";
     }
-    load_laplacian_null();
+    set_laplacian_null();
   } else {
     // from file
     lpl_index[0] = 0;
@@ -1082,8 +1082,8 @@ void *simulazione(void *threadarg) {
   /* Prova */
   /**/
   const unsigned long long CORRL_TIME = 2*458ULL * N * N;
-  const unsigned long long RELAX_TIME = 10*CORRL_TIME;
-  const int STATISTIC = 100;
+  const unsigned long long RELAX_TIME = 100ULL * CORRL_TIME; //200
+  const int STATISTIC = 1000;
   /**/
 
   /* Simulations (for the Cacciuto stuff) */
