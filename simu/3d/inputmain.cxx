@@ -46,11 +46,13 @@ struct simufiles_t {
   FILE *accfile;
   FILE *ctcfile;
   FILE *inffile;
-  FILE *cnffile;
   FILE *lplfile;
   FILE *locfile;
+  FILE *rndfile;
+  FILE *chkfile;
 };
 extern simufiles_t simufiles;
+extern "C" void flushfiles();
 
 
 const std::vector<inputvari_t> inputvari = {
@@ -119,6 +121,19 @@ const std::vector<inputvari_t> inputvari = {
     }
   },
 
+  {"checkpoint",
+    [] (const std::string cosa) {
+      rewind(simufiles.chkfile);
+      ftruncate(fileno(simufiles.chkfile), 0);
+      print_buffer(simufiles.chkfile);
+      fflush(simufiles.chkfile);
+      std::cout << "Done" << std::endl;
+    },
+    []() -> std::string {
+      return "\t\t\tmake a checkpoint";
+    }
+  },
+
   {"times",
     [] (const std::string cosa) {
       fprintf(stderr,
@@ -134,11 +149,7 @@ const std::vector<inputvari_t> inputvari = {
 
   {"flush",
     [] (const std::string cosa) {
-      fflush(stderr);
-      fflush(stdout);
-      gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
-      fflush(simufiles.accfile);
-      fflush(simufiles.ctcfile);
+      flushfiles();
       std::cout << "Done" << std::endl;
     },
     []() -> std::string {

@@ -58,17 +58,18 @@ extern "C" {
 
   struct simufiles_t {
     gzFile *xyzfile;
-    gzFile *cnffile;
     FILE *accfile;
     FILE *ctcfile;
     FILE *inffile;
     FILE *lplfile;
     FILE *locfile;
     FILE *rndfile;
+    FILE *chkfile;
   };
   __attribute__ ((aligned (16))) struct simufiles_t simufiles;
 
   __attribute__ ((noinline)) void closefiles();
+  __attribute__ ((noinline)) void flushfiles();
   void *simulazione(void *threadarg);
 
 #if defined(__cplusplus)

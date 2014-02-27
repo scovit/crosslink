@@ -758,7 +758,7 @@ int set_bead_initial_position(float o_posx, float o_posy, float o_posz,
 }
 
 static __attribute__ ((noinline))
-void load_configuration_rand() {
+void set_configuration_rand() {
   for (int i = 0; i <  N; i++) {
     dots.x[i] = (float)NAN;
     dots.y[i] = (float)NAN;
@@ -781,7 +781,7 @@ void load_configuration_rand() {
 }
 
 static __attribute__ ((noinline))
-void load_configuration_null() {
+void set_configuration_null() {
 #if !defined(HARDCORE)
   float gsigma = lambda - lambda/1000;
 #else
@@ -809,28 +809,17 @@ void load_configuration_null() {
 }
 
 static __attribute__ ((noinline))
-unsigned long long int load_configuration(char *cnffilepath) {
+ unsigned long long int load_configuration(FILE *cnffile, 
+					   char *cnffilepath) {
   // Attention: input should be gz compressed!!!
   unsigned long long int filetime = 0ULL;
-  if ((simufiles.cnffile = gzopen(cnffilepath, "r")) == NULL) {
-    if (!strcmp(cnffilepath, "RAND")) {
-      load_configuration_rand();
-    } else {
-      if (strcmp(cnffilepath, "NULL")) {
-	fprintf(stderr, "Error: file %s not found and not NULL "
-		"or RAND, aborting\n",
-		cnffilepath);
-	exit(-12);
-      }
-      load_configuration_null();
-    }
-  } else {
-    unsigned long long int oldfiletime = 0;
-    z_off_t curpos = gztell(simufiles.cnffile);
+  if (cnffile != NULL) {
+    unsigned long long int oldfiletime = 0ULL;
+    z_off_t curpos = ftell(cnffile);
     z_off_t startpos = curpos;
     char linebuffer[512];
     // here it finds the last iteration
-    while(gzgets(simufiles.cnffile, linebuffer, sizeof(linebuffer))) {
+    while(fgets(linebuffer, sizeof(linebuffer), cnffile)) {
       if (sscanf(linebuffer, "%llu", &filetime) != 1) {
 	fprintf(stderr, "File format error %s\n", cnffilepath);
 	exit(-3);
@@ -839,18 +828,23 @@ unsigned long long int load_configuration(char *cnffilepath) {
 	startpos = curpos;
 	oldfiletime = filetime;
       }
-      curpos = gztell(simufiles.cnffile);
+      curpos = ftell(cnffile);
     }
     // it moves there and read the configuration
-    gzseek(simufiles.cnffile, startpos, SEEK_SET);
+    fseek(cnffile, startpos, SEEK_SET);
     for (unsigned int i = 0; i < N; i++)
-      if(!gzgets(simufiles.cnffile, linebuffer, 512) || 
+      if(!fgets(linebuffer, sizeof(linebuffer), cnffile) || 
 	 (sscanf(linebuffer, "%llu%g%g%g", &filetime, 
 		 dots.x + i, dots.y + i, dots.z + i) != 4)) {
 	fprintf(stderr, "File format error %s\n", cnffilepath);
 	exit(-3);
       }
-    gzclose(simufiles.cnffile);
+    fflush(cnffile);
+  } else {
+    fprintf(stderr, "Error: file %s not found and not NULL "
+	    "or RAND, aborting\n",
+	    cnffilepath);
+    exit(-12);
   }
   return filetime;
 }
@@ -944,7 +938,6 @@ unsigned int parse_info(char *filepath) {
 
 static __attribute__ ((noinline))
 void openfiles(char *outstring, const char *mode,
-	       unsigned long long int *oldtime,
 	       unsigned int *seed) {
   const char *dir = "out/";
   const char *xyzext = ".xyz.dat.gz";
@@ -952,6 +945,7 @@ void openfiles(char *outstring, const char *mode,
   const char *ctcext = ".ctc.dat";
   const char *infext = ".info";
   const char *rndext = ".rndstate";
+  const char *chkext = ".chk";
   int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
   char filename[lenght];
   bool mode_is_a = !strcmp(mode, "a");
@@ -961,11 +955,6 @@ void openfiles(char *outstring, const char *mode,
 
   strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, xyzext);
-  if (mode_is_a) {
-    unsigned long long int temp = load_configuration(filename);
-    if (oldtime)
-      *oldtime = temp;
-  }
   simufiles.xyzfile = gzopen(filename, mode);
 
   strcpy(filename, dir); strcat(filename, outstring);
@@ -993,6 +982,13 @@ void openfiles(char *outstring, const char *mode,
     fclose(temp);
   }
   simufiles.rndfile = fopen(filename, "w");
+
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, chkext);
+  if (mode_is_a)
+    simufiles.chkfile = fopen(filename, "r+");
+  else
+    simufiles.chkfile = fopen(filename, "w");
 }
 
 __attribute__ ((noinline))
@@ -1001,12 +997,24 @@ void closefiles() {
   fclose(simufiles.accfile);
   fclose(simufiles.ctcfile);
   fclose(simufiles.rndfile);
+  fclose(simufiles.chkfile);
 
   time_t tstamp = time(NULL);
   char *timestr = ctime(&tstamp);
   *strchr(timestr,'\n') = '\0';
   fprintf(simufiles.inffile, "ENDTIME=\"%s\"\n", timestr);
   fclose(simufiles.inffile);
+}
+
+__attribute__ ((noinline))
+void flushfiles() {
+  fflush(stderr);
+  fflush(stdout);
+  gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
+  fflush(simufiles.accfile);
+  fflush(simufiles.ctcfile);
+  fflush(simufiles.rndfile);
+  fflush(simufiles.chkfile);
 }
 
 void *simulazione(void *threadarg) {
@@ -1042,13 +1050,21 @@ void *simulazione(void *threadarg) {
   // put laplacian online from file or automatically
   load_laplacian(lplfilepath);
 
-  unsigned long long int resume_elapsed = 0;
+  unsigned long long int resume_elapsed;
   if (!isresume) {
-    load_configuration(cnffilepath);
-    openfiles(outstring, "w", NULL, NULL);
+    if (!strcmp(cnffilepath, "RAND")) {
+      set_configuration_rand();
+    } else if (!strcmp(cnffilepath, "NULL")) {
+      set_configuration_null();
+    } else  {
+      FILE *cnffile = fopen(cnffilepath, "r");
+      load_configuration(cnffile, cnffilepath);
+    }
+    resume_elapsed = 0;
+    openfiles(outstring, "w", NULL);
   } else {
-    // Configuration is loaded there
-    openfiles(outstring, "a", &resume_elapsed, &seed);
+    openfiles(outstring, "a", &seed);
+    resume_elapsed = load_configuration(simufiles.chkfile, "Checkpoint");
   }
 
   fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);

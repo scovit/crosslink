@@ -33,21 +33,14 @@ void sigusr1_handler(int sig) {
 	  "STEPS DONE:  %llu\n"
 	  "STEPS TO GO: %llu\n", 
 	  mc_time.DYN_STEPS, mc_time.DYN_STEPS - mc_time.t, mc_time.t);
-  fflush(stderr);
-  fflush(stdout);
-  gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
-  fflush(simufiles.accfile);
-  fflush(simufiles.ctcfile);
-  fflush(simufiles.rndfile);
+  flushfiles();
 }
 
 void sigusr2_handler(int sig) {
-  fflush(stderr);
-  fflush(stdout);
-  gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
-  fflush(simufiles.accfile);
-  fflush(simufiles.ctcfile);
-  fflush(simufiles.rndfile);
+  rewind(simufiles.chkfile);
+  ftruncate(fileno(simufiles.chkfile), 0);
+  print_buffer(simufiles.chkfile);
+  flushfiles();
 }
 
 void sigterm_handler(int sig) {
@@ -70,7 +63,7 @@ static void install_sighandlers() {
   sausr2.sa_handler = sigusr2_handler;
   sausr2.sa_flags = 0; // or SA_RESTART
   sigemptyset(&sausr2.sa_mask);
-  if (sigaction(SIGUSR1, &sausr2, NULL) == -1) {
+  if (sigaction(SIGUSR2, &sausr2, NULL) == -1) {
     perror("couldn't set USR2 signal");
   }
   // install the sigterm and sigint signal
