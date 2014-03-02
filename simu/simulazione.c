@@ -921,7 +921,7 @@ unsigned int parse_info(char *filepath) {
       got_there = true;
       if (sscanf(linebuffer + 5, "%u", &retval) != 1) {
 	fprintf(stderr, "Checkpoint, file format error %s\n", filepath);
-	exit(-4);
+	exit(-3);
       }
     }
   }
@@ -930,7 +930,7 @@ unsigned int parse_info(char *filepath) {
   if (!got_there) {
     fprintf(stderr, "Checkpoint, no seed there in %s\n",
 	    filepath);
-    exit(-4);
+    exit(-3);
   }
 
   return retval;
