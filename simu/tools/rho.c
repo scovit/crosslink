@@ -14,17 +14,17 @@ static inline void recenter(void) {
   float xm, ym, zm;
   xm = 0; ym = 0; zm = 0;
 
-  for (int i = 0; i < N; i++) {
-    xm += x[i];
-    ym += y[i];
-    zm += z[i];
+  for (int j = 0; j < i; j++) {
+    xm += x[j];
+    ym += y[j];
+    zm += z[j];
   }
-  xm /= N; ym /= N; zm /= N;
+  xm /= i; ym /= i; zm /= i;
 
-  for (int i = 0; i < N; i++) {
-    x[i] -= xm;
-    y[i] -= ym;
-    z[i] -= zm;
+  for (int j = 0; j < i; j++) {
+    x[j] -= xm;
+    y[j] -= ym;
+    z[j] -= zm;
   }
 }
 
