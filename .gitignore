@@ -4,3 +4,12 @@ simu/nucleoid
 simu/nucleoid.32
 simu/nucleoid.gl
 simu/nucleoid.npc
+simu/tools/ac
+simu/tools/diag
+simu/tools/distancematrix
+simu/tools/inertia
+simu/tools/merr
+simu/tools/pc
+simu/tools/puntadiacency
+simu/tools/rho
+
