@@ -1,0 +1,5 @@
+JobName = "local_equispaced_collapse2C_%s";
+ParameterFile = param/param.gz;
+Executable = "/bin/bash";
+Arguments = "jobbe.parameterfile.sh %f %s";
+InputSandbox = { "jobbe.parameterfile.sh", "%F", "nucleoid.npc", "tools/distancematrix", "tools/shuffle.awk", "tools/ac", "tools/ss", "tools/merr", "tools/inertia", "tools/diag", "tools/pntmaker.sh", "tools/rndpntmaker.sh", "tools/puntadiacency", "in/saw.512", "in/globuleN256S0.0427611758752.in", "in/globuleN512S0.0427611758752.in", "/home/vscolari/copiatore/sshconfig", "/home/vscolari/copiatore/copiatore" };
