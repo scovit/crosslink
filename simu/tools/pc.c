@@ -25,6 +25,8 @@ int misura() {
     return -1;
   }
 
+  memset(contacts, 0, 2 * sizeof(int) * N);
+
   for (int j = 0; j < N; j++)
     for (int k = j; k < N; k++) {
       if ((((double)(x[j] - x[k]))*((double)(x[j] - x[k])) +
@@ -35,10 +37,8 @@ int misura() {
       norm[k - j]++;
     }
 
-  printf("%llu", TIME);
   for (int j = 0; j < N; j++)
-    printf("\t%g", ((double)contacts[j])/norm[j]);
-  putchar('\n');
+    printf("%llu\t%g\n", TIME, ((double)contacts[j])/norm[j]);
 
   return 0;
 };
@@ -47,7 +47,7 @@ int main (int argc, char **argv) {
   TIME = -5;
   i = 0;
 
-  if (argc != 4) {
+  if (argc != 3) {
     fprintf(stderr, "Usage: %s N Sigma\n", argv[0]);
     exit(-3);
   }
