@@ -15,6 +15,7 @@
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "simulazione.h"
 #include "simprivate.h"
+#include "hex.h"
 #if defined(TOPO)
 #include "raytracing.h"
 #endif
@@ -977,9 +978,11 @@ void openfiles(char *outstring, const char *mode,
   strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, rndext);
   if (mode_is_a) {
-    FILE *temp = fopen(filename, "r");
-    fread(&dsfmt, sizeof(dsfmt), 1, temp);
-    fclose(temp);
+    int error = get_saved_dsfmt(filename, &dsfmt);
+    if (error) {
+      fprintf(stderr, "Warning, was unable to open old seed, r=%d\n",
+	      error);
+    } 
   }
   simufiles.rndfile = fopen(filename, "w");
 
@@ -1067,7 +1070,7 @@ void *simulazione(void *threadarg) {
     resume_elapsed = load_configuration(simufiles.chkfile, "Checkpoint");
   }
 
-  fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
+  write_dsfmt_file(&dsfmt, simufiles.rndfile);
 
   // put locally interacting beads from or automatically
   load_localized_stuff(locfilepath);
@@ -1164,7 +1167,7 @@ void *simulazione(void *threadarg) {
       toprint -= CORRL_TIME;
 
       rewind(simufiles.rndfile);
-      fwrite(&dsfmt, sizeof(dsfmt), 1, simufiles.rndfile);
+      write_dsfmt_file(&dsfmt, simufiles.rndfile);
 
 #if !defined(CONFINEMENT)
       recenter();

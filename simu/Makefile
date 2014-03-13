@@ -27,17 +27,17 @@ GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 
 all: nucleoid nucleoid.32 nucleoid.npc nucleoid.gl
 
-nucleoid: build/simulazione.o build/main.o build/dSFMT.o
-	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o  -lm -lz
+nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o
+	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o -lm -lz
 
-nucleoid.32: build/simulazione.32.o build/main.32.o build/dSFMT.32.o
-	${CC} ${CFLAGS} ${CPUF32} -DNUM_THREADS=1 -o nucleoid.32 build/simulazione.32.o build/main.32.o build/dSFMT.32.o  -lm -lz
+nucleoid.32: build/simulazione.32.o build/main.32.o build/dSFMT.32.o build/hex.32.o
+	${CC} ${CFLAGS} ${CPUF32} -DNUM_THREADS=1 -o nucleoid.32 build/simulazione.32.o build/main.32.o build/dSFMT.32.o build/hex.32.o -lm -lz
 
-nucleoid.npc: build/simulazione.npc.o build/main.o build/dSFMT.o
-	${CC} ${CFLAGS} ${CPUF64NPC} -DNUM_THREADS=1 -o nucleoid.npc build/simulazione.npc.o build/main.o build/dSFMT.o  -lm -lz
+nucleoid.npc: build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o
+	${CC} ${CFLAGS} ${CPUF64NPC} -DNUM_THREADS=1 -o nucleoid.npc build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o -lm -lz
 
-nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.o ${GLFILES}
-	${CXX} ${CXXFLAGS} ${CPUF64} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.o  ${GLLIBS} -lm -lz
+nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.o build/hex.o ${GLFILES}
+	${CXX} ${CXXFLAGS} ${CPUF64} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.o build/hex.o ${GLLIBS} -lm -lz
 
 build/simulazione.o: simulazione.c simulazione.h simprivate.h raytracing.h
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o build/simulazione.o -c simulazione.c
@@ -65,6 +65,12 @@ build/dSFMT.o: dSFMT-src-2.2.1/dSFMT.c
 
 build/dSFMT.32.o: dSFMT-src-2.2.1/dSFMT.c
 	${CC} ${CFLAGS} ${CPUF32} -O3 -fno-strict-aliasing -DNDEBUG -o build/dSFMT.32.o -c dSFMT-src-2.2.1/dSFMT.c
+
+build/hex.o: hex.c
+	${CC} ${CFLAGS} ${CPUF64} -o build/hex.o -c hex.c
+
+build/hex.32.o: hex.c
+	${CC} ${CFLAGS} ${CPUF32} -o build/hex.32.o -c hex.c
 
 build/glumain.o: 3d/glumain.cxx
 	${CXX} ${CXXFLAGS} ${CPUF64} -DNUM_THREADS=3 -o build/glumain.o -c 3d/glumain.cxx
