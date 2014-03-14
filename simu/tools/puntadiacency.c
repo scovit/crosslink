@@ -134,6 +134,7 @@ int main (int argc, char **argv) {
   adiacence = calloc(numgroup*numgroup, sizeof(uint8_t));
 
   threshold = 1.44224957 * cbrt(3.0 * Sigma / (4.0 * N * M_PI));
+  threshold = threshold * threshold;
 
   unsigned long long int t;
   float xyz[3];
