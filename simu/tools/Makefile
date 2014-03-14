@@ -1,4 +1,4 @@
-all: ac diag distancematrix inertia merr pc puntadiacency rho ss
+all: ac diag distancematrix inertia merr pc puntadiacency rho ss adiacency
 
 ac: ac.c
 	gcc -O2 -std=gnu99 -o ac ac.c
@@ -21,6 +21,9 @@ pc: pc.c
 puntadiacency: puntadiacency.c
 	gcc -O2 -std=gnu99 -o puntadiacency puntadiacency.c -lm
 
+adiacency: adiacency.c
+	gcc -O2 -std=gnu99 -o adiacency adiacency.c -lm
+
 rho: rho.c
 	gcc -O2 -std=gnu99 -o rho rho.c -lm
 
@@ -28,5 +31,5 @@ ss: ss.c
 	gcc -O2 -std=gnu99 -o ss ss.c 
 
 clean:
-	rm ac diag distancematrix inertia merr pc puntadiacency rho ss
+	rm ac diag distancematrix inertia merr pc puntadiacency rho ss adiacency
 
