@@ -18,7 +18,7 @@ INCFG=${PARAMLIST[6]}
 CHECKPOINTING=${PARAMLIST[7]}
 RNDPNT=${PARAMLIST[8]}
 
-OUTSTRING=local_equispaced_collapse2C~$N~$SIGMA~$E~$EPNT~$MPNT~$GPNT~$INCFG~$RNDPNT~
+OUTSTRING=local_equispaced_collapse3A~$N~$SIGMA~$E~$EPNT~$MPNT~$GPNT~$INCFG~$RNDPNT~
 OUTXYZ=out/$OUTSTRING.xyz.dat.gz
 OUTCHK=out/$OUTSTRING.chk
 
@@ -26,7 +26,10 @@ echo $OUTSTRING  >&2
 
 chmod +x ./nucleoid.npc
 chmod +x ./ss
+chmod +x ./pc
 chmod +x ./merr
+chmod +x ./puntadiacency
+chmod +x ./adiacency
 chmod +x ./distancematrix
 chmod +x ./inertia
 chmod +x ./diag
@@ -109,13 +112,17 @@ done;
 zcat $OUTXYZ | ./inertia | ./diag | gzip -c > $OUTXYZ.inertia.diag.gz
 
 zcat $OUTXYZ | ./puntadiacency $N $SIGMA $PNT | gzip -c > $OUTXYZ.puntad.gz
+zcat $OUTXYZ | ./adiacency $N $SIGMA | gzip -c > $OUTXYZ.adiac.gz
 
 zcat $OUTXYZ | ./ss | gzip -c > $OUTXYZ.ss.gz
+zcat $OUTXYZ | ./pc $N $SIGMA | gzip -c > $OUTXYZ.pc.gz
 zcat $OUTXYZ.ss.gz | ./merr > $OUTXYZ.ss.gz.merr
+zcat $OUTXYZ.pc.gz | ./merr > $OUTXYZ.pc.gz.merr
 
 ### FILE REMOVALS
 rm -f $OUTXYZ
 rm -f $OUTXYZ.ss.gz
+rm -f $OUTXYZ.pc.gz
 rm -f $OUTCHK
 ### END
 
