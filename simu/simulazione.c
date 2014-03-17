@@ -891,18 +891,20 @@ void count_contacts() {
     for (int k = 0; k < N; k++) if (k != i) {
 	float distance = squareDist(dots.x[i], dots.y[i], dots.z[i],
 				    dots.x[k], dots.y[k], dots.z[k]);
+#if defined(HARDCORE)
 	if (distance < (sigma*sigma)) {
 	  fprintf(stderr, "Wrong initial conditions --> %d %d\n",
 		  i, k);
 	  exit(-2);
 	}
+#endif
 #if defined(UNIFORM)
-	if (distance < (sigma + alfa_uniform)*(sigma + alfa_uniform))
+	if (distance < alfa_uniform * alfa_uniform)
 	  if (k > i)
 	    contacts++;
 #endif
 #if defined(LOCALIZED)
-        if (distance < (sigma + alfa_localized)*(sigma + alfa_localized))
+        if (distance < alfa_localized * alfa_localized)
           if (k > i)
 	    if (is_loc_interacting(k) && is_loc_interacting(i))
 	      contacts_loc++;
