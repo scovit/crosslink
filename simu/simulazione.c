@@ -556,16 +556,17 @@ void set_param_normalized(int enne, double big_sigma,
   }
 
   lambda = sqrt(5.0 / 3.0 / N);
+  double sigmal = cbrt(3.0 * big_sigma / (4.0 * N * M_PI));
 #ifdef HARDCORE
-  sigma = cbrt(3.0 * big_sigma / (4.0 * N * M_PI));
+  sigma = sigmal;
 #endif
 #ifdef UNIFORM
-  alfa_uniform = /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigma;
+  alfa_uniform = /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
   beta_uniform = energy_uniform;
 #endif
 #ifdef LOCALIZED
 #warning Localized interaction range setted by default to uniform ones
-  alfa_localized =  /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigma;
+  alfa_localized =  /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
   beta_localized = energy_localized;
 #endif
 #ifdef CONFINEMENT
@@ -789,7 +790,7 @@ void set_configuration_null() {
   float gsigma = sigma;
 #endif
 #if !defined(UNIFORM)
-  float galfa_uniform = sigma + lambda/1000;
+  float galfa_uniform = gsigma + lambda/1000;
 #else
   float galfa_uniform = alfa_uniform;
 #endif
