@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <signal.h>
 #include "simulazione.h"
+#include "hex.h"
 
 
 struct thread_data thread_data_array[NUM_THREADS];

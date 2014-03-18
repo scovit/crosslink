@@ -86,7 +86,7 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
   };
 #endif
 
-#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO)
+#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && !defined(LOCALIZED)
   return 0; // Se ghost
 #endif
 

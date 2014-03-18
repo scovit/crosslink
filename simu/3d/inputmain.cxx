@@ -30,8 +30,12 @@ struct inputvari_t {
 };
 
 extern "C" void print_buffer(FILE *out);
+#if defined(UNIFORM)
 extern double beta_uniform;
+#endif
+#if defined(LOCALIZED)
 extern double beta_localized;
+#endif
 
 extern float BackGround[4];
 
@@ -130,7 +134,7 @@ const std::vector<inputvari_t> inputvari = {
       std::cout << "Done" << std::endl;
     },
     []() -> std::string {
-      return "\t\t\tmake a checkpoint";
+      return "\t\tmake a checkpoint";
     }
   },
 
@@ -156,7 +160,7 @@ const std::vector<inputvari_t> inputvari = {
       return "\t\t\tflush the output files write cache";
     }
   },
-
+#if defined(UNIFORM)
   {"beta_uniform=",
     [] (const std::string cosa) {
       double temp = boost::lexical_cast<double>(cosa);
@@ -170,7 +174,8 @@ const std::vector<inputvari_t> inputvari = {
       return oss.str();
     }
   },
-
+#endif
+#if defined(LOCALIZED)
   {"beta_localized=",
     [] (const std::string cosa) {
       double temp = boost::lexical_cast<double>(cosa);
@@ -184,7 +189,7 @@ const std::vector<inputvari_t> inputvari = {
       return oss.str();
     }
   }
-
+#endif
 };
 
 static inline std::string readcomando(char *prompt) {
