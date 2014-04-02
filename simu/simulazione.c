@@ -1089,7 +1089,7 @@ void flushfiles() {
 void *simulazione(void *threadarg) {
 
   // This sets all denormal numbers to zero - DAZ and FTZ flags
-  _mm_setcsr( _mm_getcsr() | 0x8040 );
+  //  _mm_setcsr( _mm_getcsr() | 0x8040 );
 
   //
   // Initialization code, set global variables and files

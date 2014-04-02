@@ -13,14 +13,15 @@ MEASUREMENTS=-DGETXYZ -DGETENERGY
 #
 # FOR DEBUG, CHOOSE BETWEEN
 # "-Ofast" (NO DEBUGGING) AND "-g -O0" (DEBUGGING)
-#
-DEBUG=-Ofast
+# "-DFASTEXP" is an experimental optimization
+# -ffast-math -funsafe-math-optimizations
+DEBUG=-Ofast -fno-fast-math
 
 CXXFLAGS=${DEBUG} -std=c++0x -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
 CFLAGS=${DEBUG} -std=gnu99 -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
-CPUF32=-DHAVE_SSE2=1 -m32 -march=core2 -mtune=core2 -mfpmath=sse -ffast-math -funsafe-math-optimizations
-CPUF64NPC=-DHAVE_POPCNT=0 -DHAVE_SSE2=1 -m64 -march=opteron -mtune=opteron -ffast-math -funsafe-math-optimizations -funroll-all-loops -fprefetch-loop-arrays
-CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=corei7 -mtune=corei7 -ffast-math -funsafe-math-optimizations -funroll-all-loops -fprefetch-loop-arrays
+CPUF32=-DHAVE_SSE2=1 -m32 -march=core2 -mtune=core2 -mfpmath=sse
+CPUF64NPC=-DHAVE_POPCNT=0 -DHAVE_SSE2=1 -m64 -march=opteron -mtune=opteron -fprefetch-loop-arrays
+CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=corei7 -mtune=corei7 -fprefetch-loop-arrays
 
 GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/polymer.o build/sphere.o build/inputmain.o
 GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
