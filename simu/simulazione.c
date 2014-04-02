@@ -354,6 +354,52 @@ static inline void displace_sphere(float *restrict np,
   np[2] = d2 + D * (float)x2;
 }
 
+#if defined(FASTEXP)
+#define EXPLOOKUPSIZE 256
+#define EXPLOOKUPFIRST 64
+
+#if defined(UNIFORM)
+__attribute__ ((aligned (16))) double uniform_exp_lookup[EXPLOOKUPSIZE];
+#endif
+#if defined(LOCALIZED)
+__attribute__ ((aligned (16))) double localized_exp_lookup[EXPLOOKUPSIZE];
+#endif
+
+__attribute__ ((noinline))
+void populate_lookup_tables() {
+  for (int i = 0; i < EXPLOOKUPSIZE; i++) {
+#if defined(UNIFORM)
+    uniform_exp_lookup[i] =
+      __builtin_exp(beta_uniform * (EXPLOOKUPFIRST - i));
+#endif
+#if defined(LOCALIZED)
+    localized_exp_lookup[i] =
+      __builtin_exp(beta_localized * (EXPLOOKUPFIRST - i));
+#endif
+  }
+}
+
+#if defined(UNIFORM)
+static inline double fastexp_uniform(int arg) {
+  arg = EXPLOOKUPFIRST - arg;
+  if (arg < EXPLOOKUPSIZE && (arg > 0))
+    return uniform_exp_lookup[arg];
+  else
+    return __builtin_exp(beta_uniform * (EXPLOOKUPFIRST - arg));
+}
+#endif
+
+#if defined(LOCALIZED)
+static inline double fastexp_localized(int arg) {
+  arg = EXPLOOKUPFIRST - arg;
+  if (arg < EXPLOOKUPSIZE && (arg > 0))
+    return localized_exp_lookup[arg];
+  else
+    return __builtin_exp(beta_localized * (EXPLOOKUPFIRST - arg));
+}
+#endif
+#endif
+
 static int move_ele() {
   float n_pos[3];
 
@@ -412,7 +458,11 @@ static int move_ele() {
   // three different codepath for optimisation
 #if defined(UNIFORM) && !defined(LOCALIZED)
   if (newc_uni < oldc_uni) {
+#if defined(FASTEXP)
+    double a = fastexp_uniform(newc_uni - oldc_uni);
+#else
     double a = __builtin_exp(beta_uniform * (newc_uni - oldc_uni));
+#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -420,7 +470,11 @@ static int move_ele() {
 #endif
 #if defined(LOCALIZED) && !defined(UNIFORM)
   if (newc_loc < oldc_loc) {
+#if defined(FASTEXP)
+    double a = fastexp_localized(newc_loc - oldc_loc);
+#else
     double a = __builtin_exp(beta_localized * (newc_loc - oldc_loc));
+#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -431,7 +485,12 @@ static int move_ele() {
     beta_uniform * (newc_uni - oldc_uni) +
     beta_localized * (newc_loc - oldc_loc);
   if (c < 0.) {
+#if defined(FASTEXP)
+    double a = fastexp_localized(newc_loc - oldc_loc) *
+      fastexp_uniform(newc_uni - oldc_uni);
+#else
     double a = __builtin_exp(c);
+#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -587,6 +646,10 @@ void set_param_normalized(int enne, double big_sigma,
 #ifdef TOPO
   //conservative topological cutoff 
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
+#endif
+
+#ifdef FASTEXP
+  populate_lookup_tables();
 #endif
 }
 
@@ -1086,11 +1149,11 @@ void *simulazione(void *threadarg) {
   //
 
   /* Prova */
-  /**/
+  /*
   const unsigned long long CORRL_TIME = 2*458ULL * N * N;
   const unsigned long long RELAX_TIME = 100ULL * CORRL_TIME; //200
   const int STATISTIC = 1000;
-  /**/
+  */
 
   /* Simulations (for the Cacciuto stuff) */
   /*
@@ -1108,13 +1171,13 @@ void *simulazione(void *threadarg) {
   */
 
   /* Performances */
-  /*
+  /**/
   const unsigned long long RELAX_TIME = 
     0;
   const unsigned long long CORRL_TIME =
     300000*N;
-  const int STATISTIC = 1000;
-  */
+  const int STATISTIC = 1;
+  /**/
 
   mc_time.DYN_STEPS = RELAX_TIME + CORRL_TIME * STATISTIC + 1;
 

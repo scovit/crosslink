@@ -58,6 +58,9 @@ struct simufiles_t {
 extern simufiles_t simufiles;
 extern "C" void flushfiles();
 
+#if defined(FASTEXP)
+extern "C" void populate_lookup_tables();
+#endif
 
 const std::vector<inputvari_t> inputvari = {
   {"help",
@@ -165,6 +168,9 @@ const std::vector<inputvari_t> inputvari = {
     [] (const std::string cosa) {
       double temp = boost::lexical_cast<double>(cosa);
       beta_uniform = temp;
+#if defined(FASTEXP)
+      populate_lookup_tables();
+#endif
       std::cout << "beta_uniform=" << beta_uniform << std::endl;
     },
     []() -> std::string {
@@ -180,6 +186,9 @@ const std::vector<inputvari_t> inputvari = {
     [] (const std::string cosa) {
       double temp = boost::lexical_cast<double>(cosa);
       beta_localized = temp;
+#if defined(FASTEXP)
+      populate_lookup_tables();
+#endif
       std::cout << "beta_localized=" << beta_localized << std::endl;
     },
     []() -> std::string {
