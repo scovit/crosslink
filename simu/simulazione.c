@@ -1149,11 +1149,11 @@ void *simulazione(void *threadarg) {
   //
 
   /* Prova */
-  /*
+  /**/
   const unsigned long long CORRL_TIME = 2*458ULL * N * N;
   const unsigned long long RELAX_TIME = 100ULL * CORRL_TIME; //200
   const int STATISTIC = 1000;
-  */
+  /**/
 
   /* Simulations (for the Cacciuto stuff) */
   /*
@@ -1171,13 +1171,13 @@ void *simulazione(void *threadarg) {
   */
 
   /* Performances */
-  /**/
+  /*
   const unsigned long long RELAX_TIME = 
     0;
   const unsigned long long CORRL_TIME =
     300000*N;
   const int STATISTIC = 1;
-  /**/
+  */
 
   mc_time.DYN_STEPS = RELAX_TIME + CORRL_TIME * STATISTIC + 1;
 
