@@ -929,6 +929,112 @@ approaches used to investigate the nucleoid.
 % more details on switch argument?
 %
 
+\section{Scaling argument for the entropy of a star polymer.}
+
+These notes describe the calculation of the number of blobs of a star
+polymer with $f$ arms, each of length $N$, bridging some implicit
+parts of the calculation carried out by Daoud and Cotton (1982). The
+number of blobs can then be used as a proxy for the entropy (blob
+ansatz).
+
+The polymer is described as a series of concentric shells, each of
+which by definition has to contain $f$ blobs (one for each
+arm). However, the size of the blobs $\xi$ will depend on the radial
+coordinate of the shell (called $r$). Since the shell at $r$ has
+surface $\sim r^2$, the size of each blob is $\xi^2 = r^2/f$, which
+means that $\xi \sim r / f^{1/2}$, i.e. $\xi = a r$, with $a = C
+f^{-1/2} $.  $\xi$ is also the thickness of the shell at coordinate
+$r$.
+
+
+Starting form a core of size $r_0$ we now imagine to stack
+(iteratively) discrete blobs of the proper size on each shell. Each
+stacked shell will determine the coordinate of the following one, and
+hence its blob size. We thus write
+\begin{displaymath}
+  r_i = a \sum_{k=1}^{i-1} r_k + a \frac{r_i}{2} + a r_0 \ ,  
+\end{displaymath}
+with
+\begin{displaymath}
+  \xi_i = \xi(r_i) = a r_i \ .
+\end{displaymath}
+
+Immediately one has 
+\begin{displaymath}
+  r_i \left(1 -\frac{a}{2} \right) = a \sum_{k=0}^{i-1} r_k
+\end{displaymath}
+i.e. 
+\begin{displaymath}
+  r_1 \left(1 -\frac{a}{2} \right) = a r_0
+\end{displaymath}
+\begin{displaymath}
+  r_2 \left(1 -\frac{a}{2} \right) = r_0 a(1+a)
+\end{displaymath}
+\begin{displaymath}
+  r_n \left(1 -\frac{a}{2} \right) = r_0 a (1+a)^{n-1} \ .
+\end{displaymath}
+
+and
+\begin{displaymath}
+  \xi_n = r_0 a^2 (1+a)^{n-1} \ .
+\end{displaymath}
+
+We note now that the relationship $\xi_n \sim g_n^{3/5} v^{1/5} b$,
+also has to hold (each blob is a swollen polymer of bond length $b$),
+where $v=1/2 - \chi$, and $g$ is the number of monomers in a
+blob. Hence,
+\begin{displaymath}
+  g_n = A e^{\frac{5}{3}\left(n-\frac{1}{2}\right)a} \ ,  
+\end{displaymath}
+where
+\begin{displaymath}
+ A= \frac{(a^2 r_0)^{5/3}}{v^{1/3} b^{5/3}} . 
+\end{displaymath}
+
+The important part is that  
+\begin{displaymath}
+  g_n \simeq A e^{\frac{5}{3}n a} \ ,  
+\end{displaymath}
+for $n$ sufficiently large.
+
+We now follow (on one branch of the star) all the monomers in all the
+blobs, and impose that their total has to be $N$. Inverting this
+relationship will give an estimate for $N_{\mathbf{blob}}$. This can
+be used to estimate $\beta F \simeq f N_{\mathbf{blob}}$ (since the
+argument only involves the blobls of one arm).
+
+One has
+\begin{displaymath}
+  \sum_{n=1}^{N_{\mathbf{blob}}} g_n = N \ ,
+\end{displaymath}
+hence
+\begin{displaymath}
+  N \simeq \int_{1}^{N_{\mathbf{blob}}} \mathrm{d}n  A e^{\frac{5}{3}n
+    a} \ , 
+\end{displaymath}
+from which
+\begin{displaymath}
+  N_{\mathbf{blob}} \sim \frac{1}{a} \log N a / A
+\end{displaymath}
+where we neglected additive and multiplicative numerical constants
+
+This leads to the final expression
+\begin{displaymath}
+  \beta F \sim f^{3/2} \log 
+  \left(  N f^{7/6} v^{1/3}  \left(\frac{b}{r_0} \right)^{5/3} \right)
+\end{displaymath}
+
+Notes:
+
+(i) The prefactor of $f^{3/2}$ is numerical and cannot contain $v$,
+since it comes from the dimensionless expononent of $g_n$, which is
+proportional to $n a$, and ultimately from the purely geometric
+relationship $\xi^2 = r^2/f$.
+
+(ii) Not sure about the exponent of $f$ in the log (last time I did it
+I had one power less of a, giving exponent 1/3, but now it seems OK
+this way...).
+
 % \section{}
 % more details on polysoap argument?
 
