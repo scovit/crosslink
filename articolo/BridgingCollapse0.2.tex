@@ -1,4 +1,10 @@
-\documentclass[a4paper,12pt,pre,superscriptaddress]{revtex4}
+\documentclass[
+%twocolumn,
+preprint,
+a4paper,
+12pt,
+superscriptaddress,
+pre]{revtex4}
 \usepackage{latexsym} 
 %\usepackage{helvet}
 %\usepackage{times}
@@ -32,6 +38,12 @@
   M\'{e}decine Paris, France}
 %
 \affiliation{CNRS, UMR 7238, Paris, France}
+%
+\affiliation{National Centre for Biological Sciences, Tata Institute
+  of Fundamental Research, GKVK, Bellary Road, Bangalore 560065,
+  India}
+%
+\affiliation{Manipal University, Manipal 576104, India}
 %%
 % \author{Bruno Bassetti} 
 % %
@@ -319,7 +331,7 @@ Additionally, consecutive monomers feel the nearest-neighbor bonds as
 \end{displaymath}
 The short-ranged attraction, between all monomers, is modeled as a
 negative square well between the two bounds imposed by the two above
-potentials, and within a maximum range of $a = 0.61\sigma$
+potentials, and within a maximum range of $a = 1.44 \sigma$
 (Fig~\ref{fig:1}A). The depth of the attractive potential is
 $\epsilon_u$ for all beads, modeling a generic short-ranged attraction
 due to depletion effects / molecular crowding~\cite{Noro2000}.
@@ -462,22 +474,30 @@ observed in our simulations.
   \centering
   \includegraphics[width=0.4\textwidth]{fig3}
   \caption{Collapse due to bridging proteins.  A: Switch-like
-    transition to a collapsed state for polymers with $p=4$ and $N=256$.
+    transition to a collapsed state for polymers with small $p$ and
+    $N=256$, solid lines show the predictions of the theory \ref{eq:}
+    taking into account the correct scaling of $P_c(s) ~ s^{-2.27}$
+    for swollen polymers but not the star polymer contribution (see
+    Appendix).
 %
 B: Collapse curves (swelling parameter vs
     $\epsilon_l$) drawn for different fractions of bridging
     interactions $\eta$; the transition energy moves to lower values
     for decreasing $\eta$ (coded by color and symbols, see legend),
-    the case $\eta=1$ corresponds to the case of uniform collapse. The
-    parameters have been chosen so that the phenomenology of
-    Fig.~\ref{fig:2}C is not present. 
+    the case $\eta=1$ corresponds to the case of uniform
+    collapse. The parameters have been chosen so that the
+    phenomenology of Fig.~\ref{fig:2}C is not present. The solid lines
+    show a fit of the prediction of mean field theory for the polymer
+    collapse (eq. \ref{eq:deg_mfield}) on the parameters $B_1$ and
+    $B_2$, which is an acceptable theory for the case of big $\eta$.
 %%
 C:  Transition energy plotted as a function of an effective
 concentration  of bridging proteins, estimated  from $p,N$, by a
 simple 
-Langmuir model. We assumed a dissociation constant $K_d\simeq 0.5
-\mu$M 
-for the binders \textbf{check this use muM for the x axis}.      
+Langmuir model. We assumed different effective dissociation constants $K_d$ 
+for the binders with a range of values typical for transcription
+factors \cite{Buchler29042003}. Dashed line are just a visual aid. An
+increase of $K_d$ correspond to a rescaling of the collape curve.
 %
 % Simulations are  
 % performed varying $\eta$ and $\epsilon_l$, with fixed $\epsilon_u = 0$
