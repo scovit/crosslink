@@ -34,12 +34,12 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="0.63"
-     inkscape:cx="217.37775"
-     inkscape:cy="181.15453"
+     inkscape:cx="80.076163"
+     inkscape:cy="260.51958"
      inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g3980"
+     inkscape:current-layer="g5408"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -58,6 +58,10 @@
      x="-430.5387"
      y="-742.92633"
      id="tspan1134">B</tspan></text>
+
+
+
+
 
 
 
@@ -105,6 +109,10 @@
      sodipodi:role="line">Softly interacting regions</tspan></text>
 
 
+
+
+
+
 <text
    sodipodi:linespacing="125%"
    id="text3000"
@@ -117,6 +125,10 @@
      x="800.93707"
      id="tspan3002"
      sodipodi:role="line">Strong interacting collapsed region</tspan></text>
+
+
+
+
 
 
 <text
@@ -135,6 +147,10 @@
    id="tspan4892">red</tspan> spheres)</tspan></text>
 
 
+
+
+
+
 <text
    xml:space="preserve"
    style="font-size:168.12263489px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
@@ -149,6 +165,10 @@
      y="-3346.6809">(<tspan
    style="fill:#0000ff"
    id="tspan4894">blue</tspan> spheres)</tspan></text>
+
+
+
+
 
 
 <rect
@@ -2756,6 +2776,10 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Attractive energy </tspan></text>
 
 
+
+
+
+
 <text
    id="text5280"
    transform="matrix(1,0,0,-1,278.8799,9.8801)"><tspan
@@ -2765,6 +2789,10 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
 
 
+
+
+
+
 <text
    id="text5284"
    transform="matrix(1,0,0,-1,287.75998,1.81604)"><tspan
@@ -2772,6 +2800,10 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">l</tspan></text>
+
+
+
+
 
 
 </g><path
@@ -2813,6 +2845,10 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">1</tspan></text>
 
 
+
+
+
+
 <text
    id="text5308"
    transform="matrix(0,1,1,0,16.5602,69.784)"><tspan
@@ -2821,6 +2857,10 @@
      y="0"
      x="0 13.44672 28.002239 39.211201 43.686722 48.162239 52.63776 63.846722 75.055679 80.660156 94.10688 105.31584 112.02912 123.23808 140.03136 151.24033 156.8448 168.05376"
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Swelling Parameter</tspan></text>
+
+
+
+
 
 
 </g><path
@@ -2842,6 +2882,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
 
 
+
+
+
+
 <text
    id="text5324"
    transform="matrix(1,0,0,-1,305.66408,226.0718)"><tspan
@@ -2849,6 +2893,10 @@
      y="0"
      x="0"
      style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">u</tspan></text>
+
+
+
+
 
 
 <text
@@ -2861,6 +2909,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">(k</tspan></text>
 
 
+
+
+
+
 <text
    id="text5332"
    transform="matrix(1,0,0,-1,332.01605,226.0718)"><tspan
@@ -2868,6 +2920,10 @@
      y="0"
      x="0"
      style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">B</tspan></text>
+
+
+
+
 
 
 <text
@@ -2880,6 +2936,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">T)</tspan></text>
 
 
+
+
+
+
 </g><g
        transform="matrix(10,0,0,10,-1818.6667,37.07937)"
        id="g5342"><text
@@ -2889,6 +2949,10 @@
      y="0"
      x="0"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0</tspan></text>
+
+
+
+
 
 
 </g><path
@@ -2911,6 +2975,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0.24</tspan></text>
 
 
+
+
+
+
 </g><path
        id="path5358"
        style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -2929,6 +2997,10 @@
      y="0"
      x="0 9.7144318 14.571648 24.286079"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0.40</tspan></text>
+
+
+
+
 
 
 </g><path
@@ -2951,6 +3023,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0.5</tspan></text>
 
 
+
+
+
+
 </g><path
        id="path5378"
        style="fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -2969,6 +3045,10 @@
      y="0"
      x="0 9.7144318 14.571648 24.286079"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0.64</tspan></text>
+
+
+
+
 
 
 </g><path
@@ -2991,6 +3071,10 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">0.8</tspan></text>
 
 
+
+
+
+
 </g><path
        id="path5398"
        style="fill:#00ffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -2999,49 +3083,212 @@
        id="path5400"
        style="fill:none;stroke:#000000;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
        d="m 969.17333,1350.2794 -48,-83.04 95.99997,0 -47.99997,83.04 z"
-       inkscape:connector-curvature="0" /><path
-       id="path5402"
-       style="fill:none;stroke:#000000;stroke-width:7.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
-       d="m -786.66667,1172.5194 -480.00003,0"
-       inkscape:connector-curvature="0" /><path
-       id="path5404"
-       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
-       d="m -1170.6667,1201.3194 -96,-28.8 96,-28.8 0,28.8"
-       inkscape:connector-curvature="0" /><path
-       id="path5406"
-       style="fill:none;stroke:#000000;stroke-width:7.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
-       d="m -1170.6667,1201.3194 -96,-28.8 96,-28.8 0,57.6 z"
        inkscape:connector-curvature="0" /><g
        transform="matrix(10,0,0,10,-1914.6667,117.07937)"
-       id="g5408"><text
-   id="text5410"
-   transform="matrix(1,0,0,-1,42.5762,114.04)"><tspan
-     id="tspan5412"
+       id="g5408">
+
+
+
+
+
+
+
+
+
+
+
+<g
+   id="g3850"
+   transform="translate(220.95238,-34.285714)"><path
+     inkscape:connector-curvature="0"
+     d="m -786.66667,1172.5194 -480.00003,0"
+     style="fill:none;stroke:#000000;stroke-width:7.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path5402"
+     transform="matrix(0.1,0,0,0.1,191.46667,-11.707936)" /><path
+     inkscape:connector-curvature="0"
+     d="m -1170.6667,1201.3194 -96,-28.8 96,-28.8 0,28.8"
+     style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+     id="path5404"
+     transform="matrix(0.1,0,0,0.1,191.46667,-11.707936)" /><path
+     inkscape:connector-curvature="0"
+     d="m -1170.6667,1201.3194 -96,-28.8 96,-28.8 0,57.6 z"
+     style="fill:none;stroke:#000000;stroke-width:7.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+     id="path5406"
+     transform="matrix(0.1,0,0,0.1,191.46667,-11.707936)" /><text
+     transform="matrix(1,0,0,-1,42.5762,114.04)"
+     id="text5410"><tspan
+       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+       x="0 4.8572159 14.571648 23.307648 29.125824 38.840256 48.554688 57.290688 61.169472 70.883904 80.598335"
+       y="0"
+       sodipodi:role="line"
+       id="tspan5412">Increasing </tspan></text>
+<text
+     transform="matrix(1,0,0,-1,128.0641,114.04)"
+     id="text5414"><tspan
+       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
+       x="0"
+       y="0"
+       id="tspan5416">ε</tspan></text>
+<text
+     transform="matrix(1,0,0,-1,135.74418,107.08023)"
+     id="text5418"><tspan
+       style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+       x="0"
+       y="0"
+       id="tspan5420">u</tspan></text>
+</g>
+
+
+
+
+
+<g
+   id="g3790"
+   transform="translate(7.187302,-5.4095238)"
+   style="fill:#008000"><g
+     transform="translate(-354.28571,64.761905)"
+     id="g3780"
+     style="fill:#008000"><text
+       style="font-size:12px;fill:#008000"
+       y="-53.019703"
+       x="526.31299"
+       id="text5414-6"
+       transform="scale(1,-1)"><tspan
+         id="tspan5416-1"
+         y="-53.019703"
+         x="526.31299"
+         style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#008000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
+<text
+       style="font-size:12px;fill:#008000"
+       y="-46.059925"
+       x="533.99304"
+       id="text5418-1"
+       transform="scale(1,-1)"><tspan
+         id="tspan5420-4"
+         y="-46.059925"
+         x="533.99304"
+         style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#008000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">u</tspan></text>
+</g><text
+     transform="scale(1,-1)"
+     sodipodi:linespacing="125%"
+     id="text3786"
+     y="-113.89223"
+     x="186.6515"
+     style="font-size:20.15999985px;font-style:italic;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#008000;fill-opacity:1;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     xml:space="preserve"><tspan
+       style="font-style:normal;fill:#008000;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans"
+       y="-113.89223"
+       x="186.6515"
+       id="tspan3788"
+       sodipodi:role="line">&lt; θ</tspan></text>
+</g><g
+   id="g3790-3"
+   transform="translate(-124.7418,-13.571295)"
+   style="fill:#008000"><g
+     id="g3838"
+     transform="translate(0,-1.2698413)"
+     style="fill:#008000"><g
+       id="g3780-6"
+       transform="translate(-354.28571,64.761905)"
+       style="fill:#008000"><text
+         transform="scale(1,-1)"
+         id="text5414-6-4"
+         x="526.31299"
+         y="-53.019703"
+         style="font-size:12px;fill:#008000"><tspan
+           style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#008000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol"
+           x="526.31299"
+           y="-53.019703"
+           id="tspan5416-1-8">ε</tspan></text>
+<text
+         transform="scale(1,-1)"
+         id="text5418-1-1"
+         x="533.99304"
+         y="-46.059925"
+         style="font-size:12px;fill:#008000"><tspan
+           style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#008000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+           x="533.99304"
+           y="-46.059925"
+           id="tspan5420-4-2">u</tspan></text>
+</g><text
+       xml:space="preserve"
+       style="font-size:20.15999985px;font-style:italic;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#008000;fill-opacity:1;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+       x="186.6515"
+       y="-113.89223"
+       id="text3786-4"
+       sodipodi:linespacing="125%"
+       transform="scale(1,-1)"><tspan
+         sodipodi:role="line"
+         id="tspan3788-7"
+         x="186.6515"
+         y="-113.89223"
+         style="font-style:normal;fill:#008000;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans">&gt; θ</tspan></text>
+</g></g></g><g
+       transform="matrix(10,0,0,10,-1867.1231,-2681.189)"
+       inkscape:label="ztrans"
+       id="g3755"><g
+         transform="matrix(0.1,0,0,0.1,-12.8,11.2)"
+         id="g3757"><g
+           transform="scale(10,10)"
+           id="g3811">
+
+
+
+
+
+
+
+
+
+
+
+<g
+   id="g3864"
+   transform="translate(-259.37778,68.571428)"><g
+     transform="matrix(0.00961285,0.99995379,-0.99995379,0.00961285,61.49665,354.43389)"
+     id="g3856">
+
+
+
+<text
+   style="font-size:12px"
+   y="143.00488"
+   x="501.57907"
+   id="text3827-9"
+   transform="matrix(0.00961285,-0.9999538,-0.9999538,-0.00961285,0,0)"><tspan
+     id="tspan3829-7"
      sodipodi:role="line"
-     y="0"
-     x="0 4.8572159 14.571648 23.307648 29.125824 38.840256 48.554688 57.290688 61.169472 70.883904 80.598335"
-     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Increasing </tspan></text>
+     y="143.00488"
+     x="501.57907 508.29236"
+     style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">(k</tspan></text>
 
 
 <text
-   id="text5414"
-   transform="matrix(1,0,0,-1,128.0641,114.04)"><tspan
-     id="tspan5416"
-     y="0"
-     x="0"
-     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
+   style="font-size:12px"
+   y="151.06854"
+   x="518.29449"
+   id="text3831-4"
+   transform="matrix(0.00961285,-0.9999538,-0.9999538,-0.00961285,0,0)"><tspan
+     id="tspan3833-1"
+     y="151.06854"
+     x="518.29449"
+     style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">b</tspan></text>
 
 
 <text
-   id="text5418"
-   transform="matrix(1,0,0,-1,135.74418,107.08023)"><tspan
-     id="tspan5420"
-     y="0"
-     x="0"
-     style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">u</tspan></text>
+   style="font-size:12px"
+   y="143.00488"
+   x="526.21442"
+   id="text3835-4"
+   transform="matrix(0.00961285,-0.9999538,-0.9999538,-0.00961285,0,0)"><tspan
+     id="tspan3837-5"
+     sodipodi:role="line"
+     y="143.00488"
+     x="526.21442 538.53217"
+     style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">T)</tspan></text>
 
 
-</g></g></g></g></g><g
+</g></g></g></g></g></g></g></g></g><g
                    transform="matrix(10,0,0,10,-2494.8276,-4680.8234)"
                    inkscape:label="znicodemi"
                    id="g18412" /></g></g></g></g></g></g><g
@@ -3055,5 +3302,9 @@
      x="-430.5387"
      y="-742.92633"
      id="tspan1134-3">A</tspan></text>
+
+
+
+
 
 </g></g></svg>
