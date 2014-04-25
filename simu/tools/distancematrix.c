@@ -24,18 +24,18 @@ static void usage(int argc, char *argv[]) {
 }
 
 static void allocate_memory() {
-  float * restrict buffer = malloc(3 * sizeof(float) * maxdots);
+  float * restrict buffer = malloc(3 * sizeof(float) * maxdots +
+				   sizeof(double) * maxdots * maxdots);
   dots.x = buffer; dots.y = dots.x + maxdots; dots.z = dots.y + maxdots;
 
-  distance = malloc(sizeof(float) * maxdots * maxdots);
+  distance = (double *)(dots.z + maxdots);
 }
 
 static void free_memory() {
   free(dots.x);
-  free(distance);
 }
 
-static inline float square_distance(int a, int b) {
+static inline double square_distance(int a, int b) {
   return (dots.x[a] - dots.x[b]) * (dots.x[a] - dots.x[b]) +
     (dots.y[a] - dots.y[b]) * (dots.y[a] - dots.y[b]) +
     (dots.z[a] - dots.z[b]) * (dots.z[a] - dots.z[b]);
