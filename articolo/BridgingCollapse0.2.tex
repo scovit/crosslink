@@ -347,12 +347,8 @@ potentials, and within a maximum range of $a = 1.44 \sigma$
 (Fig~\ref{fig:1}A). The depth of the attractive potential is
 $\epsilon_u$ for all beads, modeling a generic short-ranged attraction
 due to depletion effects / molecular crowding~\cite{Noro2000}.
-Bridging interactions are represented by a square-well attractive
-potential of the same range, but with interaction energy $\epsilon_l >
-\epsilon_u$, for sparsely chosen beads.
+Bridging interactions are \rev{modeled as sparsely chosen beads with additional square-well attractive potentials of the same range, but acting only on other beads of the same class with interaction energy $\epsilon_l$}.
 %
-\textbf{CHE ASSUNZIONI FACCIAMO PER INTERAZIONI TRA BRIDGING E NON?
-  PER BRIDGING L'ENERGIA E' epsl, non epsu + epsl, GIUSTO?   }
 
 %%%
 %%%
@@ -491,10 +487,12 @@ observed in our simulations.
     transition to a collapsed rosette-like state for polymers for
     small fraction of 
     bridging interactions $\eta$, solid lines show the predictions of
-    the theoretical estimate (Eq.~\ref{eq:}) taking into account the
-    correct scaling of 
-    $P_\mathrm{(loop)}(s) \sim s^{-2.27}$ for swollen polymers but not the star
-    polymer contribution (see Appendix).
+    the theoretical estimate (Eq.~\ref{eq:prob_collapseZ},
+    \ref{eq:Zloop_red})
+    taking into
+    account the correct scaling of
+    $P_\mathrm{(loop)} \sim g^{-2.27}$. The star polymer
+    contribution has been neglected (see Appendix).
 %
 B: Collapse curves (swelling parameter vs
     $\epsilon_l$) drawn for big fractions of bridging
@@ -514,7 +512,7 @@ Langmuir model. We assumed different effective dissociation constants $K_d$
 for the binders with a range of values typical for transcription
 factors \cite{Buchler29042003}. Dashed lines are guides to the
 eye. The region of low binder concentration is expected to produce a
-switch-like transition to a reosette state, while the
+switch-like transition to a rosette state, while the
 high-concentration regime is expected to follow mean-field behavior. An
 increase of $K_d$ corresponds to a rescaling of the transition curve. 
 %
@@ -571,8 +569,8 @@ measure with simulations the first return probability for the polymer
 of length $g = (N-p)/p$. This can be estimated for large $g$ as return
 probability of $P_\mathrm{(loop)} \simeq (a^3/\lambda^3) g^{-3/2}$ by
 using mean field theory, this estimation is correct for ghost polymers
-while the scaling for the swollen state is $P_\mathrm{(loop)}(s) \sim
-s^{-2.27}$~\cite{Marenduzzo2006c}.
+while the scaling for the swollen state is $P_\mathrm{(loop)} \sim
+g^{-2.27}$~\cite{Marenduzzo2006c}.
 %
 While the entropy of many configurations can be estimated as a
 combination of loops of varying length, complex constrained
@@ -581,9 +579,9 @@ the entropy loss terms can be computed case by case in a
 straightforward way (for example for $p=4$ only one such configuration
 emerges, connecting bridging points 1-3 and 2-4).  Fig.~\ref{fig:3}A
 shows a comparison of the calculation carried out for $p=4$, and
-direct simulation.  The agreement between the estimated and measured
-$P(C^*)$ is satisfactory, indicating that indeed a loop entropy
-reduction switch is relevant. \rev{The prediction looses
+direct simulation.  The agreement between the estimated and
+measured $P(C^*)$ is satisfactory, indicating that indeed a loop
+entropy reduction switch is relevant. \rev{The prediction looses
   quantitative precision for increasing number of loops, due to the
   fact that the entropy reduction due to interactions between loops
   (as in star polymers) is
@@ -597,14 +595,12 @@ dominant contribution to the estimate is the collapsed state $C^*$, and
 the transition can be captured by a simplified two-state partition
 function keeping into account only the fully unfolded and the fully
 bridged configurations (Fig.~\ref{fig:3}A),
-\rev{modified equation, ??? we need to understand the factorial term???}
 %
 % Z_R = 1 + e^{-\beta n_b^{\mathrm{(max)}} \epsilon_l + (p-1) \Delta
 % S_1(g)} \ .
 %
 \begin{equation}
-  Z_R = 1 + \frac{P_\mathrm{loop}(g)^{p-1}}
-                  {(p-1)!}
+  Z_R = (p - 1)! + P_\mathrm{loop}(g)^{p-1}
             e^{\beta \epsilon_l n_b^{\mathrm{(max)}}} \ .
   \label{eq:Zloop_red}
 \end{equation}
@@ -680,7 +676,7 @@ model (Fig.~\ref{fig:3}C).
     $\left.{\epsilon_l}^*\right|_{\epsilon_u > \epsilon_u^*} \simeq 2k_bT$
     appears to depend only weakly on $\epsilon_u$.
 %
-    Simulations were with performed with $N=256$ and $p=8$
+    Simulations were with performed with $N=256$ and $\eta=8/256$
     \textbf{CHECK} for XXX Monte Carlo sweeps, and with varying values
     of $\epsilon_u$ and $\epsilon_l$ }
   \label{fig:4}
@@ -730,7 +726,10 @@ bridging.
   transizione?  e' notevole anche che ci sia una transizione del
   volume in questo regime, dato che sono entrambi oggetti
   collassati. Per qualche ragione quello dominato dal bridging occupa
-  meno spazio, ma non so perche'. }
+  meno spazio, ma non so perche'. VFS: Perche' stiamo misurando non il
+  raggio di girazione  ma bensi' lo swelling parameter (end to end
+  distance). Le estremita` sono privilegiate perche` entrambe sono
+  bridging. }
 
 
 The dependence of the free energy in the looped chains from the
@@ -742,6 +741,7 @@ b scale as
 \begin{equation}
 \beta F_\mathrm{(corona)} \sim f^{3/2} \log\left(Nf^{7/6} v^{1/3}
   \left( \frac{b}{r_0}\right)^{5/3} \right)
+\label{eq:corona}
 \end{equation}
 %% Attenzione questa formula va verificata, il v nel logaritmo e`
 %% strano ma sembra che fitti per v "grande" -- simulations are on the
@@ -770,9 +770,13 @@ of sparse interactions can lead to long-lived states where
 snapshot of such a configuration. Multiple domains are visible from
 interaction maps, i.e. tables where the indexes are the discrete
 arc-length coordinates of the polymer beads and the entries are
-proportional to the probability of finding the two monomers within a
-threshold distance \textbf{check this: le tue non sono queste - come
-  hai definito le mappe??} (Fig.~\ref{fig:5}B). States with multiple
+proportional to \rev{the mean square distances(Fig.~\ref{fig:5}B)}.
+% the probability of finding the two monomers within a
+% threshold distance \textbf{check this: le tue non sono queste - come
+%   hai definito le mappe??} (Fig.~\ref{fig:5}B). Questa misura e`
+%   molto difficile da fare (richiede troppa statistica) per questo
+%   uso la mean square distance
+States with multiple
 domains were stable in our simulations for as long as we could
 measure. Additionally, states prepared with the initial conditions of
 a single domain would switch to a two- or three-domain state, which
@@ -1038,29 +1042,81 @@ approaches used to investigate the nucleoid.
 
 \section{Inclusion of star polymer terms in the collapse due to sparse
 interactions}
+Equations \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red}) don't show
+perfect agreement with simulation data in figure \ref{fig:3}B because
+we neglected the entropy reduction due to the interactions between
+loops. While the approximation of Eq.~ \ref{eq:Zloop_red} is only
+valid for small number of loops, it is precise only for
+ghost chains (see Fig. \ref{fig:6}A). The scaling of the probability
+of collapse for swollen arms of depends on the excluded volume
+interaction parameter $v$ through two effects: the first one is the
+swelling of the arms due to the self-interactions which changes the
+scaling for the probability of contact from $P_\mathrm{loop} \sim g^{-3/2}$
+to $P_\mathrm{loop} \sim g^{-2.27}$~\cite{Marenduzzo2006c}, the second
+one is the interactions between the arms due to the peculiar star-like
+configuration of the collapsed polymer. The latter is more tricky
+since it depends not only on the arm length $g$ and the interaction
+parameter $v$ but also on the branching number $2p$.
+
+The entropy reduction for a star polymer with
+$f$ arms of length $N/f$ has been studied in the thermodynamic
+limit ($N \to \infty$)\cite{Schafer1992}.
+
+One can define a set of scaling exponents $\gamma_f$ which sets the
+scaling between the number of configuration of a star polymer made of
+$f$ arms each of length $N$ as:
+\begin{equation}
+Z = \mu^{-fN} N^{\gamma_f - 1}.
+\end{equation}
+
+Due to the effect of this scaling, the collapse energy of the polymer
+with bridging interactions is shifted to higher values by an entropic
+contribution as\cite{Hanke2003}:
+\begin{equation}
+\Delta S_{star} = \sigma_{2f} \log \frac{N}{f-1},\ 
+\mathrm{with}\ \sigma_{2f} = \gamma_f - \frac{\gamma_1 + 1}{2}.
+\end{equation}
+
+numerical calculations of the $\gamma_f$ for selected values of $f$
+have been carried out using field theoretical
+estimations\cite{Schafer1992} and on-lattice polymer simulations 
+\cite{Batoulis1989,Grest1994,Caracciolo1998,Zifferer1999,Shida2000,
+Hsu2004}.
+
+In a complementary way the problem of the star
+polymer has been solved by using renormalization theory and scaling
+properties of polymer blobs\cite{Daoud1982}, this way it is possible
+to show that the scaling of the free energy of the star polymer is
+proportional to $\sim f^{3/2}$~\cite{Witten1986}. This approach led to
+the scaling of the $\gamma_f$ exponents by the
+exponent $3/2$. The same simulations which were used to calculate
+numerically $\gamma_f$ obtained\cite{Hsu2004} for the results scaling
+given by the relation 
+$\gamma_f - 1 \sim -(f-3/2)^{1.68}$
+which is in agreement to the scaling of the free energy $\sim 3/2$.
+
+We propose a scaling for the entropic cost of the star
+polymer term as in Eq. \ref{eq:corona}, this version of the scaling
+includes also the logarithmic prefactor which depends on the
+homogeneous interaction term which is not a constant. For a detailed
+explanation of the derivation of this equation check the next
+appendix.
+%
+The improved agreement of the theoretical predicted collapsed curves
+with the addition of a component which scales according to equation
+\ref{eq:corona} is shown in Fig. \ref{fig:6}B.
+
 \rev{
-Qui ci st\`a il grafico 2A con le correzioni per lo star polymer, ci
-devono essere tutte le seguenti citazioni:
-\begin{itemize}
-\item
-  Hanke Metzler 2003
-\item
-  Hsu Nadler Grassberger 2004
-\item
-  Witten Pincus 1986
-\item
-  Shafer Duplantier 1991
-\end{itemize}
 ci st\`a anche un grafico che discende da 4B dove si fa vedere la
 divergenza logaritmica.
-}
+Inviare simulazioni per il ghost con $p = 6$}.
 \section{Scaling argument for the entropy of a star polymer.}
 
 These notes describe the calculation of the number of blobs of a star
 polymer with $f$ arms, each of length $N$, bridging some implicit
-parts of the calculation carried out by Daoud and Cotton (1982). The
-number of blobs can then be used as a proxy for the entropy (blob
-ansatz).
+parts of the calculation carried out by Daoud and Cotton
+(1982)\cite{Daoud1982}. The number of blobs can then be used as a
+proxy for the entropy (blob ansatz).
 
 The polymer is described as a series of concentric shells, each of
 which by definition has to contain $f$ blobs (one for each
