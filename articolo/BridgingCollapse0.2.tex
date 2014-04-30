@@ -1042,7 +1042,31 @@ approaches used to investigate the nucleoid.
 
 \section{Inclusion of star polymer terms in the collapse due to sparse
 interactions}
-Equations \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red}) don't show
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.4\textwidth]{fig6}
+  \caption{Inclusion of star polymer terms in the collapse due to
+    sparse interactions: A Collapse for the ghost polymer with
+    bridging interactions, the graph shows agreement of the
+    predictions of Eq. \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red}
+    to simulation data. The formulas include a scaling of
+    $P_\mathrm{loop} \sim g^{-3/2}$ measured from simulations. Panel B
+    shows a version of fig. \ref{fig:3}B where the theoretical
+    predictions are improved by a shift in the transition energy of
+    value $\Delta S_{star} = \mathrm{A0} (2p - 3/2)^{1.68}
+    \log[256/p]$ (see eq. \ref{eq:grass}) where $\mathrm{A0} =
+    0.00258$ is a fitted parameter. Panel C shows the agreement of
+    the scaling of the transition point between the simulations for
+    the polymer with bridging interactions ($\eta = 8/256$) in the
+    swollen arm regime and the predictions of eq. \ref{eq:corona}, the
+    ordinate shows the difference between the transition energy and
+    the critical transition energy of $\sim 2 k_b T$ where the polymer
+    switch to the collapsed-arms regime.}
+  \label{fig:6}
+\end{figure}
+
+Equations \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red} don't show
 perfect agreement with simulation data in figure \ref{fig:3}B because
 we neglected the entropy reduction due to the interactions between
 loops. While the approximation of Eq.~ \ref{eq:Zloop_red} is only
@@ -1064,20 +1088,21 @@ limit ($N \to \infty$)\cite{Schafer1992}.
 
 One can define a set of scaling exponents $\gamma_f$ which sets the
 scaling between the number of configuration of a star polymer made of
-$f$ arms each of length $N$ as:
+$f$ arms each of length $N/f$ as:
 \begin{equation}
-Z = \mu^{-fN} N^{\gamma_f - 1}.
+Z = \mu^{-N} \left(N/f\right)^{\gamma_f - 1}.
 \end{equation}
 
 Due to the effect of this scaling, the collapse energy of the polymer
-with bridging interactions is shifted to higher values by an entropic
-contribution as\cite{Hanke2003}:
+with bridging interactions is shifted to higher values for increasing
+$p$ by an entropic contribution as\cite{Hanke2003}:
 \begin{equation}
-\Delta S_{star} = \sigma_{2f} \log \frac{N}{f-1},\ 
-\mathrm{with}\ \sigma_{2f} = \gamma_f - \frac{\gamma_1 + 1}{2}.
+\Delta S_{star} = \sigma_{2p} \log \frac{N}{p-1},\ 
+\mathrm{with}\ \sigma_{2p} = \gamma_p - \frac{\gamma_1 + 1}{2}.
+\label{eq:sstar}
 \end{equation}
 
-numerical calculations of the $\gamma_f$ for selected values of $f$
+Numerical calculations of the $\gamma_f$ for selected values of $f$
 have been carried out using field theoretical
 estimations\cite{Schafer1992} and on-lattice polymer simulations 
 \cite{Batoulis1989,Grest1994,Caracciolo1998,Zifferer1999,Shida2000,
@@ -1092,7 +1117,10 @@ the scaling of the $\gamma_f$ exponents by the
 exponent $3/2$. The same simulations which were used to calculate
 numerically $\gamma_f$ obtained\cite{Hsu2004} for the results scaling
 given by the relation 
-$\gamma_f - 1 \sim -(f-3/2)^{1.68}$
+\begin{equation}
+\gamma_f - 1 \sim -(f-3/2)^{1.68}
+\label{eq:grass}
+\end{equation}
 which is in agreement to the scaling of the free energy $\sim 3/2$.
 
 We propose a scaling for the entropic cost of the star
@@ -1104,12 +1132,8 @@ appendix.
 %
 The improved agreement of the theoretical predicted collapsed curves
 with the addition of a component which scales according to equation
-\ref{eq:corona} is shown in Fig. \ref{fig:6}B.
+\ref{eq:corona} is shown in Fig. \ref{fig:6}B and Fig. \ref{fig:6}C.
 
-\rev{
-ci st\`a anche un grafico che discende da 4B dove si fa vedere la
-divergenza logaritmica.
-Inviare simulazioni per il ghost con $p = 6$}.
 \section{Scaling argument for the entropy of a star polymer.}
 
 These notes describe the calculation of the number of blobs of a star
