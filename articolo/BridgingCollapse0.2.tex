@@ -325,9 +325,8 @@ ref.~\cite{Cacciuto2006}. The polymer is represented as a linear
 string of $N$ spherical ``beads'' of diameter $\sigma$, connected by
 bonds of maximal extension $\lambda = 2.36 \sigma$
 %% \textbf{(??? Cacciuto mette 1.9)}. 
-We simulated polymers composed of up to 1024 \textbf{CORRECT NUMBER
-  HERE} beads.  All monomers interact via a hard-core repulsion
-potential
+We simulated polymers composed of up to 512 beads.  All monomers
+interact via a hard-core repulsion potential
 \begin{displaymath}
   U_r(r_{ij}) = \begin{cases} 
     0,  & \mbox{if }\ r_{ij} > \sigma \\ 
@@ -587,8 +586,7 @@ entropy reduction switch is relevant. \rev{The prediction looses
   (as in star polymers) is
   neglected. We verified that the estimate is precise for a ghost
   chain, and produced a refined estimate keeping into account the
-  star-polymer contributions (see Appendix and Fig. XXX YYY [figures
-  in the appendix]) } 
+  star-polymer contributions (see Appendix and Fig. \ref{fig:6}AB) } 
 %
 Additionally, we find that for $\eta$ sufficiently small, the
 dominant contribution to the estimate is the collapsed state $C^*$, and
@@ -854,44 +852,32 @@ bridging proteins in multiple domains.
     loops arranged in a star-like configuration.   
 %
 B: Stability of multi-domain configurations over single-domain
-collapsed 
-state. Colormaps of mean distance between polymer segments shown for
-increasing Monte Carlo times.  
+collapsed state. Colormaps of mean distance between polymer segments
+shown for increasing Monte Carlo times.
 %
 In lexicographic order:  (i)  initial configuration of the simulation 
-prepared as a single domain (as in Fig.~\ref{fig:4}A), (ii) after
-$2\cdot10^6$ 
-Monte Carlo sweeps the system (simulated for
-$\epsilon_l+\epsilon_u=2.4$, 
-$\epsilon_u=0.15$)  shows a disintegration of the single-domain
-configuration,  (iii) 
-  at $10^7$  sweeps a two-domain configuration is stable;
-  (iv)  different parameters    
-($epsilon_l+epsilon_u=2.4$, $epsilon_u=0.005$) lead to a stable
-three-domain 
-configuration after $10^7$ sweeps.
+prepared as a single domain (as in Fig.~\ref{fig:4}A), (ii and iii) after
+$9.3\cdot10^6$ and $3.7\cdot10^7$ Monte Carlo sweeps the system (simulated for
+$\epsilon_l+\epsilon_u=2.4$, $\epsilon_u=0.15$)  shows a
+disintegration of the single-domain configuration and a progressive
+reordering of the stable configuration in two distinct clusters, (iii)
+at $10^8$ sweeps a two-domain configuration is stable; (iv) different
+parameters ($\epsilon_l+\epsilon_u=2.4$, $\epsilon_u=0.005$) lead to a stable
+three-domain configuration after $10^7$ sweeps.
 %  
-    C: The shape anisotropy of the collapsed globules (measured as the
-    ratio between the first and the third eigenvalue of the inertia
-    matrix)  shows a transition when the difference between the
-    uniform  
-    interaction  lower to a negative threshold. The
-    transition is due to 
-    the increasing repulsive interaction within the loops. The inset
+C: The shape anisotropy of the collapsed globules (measured as the
+ratio between the first and the third eigenvalue of the inertia
+matrix)  shows a transition when the difference between the
+uniform  
+interaction  lower to a negative threshold. The
+transition is due to 
+the increasing repulsive interaction within the loops. The inset
     show that with  the same transition is visible  the volume-energy
-    law.  \textbf{check this:  va 
-      confrontata con l'anisotropia standard del swollen polymer,
-      e bisogna segnare nel plot quando ci sono due domini e quando si
-    passa a uno}. In these plots, 
-    $\epsilon_l+\epsilon_u=3.4 K_b T$ \textbf{perche' scelgi di
-      conservare la somma?}.  
+    law.
 %
 \textbf{Simulation parameters. }
-Simulations are performed with $N = 512$, $sigma =$ 
- $lambda =$   $p=32$, $eta=0.125$, $l_0= $.  
-%
-\textbf{Change colorscale of interaction map. Rename panels into A B
-  C, invert panels C ad B. small text/symbols and general visibility problems} }
+Simulations are performed with $N = 512$, $\sigma = 0.027$ 
+ $\lambda = 0.057$,  $p=32$, $\eta=0.125$.}
   \label{fig:5}
 \end{figure}
 
