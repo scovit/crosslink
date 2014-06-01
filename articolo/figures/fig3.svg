@@ -15,10 +15,10 @@
    width="498.29684"
    height="976.83081"
    xml:space="preserve"
-   sodipodi:docname="fig3.bis.svg"><metadata
+   sodipodi:docname="fig3.svg"><metadata
      id="metadata8"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
      id="defs6" /><sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -33,12 +33,12 @@
      id="namedview4"
      showgrid="false"
      inkscape:zoom="0.70710678"
-     inkscape:cx="-9.8006329"
-     inkscape:cy="587.2056"
+     inkscape:cx="676.09295"
+     inkscape:cy="551.85026"
      inkscape:window-x="65"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g13864-5-6"
+     inkscape:current-layer="g4229"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -67,6 +67,7 @@
      id="tspan1136" /></text>
 
 
+
 <text
    xml:space="preserve"
    style="font-size:20.15999985px;font-style:italic;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
@@ -80,6 +81,7 @@
      x="-429.20636"
      y="-261.35397"
      style="font-size:32px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Liberation Sans;-inkscape-font-specification:Liberation Sans">C</tspan></text>
+
 
 
 </g><g
@@ -1400,6 +1402,7 @@
      y="0" /></text>
 
 
+
 <text
    transform="matrix(1,0,0,-1,254.16,9.8801)"
    id="text13736"><tspan
@@ -1407,6 +1410,7 @@
      x="0"
      y="0"
      id="tspan13738" /></text>
+
 
 
 <text
@@ -1418,6 +1422,7 @@
      id="tspan13742" /></text>
 
 
+
 <text
    transform="matrix(1,0,0,-1,271.76448,9.8801)"
    id="text13744"><tspan
@@ -1426,6 +1431,7 @@
      y="0"
      sodipodi:role="line"
      id="tspan13746" /></text>
+
 
 
 </g><path
@@ -1473,6 +1479,7 @@
      id="tspan13774">1</tspan></text>
 
 
+
 <text
    transform="matrix(0,1,1,0,16.5602,69.2559)"
    id="text13776"><tspan
@@ -1483,6 +1490,7 @@
      id="tspan13778">Collapse probability</tspan></text>
 
 
+
 </g><path
    inkscape:connector-curvature="0"
    d="m 408,490 3312,0 0,2160 -3312,0 0,-2160 z"
@@ -1490,11 +1498,11 @@
    id="path13780"
    transform="translate(1866.6667,-50.79366)" /><path
    inkscape:connector-curvature="0"
-   d="m 4509.2068,511.88181 1003.1075,0 0,1546.11919 -1003.1075,0 0,-1546.11919 z"
-   style="fill:none;stroke:#000000;stroke-width:6.93123913;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+   d="m 4509.2068,469.45573 1003.1075,0 0,1665.24437 -1003.1075,0 0,-1665.24437 z"
+   style="fill:#ffffff;stroke:#000000;stroke-width:7.19330359;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13784" /><g
    id="g13794"
-   transform="matrix(10,0,0,10,1792.7619,-208)"><text
+   transform="matrix(10,0,0,10,1792.7619,-96)"><text
    transform="matrix(1,0,0,-1,300.72,187.72)"
    id="text13796"><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
@@ -1504,17 +1512,18 @@
      id="tspan13798">2/256</tspan></text>
 
 
+
 </g><path
    inkscape:connector-curvature="0"
-   d="m 4655.9619,1778.16 -48,-48 48,-48 48,48"
+   d="m 4655.9619,1890.16 -48,-48 48,-48 48,48"
    style="fill:#00ffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
    id="path13800" /><path
    inkscape:connector-curvature="0"
-   d="m 4655.9619,1778.16 -48,-48 48,-48 48,48 -48,48 z"
+   d="m 4655.9619,1890.16 -48,-48 48,-48 48,48 -48,48 z"
    style="fill:none;stroke:#000000;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13802" /><g
    id="g13814"
-   transform="matrix(10,0,0,10,1792.7619,-32)"><text
+   transform="matrix(10,0,0,10,1792.7619,80)"><text
    transform="matrix(1,0,0,-1,300.72,151.72)"
    id="text13816"><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
@@ -1524,17 +1533,18 @@
      id="tspan13818">4/256</tspan></text>
 
 
+
 </g><path
    inkscape:connector-curvature="0"
-   d="m 4607.9619,1574 48,-83.04 48,83.04"
+   d="m 4607.9619,1686 48,-83.04 48,83.04"
    style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
    id="path13820" /><path
    inkscape:connector-curvature="0"
-   d="m 4607.9619,1574 48,-83.04 48,83.04 -96,0 z"
+   d="m 4607.9619,1686 48,-83.04 48,83.04 -96,0 z"
    style="fill:none;stroke:#000000;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13822" /><g
    id="g13834"
-   transform="matrix(10,0,0,10,1792.7619,144)"><text
+   transform="matrix(10,0,0,10,1792.7619,256)"><text
    transform="matrix(1,0,0,-1,300.72,115.72)"
    id="text13836"><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
@@ -1544,17 +1554,18 @@
      id="tspan13838">6/256</tspan></text>
 
 
+
 </g><path
    inkscape:connector-curvature="0"
-   d="m 4600.7619,1362.64 83.04,-48 0,96"
+   d="m 4600.7619,1474.64 83.04,-48 0,96"
    style="fill:#ff00ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
    id="path13840" /><path
    inkscape:connector-curvature="0"
-   d="m 4600.7619,1362.64 83.04,-48 0,96 -83.04,-48 z"
+   d="m 4600.7619,1474.64 83.04,-48 0,96 -83.04,-48 z"
    style="fill:none;stroke:#000000;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13842" /><g
    id="g13854"
-   transform="matrix(10,0,0,10,1792.7619,320)"><text
+   transform="matrix(10,0,0,10,1792.7619,432)"><text
    transform="matrix(1,0,0,-1,300.72,79.7199)"
    id="text13856"><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
@@ -1564,55 +1575,97 @@
      id="tspan13858">8/256</tspan></text>
 
 
+
 </g><path
    inkscape:connector-curvature="0"
-   d="m 4703.9619,1178.641 c 0,26.507 -21.49,48 -48,48 -26.51,0 -48,-21.493 -48,-48 0,-26.508 21.49,-48 48,-48 26.51,0 48,21.492 48,48"
+   d="m 4703.9619,1290.641 c 0,26.507 -21.49,48 -48,48 -26.51,0 -48,-21.493 -48,-48 0,-26.508 21.49,-48 48,-48 26.51,0 48,21.492 48,48"
    style="fill:#7221bc;fill-opacity:1;fill-rule:nonzero;stroke:none"
    id="path13860" /><path
    inkscape:connector-curvature="0"
-   d="m 4703.9619,1178.641 c 0,26.507 -21.49,48 -48,48 -26.51,0 -48,-21.493 -48,-48 0,-26.508 21.49,-48 48,-48 26.51,0 48,21.492 48,48"
+   d="m 4703.9619,1290.641 c 0,26.507 -21.49,48 -48,48 -26.51,0 -48,-21.493 -48,-48 0,-26.508 21.49,-48 48,-48 26.51,0 48,21.492 48,48"
    style="fill:none;stroke:#000000;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13862" /><g
    id="g13864"
    transform="matrix(10,0,0,10,1792.7619,304)"><text
-   transform="matrix(1,0,0,-1,300.72,61.7199)"
+   transform="scale(1,-1)"
    id="text13866"
    sodipodi:linespacing="98.000002%"
-   style="line-height:98.00000191%"><tspan
+   style="line-height:98.00000191%"
+   x="300.72"
+   y="-74.51989"><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-     x="0"
-     y="0"
+     x="300.72"
+     y="-74.51989"
      sodipodi:role="line"
      id="tspan13868">Entropic</tspan><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-     x="0"
-     y="17.122561"
+     x="300.72"
+     y="-57.397331"
      sodipodi:role="line"
      id="tspan3941">Switch</tspan><tspan
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-     x="0"
-     y="34.245121"
+     x="300.72"
+     y="-40.274769"
      sodipodi:role="line"
-     id="tspan3943">Extimate</tspan></text>
+     id="tspan3943" /></text>
 
 
+
+<g
+   transform="translate(417.17188,-218.7005)"
+   inkscape:label="zvolexclfact"
+   id="g4227"><g
+     transform="scale(0.1,0.1)"
+     id="g4229"><path
+       id="path4955-2"
+       style="fill:none;stroke:#ff0000;stroke-width:36;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:36, 108;stroke-dashoffset:0"
+       d="m -3692.7878,2301.5855 333.601,0 16.801,0.48 49.918,0 15.84,0.4808 16.32,0 15.84,0.48 15.84,0.4808 15.84,0.476 15.359,0.4808 15.359,0.961 15.364,1.441 14.878,1.438 15.36,1.922 14.879,2.879 14.883,3.839 14.398,4.321 14.4,6.242 14.4,7.68 14.4,10.078 14.4,13.441 13.92,16.801 13.92,22.078 13.92,27.84 13.92,35.039 13.44,44.641 13.44,55.199 13.44,67.203 13.44,81.598 13.44,96 12.96,110.88 12.96,123.84 12.96,134.88 12.96,141.6 12.96,144 12.48,141.12 12.96,132.96 12.48,122.4 12,108.48 12.48,93.6 12.48,79.68 12,65.76 12,53.76 12,43.2 12,34.56 12,27.84 11.52,21.12 12,17.28 11.52,12.96 11.52,10.08 11.52,8.16 11.52,6.24 11.52,4.8 11.04,3.84 11.04,2.88 11.04,1.92 11.52,1.92 10.56,1.44 11.04,0.96 11.04,0.96 10.56,0.48 11.04,0.48 10.56,0.48 10.56,0.48 10.56,0.48 21.12,0 10.08,0.48 50.88,0 10.08,0.48 189.6,0"
+       inkscape:connector-curvature="0" /></g></g><text
+   id="text13866-6"
+   sodipodi:linespacing="98.000002%"
+   style="font-size:12px;line-height:98.00000191%"
+   x="300.67343"
+   y="-38.391003"
+   transform="scale(1,-1)"><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="300.67343"
+     y="-38.391003"
+     sodipodi:role="line"
+     id="tspan13868-5">Theory</tspan><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="300.67343"
+     y="-21.26844"
+     sodipodi:role="line"
+     id="tspan3941-6">p=4</tspan><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="300.67343"
+     y="-4.1458802"
+     sodipodi:role="line"
+     id="tspan3943-2" /></text>
 </g><path
    inkscape:connector-curvature="0"
-   d="m 4559.9619,805.84 192,0"
+   d="m 4559.9619,1093.84 192,0"
    style="fill:none;stroke:#00ffff;stroke-width:14.39999962;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
    id="path13870" /><text
    style="font-size:120px"
    id="text17937-3"
-   x="4809.0757"
-   y="-1891.7402"
+   x="4761.0757"
+   y="-2003.7402"
    transform="scale(1,-1)"><tspan
      id="tspan17939-8"
      sodipodi:role="line"
-     y="-1891.7402"
-     x="4809.0757"
-     style="font-size:174.72000122px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">η: p/N</tspan></text>
+     y="-2003.7402"
+     x="4761.0757"
+     style="font-size:174.72000122px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">η = p/N</tspan></text>
 
-</g><g
+
+<g
+   transform="matrix(10,0,0,10,296.04737,173.35832)"
+   id="g5141-6" /><path
+   id="path5147-1"
+   style="fill:none;stroke:#ff0000;stroke-width:36;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:36, 108;stroke-dashoffset:0"
+   d="m 4562.2874,765.59636 192,0"
+   inkscape:connector-curvature="0" /></g><g
                    transform="matrix(10,0,0,10,1657.5534,-4757.0139)"
                    inkscape:label="znicodemi"
                    id="g18412"><g
@@ -1786,6 +1839,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Binder concentration (nM)</tspan></text>
 
 
+
 </g><path
                        id="path18502"
                        style="fill:none;stroke:#000000;stroke-width:7.19999981;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
@@ -1826,6 +1880,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">10</tspan></text>
 
 
+
 <text
    id="text18522"
    transform="matrix(0,1,1,0,15.5359,58.4398)"><tspan
@@ -1834,6 +1889,7 @@
      y="0"
      x="0 13.44672 17.922239 29.131201 40.34016 51.549122 58.262402 63.866879 75.075844 80.680321 86.284798 90.760323 101.96928 106.4448 112.04928 122.12928"
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Binder affinity </tspan></text>
+
 
 
 <text
@@ -1845,6 +1901,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
 
 
+
 <text
    id="text18530"
    transform="matrix(0,1,1,0,23.59996,194.99988)"><tspan
@@ -1852,6 +1909,7 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">l</tspan></text>
+
 
 
 <text
@@ -1864,6 +1922,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">(k</tspan></text>
 
 
+
 <text
    id="text18538"
    transform="matrix(0,1,1,0,23.59996,220.4397)"><tspan
@@ -1871,6 +1930,7 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">B</tspan></text>
+
 
 
 <text
@@ -1881,6 +1941,7 @@
      y="0"
      x="0 12.31776"
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">T)</tspan></text>
+
 
 
 </g><path
@@ -1906,6 +1967,7 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">K</tspan></text>
 
 
+
 <text
    id="text18558"
    transform="matrix(1,0,0,-1,292.8802,202.8718)"><tspan
@@ -1913,6 +1975,7 @@
      y="0"
      x="0"
      style="font-size:12.33600044px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">d</tspan></text>
+
 
 
 </g><g
@@ -1925,6 +1988,7 @@
      y="0"
      x="0 9.7144318 19.428864 24.286079 34.000511"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">12 nM</tspan></text>
+
 
 
 </g><path
@@ -1957,6 +2021,7 @@
      y="0"
      x="0 9.7144318 19.428864 29.143295 34.000511 43.714943"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">120 nM</tspan></text>
+
 
 
 </g><path
@@ -2019,6 +2084,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Increasing K</tspan></text>
 
 
+
 <text
    id="text18616"
    transform="matrix(1,0,0,-1,175.5679,57.91214)"><tspan
@@ -2026,6 +2092,7 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">d</tspan></text>
+
 
 
 </g></g></g><g
@@ -3314,6 +3381,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Attractive energy </tspan></text>
 
 
+
 <text
    id="text17885"
    transform="matrix(1,0,0,-1,254.16,9.8801)"><tspan
@@ -3323,6 +3391,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Symbol;-inkscape-font-specification:Symbol">ε</tspan></text>
 
 
+
 <text
    id="text17889"
    transform="matrix(1,0,0,-1,263.03969,1.81604)"><tspan
@@ -3330,6 +3399,7 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">l</tspan></text>
+
 
 
 <text
@@ -3342,6 +3412,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">(k</tspan></text>
 
 
+
 <text
    id="text17897"
    transform="matrix(1,0,0,-1,288.4799,1.81604)"><tspan
@@ -3349,6 +3420,7 @@
      y="0"
      x="0"
      style="font-size:14.25599957px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">B</tspan></text>
+
 
 
 <text
@@ -3359,6 +3431,7 @@
      y="0"
      x="0 12.31776"
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">T)</tspan></text>
+
 
 
 </g><path
@@ -3400,6 +3473,7 @@
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">1</tspan></text>
 
 
+
 <text
    id="text17925"
    transform="matrix(0,1,1,0,16.5602,69.784)"><tspan
@@ -3408,6 +3482,7 @@
      y="0"
      x="0 13.44672 28.002239 39.211201 43.686722 48.162239 52.63776 63.846722 75.055679 80.660156 94.10688 105.31584 112.02912 123.23808 140.03136 151.24033 156.8448 168.05376"
      style="font-size:20.15999985px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">Swelling Parameter</tspan></text>
+
 
 
 </g><path
@@ -3430,6 +3505,7 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">256/256</tspan></text>
 
 
+
 </g><path
    id="path17949"
    style="fill:#00ffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -3448,6 +3524,7 @@
      y="0"
      x="0 9.7144318 19.428864 29.143295 34.000511 43.714943 53.429375"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">128/256</tspan></text>
+
 
 
 </g><path
@@ -3470,6 +3547,7 @@
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">32/256</tspan></text>
 
 
+
 </g><path
    id="path17969"
    style="fill:#0000ff;fill-opacity:1;fill-rule:nonzero;stroke:none"
@@ -3488,6 +3566,7 @@
      y="0"
      x="0 9.7144318 14.571648 24.286079 34.000511"
      style="font-size:17.47200012px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">8/256</tspan></text>
+
 
 
 </g><path
@@ -3526,59 +3605,52 @@
      y="0">Increasing η</tspan></text>
 
 
-</g><text
-   style="font-size:120px"
-   id="text17937-3-4"
-   x="2925.3635"
-   y="-1965.645"
-   transform="scale(1,-1)"><tspan
-     id="tspan17939-8-3"
-     sodipodi:role="line"
-     y="-1965.645"
-     x="2925.3635"
-     style="font-size:174.72000122px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">η: p/N</tspan></text>
+
+</g>
 
 <g
    id="g13864-5"
    transform="matrix(10,0,0,10,-21.71274,415.39828)"><text
-     transform="matrix(1,0,0,-1,300.72,61.7199)"
-     id="text13866-3"
-     sodipodi:linespacing="98.000002%"
-     style="line-height:98.00000191%"><tspan
-       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-       x="0"
-       y="0"
-       sodipodi:role="line"
-       id="tspan13868-2">Mean-</tspan><tspan
-       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-       x="0"
-       y="17.122561"
-       sodipodi:role="line"
-       id="tspan3941-4">field</tspan><tspan
-       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-       x="0"
-       y="34.245121"
-       sodipodi:role="line"
-       id="tspan3943-9">theory</tspan></text>
+   transform="matrix(1,0,0,-1,300.72,61.7199)"
+   id="text13866-3"
+   sodipodi:linespacing="98.000002%"
+   style="line-height:98.00000191%"><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="0"
+     y="0"
+     sodipodi:role="line"
+     id="tspan13868-2">Mean-</tspan><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="0"
+     y="17.122561"
+     sodipodi:role="line"
+     id="tspan3941-4">field</tspan><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="0"
+     y="34.245121"
+     sodipodi:role="line"
+     id="tspan3943-9">theory</tspan></text>
+
 </g><g
    id="g13864-5-6"
    transform="matrix(10,0,0,10,-1538.0508,-1707.5665)"><text
-     transform="scale(1,-1)"
-     id="text13866-3-6"
-     sodipodi:linespacing="98.000002%"
-     style="line-height:98.00000191%"
+   transform="scale(1,-1)"
+   id="text13866-3-6"
+   sodipodi:linespacing="98.000002%"
+   style="line-height:98.00000191%"
+   x="249.92004"
+   y="-144.1199"><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
      x="249.92004"
-     y="-144.1199"><tspan
-       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-       x="249.92004"
-       y="-144.1199"
-       sodipodi:role="line"
-       id="tspan3943-9-7">Switch-</tspan><tspan
-       style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
-       x="249.92004"
-       y="-126.99734"
-       sodipodi:role="line"
-       id="tspan4031">like</tspan></text>
+     y="-144.1199"
+     sodipodi:role="line"
+     id="tspan3943-9-7">Switch-</tspan><tspan
+     style="font-size:17.47200012px;font-variant:normal;font-weight:normal;text-align:start;line-height:98.00000191%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica"
+     x="249.92004"
+     y="-126.99734"
+     sodipodi:role="line"
+     id="tspan4031">like</tspan></text>
+
 </g><text
    id="text13866-3-6-7"
    sodipodi:linespacing="98.000002%"
@@ -3591,4 +3663,16 @@
      y="1803.6766"
      sodipodi:role="line"
      id="tspan3943-9-7-5">Mean-field</tspan></text>
+
+<text
+   style="font-size:120px"
+   id="text17937-3-0"
+   x="2919.2227"
+   y="-1982.9685"
+   transform="scale(1,-1)"><tspan
+     id="tspan17939-8-8"
+     sodipodi:role="line"
+     y="-1982.9685"
+     x="2919.2227"
+     style="font-size:174.72000122px;font-variant:normal;font-weight:normal;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:Helvetica;-inkscape-font-specification:Helvetica">η = p/N</tspan></text>
 </g></g></g></g></g></g></g></g></g></svg>
