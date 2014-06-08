@@ -68,11 +68,11 @@ pre]{revtex4}
 \begin{abstract}
   Recent results in \emph{E.~coli} suggest that the chromosome feels a
   self-attracting interaction of osmotic origin, and is condensed in
-  compartments by bridging interactions.
+  foci by bridging interactions.
 %%
   Motivated by these findings, we define a generic modeling framework
   combining solely these two ingredients, in order to characterize
-  their joint effects. Specifically, study a a simple polymer physics
+  their joint effects. Specifically, study a simple polymer physics
   computational model with weak ubiquitous short-ranged self
   attraction and stronger sparse bridging interactions.  Combining
   theoretical arguments and simulations, we study the general
@@ -83,12 +83,9 @@ pre]{revtex4}
   dictated by the interplay of excluded volume and attractive energy
   and a switch-like collapse where bridging interaction compete with
   entropy loss terms from the looped arms of a star-like rosette.
-  % in a combined phase diagram.
-%%
-  % \textbf{ QUALCOSA DI PIU' SPECIFICO SU DIAGR DI FASE ?}
 %
   Additionally, we show that bridging can induce stable
-  compartmentalized domain. In these configurations, different
+  compartmentalized domains. In these configurations, different
   ``cores'' of bridging proteins are kept separated by star-like
   polymer loops in an entropically favorable multi-domain
   configuration, with a mechanism that parallels micellar polysoaps.
@@ -133,10 +130,11 @@ Of particular interest are bridging interactions~\cite{Wiggins2009}
 induce looped domain formation, through mechanisms that are believed
 to be important also for eukaryotic
 chromatin~\cite{Brackley2013,Barbieri2013b}.  For example, a study
-combining super-resolution microscopy with genetic techniques on the
-NAP H-NS explicitly reported it to form a small set of foci in the
-cell, bringing together distant binding
-sites~\cite{Wang2011a}. Additionally H-NS
+combining super-resolution microscopy with genetic
+``chromosome-conformation capture'' (3C) techniques on the NAP H-NS
+explicitly reported it to form a small set of foci in the cell,
+bringing together distant binding sites~\cite{Wang2011a}. Additionally
+H-NS
 %%% which are distributed non-uniformly along the
 %%% genome~\cite{Scolari2011,Kahramanoglou2011}
 reduces the size of purified nucleoids~\cite{Thacker2013}.
@@ -201,11 +199,11 @@ which divide the chromosome into six contiguous
 regions~\cite{Dame2011,Benza2012}.  Subsequent studies have confirmed
 the presence of macrodomains using fluorescently labeled
 loci~\cite{EMB08,EB06,LMB+05}. The Ter macrodomain appears to be
-condensed by a single DNA-binding protein, MatP, which has a small set
+condensed by a single DNA-binding NAP, MatP, which has a small set
 of specific binding sites in the Ter region~\cite{Mercier2008}.
 %%
 %%% junier macrodomains drive segregation
-A recent modeling work has implicated the differential condensation
+A recent modeling study has implicated the differential condensation
 levels by macrodomains, together with the targeting of the Ori and Ter
 regions to specific subcellular positions, to the generation of the
 chromosome segregation pattern observed \emph{in
@@ -230,11 +228,11 @@ and gyrases.
 %%%% Hi-C studies [dove entra??]
 Sequencing techniques (though relying on population averages) give
 further insight into the folding of bacterial chromosomes.
-High-throughput Chromosome Conformation Capture (3C) techniques have
-been used to determine the global folding architecture of the
-\emph{C.~crescentus} swarmer cell genome~\cite{Le2013,Umbarger2011},
-which is easier to access experimentally than \emph{E.~coli}, due to
-the well-characterized polar tethering of the chromosome and 
+High-throughput 3C techniques have been used to determine the global
+folding architecture of the \emph{C.~crescentus} swarmer cell
+genome~\cite{Le2013,Umbarger2011}, which is easier to access
+experimentally than \emph{E.~coli}, due to the well-characterized
+polar tethering of the chromosome and
 %
 the more practicability of cell synchronization.
 %
@@ -252,28 +250,30 @@ transcription. Such domains are hypothesized to be composed of
 transcription-induced supercoiled plectonemes arrayed into a ``bottle
 brush'' fiber.
 %%
-Regarding \emph{E.~coli}, the current resolution appears too low
-\cite{Cagliero2013} to draw any specific conclusions, but finer-scale
-experiments are expected to appear soon.
+Regarding \emph{E.~coli}, the current resolution appears too
+low~\cite{Cagliero2013} to draw any specific conclusions, but
+finer-scale experiments are expected to appear soon.
 
 
 
 %%%% Our Work 
 While the bridging and loop-forming interactions are sometimes
-incorporated in polymer models of the bacterial chromosome
-\cite{Junier2013,Fritsche2012,Heermann2012}, the standard approach is
-to neglect a possible self-adhesion and consider a confined polymer
-within the cell volume.
+incorporated in polymer models of the bacterial
+chromosome~\cite{Junier2013,Fritsche2012,Heermann2012}, the standard
+approach is to neglect a possible self-adhesion and consider a
+confined polymer within the cell volume.
 %%
 Here, we set out to investigate how the combination of bridging and
 homogeneous collapse in a generic polymer physics (equilibrium)
 framework, using computer simulations and with the help of theoretical
 mean-field and scaling arguments.
 %%
-Rather than an explicit model for the chromosome, our intent is to
-generically explore the consequences of these two ingredients, in order
-to help more realistic model development and to link the phenomenology
-with the vast existing knowledge in polymer physics.
+Rather than intending this as an explicit model for the chromosome,
+our intent is to generically explore the consequences of these two
+basic ingredients, in order to help more realistic model development
+and to link the phenomenology with the vast existing knowledge in
+polymer physics, and with chromosome models available in the
+literature~\cite{Barbieri2013a,Benza2012}.
 %%
 In this spirit, we deliberately ignore the role of supercoiling, and
 we do not consider confinement. We also neglect segregation dynamics
@@ -340,26 +340,26 @@ Additionally, consecutive monomers feel the nearest-neighbor bonds as
     0, & \mbox{if }\ r_{i,i+1} \leq \lambda \ . 
   \end{cases} 
 \end{displaymath}
-The short-ranged attraction, applied between all monomers, is modeled as a
-negative square well between the two bounds imposed by the two above
-potentials, and within a maximum range of $a = 1.44 \sigma$
+The short-ranged attraction, applied between all monomers, is modeled
+as a negative square well between the two bounds imposed by the two
+above potentials, and within a maximum range of $a = 1.44 \sigma$
 (Fig~\ref{fig:1}A). The depth of the attractive potential is
 $\epsilon_u$ for all beads, modeling a generic short-ranged attraction
-due to depletion effects / molecular crowding~\cite{Noro2000}.
-Bridging interactions are \rev{modeled as sparsely chosen beads with additional square-well attractive potentials of the same range, but acting only on other beads of the same class with interaction energy $\epsilon_l$}.
+due to depletion effects / molecular
+crowding~\cite{Noro2000}. Bridging interactions are modeled as
+sparsely chosen beads with additional square-well attractive
+potentials of the same range, but acting only on other beads of the
+same class with interaction energy $\epsilon_l$.
 %
-
-%%%
-%%%
 Fig.~\ref{fig:1}B illustrates the criteria for placing the bridging
 interactions and their parametrization. We considered a situation
-where bridging regions are sparse and defined by the parameters $p$,
-the number of bridging regions, and $\eta=p/N$ is the total fraction
-of beads occupied by the bridging regions. We are interested in the
-regime where $\eta$ is small. 
-% This parameterization is invariant with respect to the number of
-% statistical units $N$ representing the polymer.
-
+where bridging beads are equally spaced, in number $p$;  $\eta=p/N$ is
+the total fraction of beads occupied by the bridging regions. We are
+especially interested in the regime where $p$ is fairly small (note
+that in this regime the value of $p$ may be explicitly relevant, and
+consequently we will not refer to $eta$ alone as the control
+parameter). 
+%%% 
 
 
 
@@ -395,9 +395,9 @@ regime where $\eta$ is small.
 
 As a test scenario, we first considered the limit case of collapse of
 a simple polymer with homogeneous self-attraction (a homopolymer). In
-this case one expects to find the conventional theta transition, and it
-is the case in our simulations. To show this, we considered the
-swelling parameter $\alpha$, defined here as the ratio of the mean
+this case one expects to find the conventional theta transition, and
+this  is the case in our simulations. To show this, we considered
+the swelling parameter $\alpha$, defined here as the ratio of the mean
 end-to-end distance of the polymer $R_e=\langle |\mathbf{r}_N -
 \mathbf{r}_1| \rangle$ in a given condition and its value $l_0=
 \lambda N^{1/2}$
@@ -406,35 +406,36 @@ end-to-end distance of the polymer $R_e=\langle |\mathbf{r}_N -
 % comunque il concetto e` quello di far si` alfa al theta point sia
 % uguale ad 1 e mi sembra gia` chiaro cosi`
 at the theta point.  Fig.~\ref{fig:2}A shows a plot of this quantity
-as a function of the homogeneous self-attraction energy per bead
+as a function of the homogeneous attraction energy per bead
 $\epsilon_u$, for polymers with increasing $N$. The theta point is
 located where the swelling parameter equals one.  We verified that its
 position corresponds well to the prediction of the Flory mean-field
 theory, which defines the theta point from the balancing, in the
 second virial coefficient, of the excluded volume interaction term
 with the attraction term. In our case both terms can be estimated from
-the Mayer function, respectively as $v_1 = 4/3 \pi \sigma^3$
-(repulsion) and $v_2= 4/3 \pi \beta \epsilon_u (a^3 - \sigma^3)$
+the Mayer function, respectively as $v_1 = \frac{4}{3} \pi \sigma^3$
+(repulsion) and $v_2=  \frac{4}{3} \pi \beta \epsilon_u (a^3 - \sigma^3)$
 (attraction), with $\beta=1/(k_B T) $.
 
 
-The theta point is not the only relevant reference point for the
-collapse. This is evident considering the collapse curves of the
-swelling parameter for varying excluded volume (Fig.~\ref{fig:2}),
+% The theta point is not the only relevant reference point for the
+% collapse.
+In our simulations, the shape of the collapse curves of the swelling
+parameter changes with varying excluded volume (Fig.~\ref{fig:2}),
 i.e. varying $\sigma$.  As $\sigma$ increases, the theta point
 correctly shifts towards larger energy values (Fig.~\ref{fig:2}B).
 %%
 However, for increasingly ``thin'' polymers, while the theta point
 still follows the predicted behavior, the inflexion point of the
-swelling parameters vs $\epsilon_u$ curve becomes very steep, and
-radically moves towards increasingly larger values of $\epsilon_u$
-instead of smaller ones. These values, and not the theta point, are
-where the ``collapse'', intended as a major jump in the swelling
-parameters, effectively takes place.
+swelling ratio plotted as a function of $\epsilon_u$ becomes very
+steep, and radically moves towards increasingly larger values of
+$\epsilon_u$ instead of smaller ones. These values, and not the theta
+point, correspond to where the ``collapse'', intended as a major jump
+in the swelling ratio, effectively takes place.
 %%
 This phenomenology has been reported previously~\cite{DeGennes1975},
 and may correspond to a first-order transition related to polymer
-crystallization~\cite{Taylor2009}.
+crystallization~\cite{Taylor2009}.  
 
 
 %%%% 
@@ -447,32 +448,28 @@ the two-body interaction term described above with a three-body
 excluded volume term. We find improved agreement with the following
 variant~\cite{DeGennes1975}
   \begin{equation}
-    \beta F = 3 [\alpha^2/2 - log \alpha] + N/2 [B_1 \rho  + B_2 \rho^2 ] \ ,
+    \beta F = 3 [\alpha^2/2 - log \alpha] + N/2 [v \rho  + B_2 \rho^2 ] \ ,
     \label{eq:deg_mfield}
 \end{equation}
-where $\rho = N/R^3$ is the concentration, $B_1 = v_1 - v_2$ and $B_2
-= (v_1)^2 / 6$. Note the logarithmic entropic term, which can be
-understood as coming from the prefactor of the radial distribution of
-a freely-jointed chain.
+where $\rho = N/R^3$ is the concentration, $v = v_1 - v_2$ plays the
+role of an effective ``excluded volume'' parameter and $B_2 = (v_1)^2
+/ 6$. Note the logarithmic entropic term, which can be understood as
+coming from the prefactor of the radial distribution of a
+freely-jointed chain.
 %
 % Or it comes from the enthropic cost of making a globule due
 % to the contact probability?
 %
-This term becomes relevant for $\alpha < 1$ and its
-addition is sufficient to capture the behavior described above.  For
-extremely small excluded volumes, this mean-field theory also fails
-quantitatively (Fig.~\ref{fig:2}C), but we noticed that (for
-unexplained reasons) the reentrant inflexion points of the theoretical
-collapse curve correspond remarkably well to the collapse points
-observed in our simulations.
+This term becomes relevant for $\alpha < 1$ and its addition captures
+rather efficiently the simulation behavior described above
+(Fig.~\ref{fig:2}B).  For extremely small excluded volumes, this
+mean-field theory also fails quantitatively (Fig.~\ref{fig:2}C), but
+we noticed that (for unexplained reasons) the reentrant inflexion
+points of the theoretical collapse curve correspond remarkably well to
+the collapse points observed in our simulations. To avoid confusion,
+in the following we will restrict ourselves to parameter values where
+this sharp collapse phenomenology does not occur.
 
-
-
-% IN APPENDIX ???? 
-%
-%%%% Matching of the parameters with collapse transition
-%
-%
 
 
 \subsection*{Collapse in presence of bridging interactions}
@@ -484,8 +481,8 @@ observed in our simulations.
   \includegraphics[width=0.4\textwidth]{fig3}
   \caption{Collapse due to bridging proteins.  A: Switch-like
     transition to a collapsed rosette-like state for polymers for
-    small fraction of 
-    bridging interactions $\eta$, solid lines show the predictions of
+    small numbers od 
+    bridging interactions $p$, solid lines show the predictions of
     the theoretical estimate (Eq.~\ref{eq:prob_collapseZ},
     \ref{eq:Zloop_red})
     taking into
@@ -494,15 +491,15 @@ observed in our simulations.
     contribution has been neglected (see Appendix).
 %
 B: Collapse curves (swelling parameter vs
-    $\epsilon_l$) drawn for big fractions of bridging
-    interactions $\eta$; the transition energy moves to
-    lower values for decreasing $\eta$ (coded by color and
-    symbols, see legend), the case $\eta=1$ corresponds to the case of
+    $\epsilon_l$) plotted for large $p$ (and $\eta$); the transition
+    energy moves to 
+    lower values for decreasing $p$ (coded by color and
+    symbols, see legend), the case $p/N=1$ corresponds to the case of
     uniform collapse. The parameters have been chosen so that the
     phenomenology of Fig.~\ref{fig:2}C is not present. The solid lines
     show a fit of the prediction of mean field theory for the polymer
     collapse (eq. \ref{eq:deg_mfield}) on the parameters $\beta$ and
-    $B_2$, which is an acceptable theory for the case of big $\eta$.
+    $B_2$, which is an acceptable theory for the case of large $\eta= p/N$.
 %%
 C:  Transition energy plotted as a function of an effective
 concentration  of bridging proteins, estimated  from $p,N$, by a
@@ -533,10 +530,13 @@ also find that there are important physical differences between the
 two situations. The conventional theta point and collapse are
 determined essentially by a balance between excluded volume and
 attractive interaction. In presence of sparse bridging points, the
-relevant contribution balanced by attractive energy is not monomer
-excluded volume, but rather the entropy reduction for closing loops
-between bridging points. In order to show this, we have considered
-explicitly the following simplified partition
+relevant contribution to the partition function balanced by attractive
+energy is not monomer excluded volume, but rather the entropy
+reduction for closing loops between bridging
+points~\cite{Marenduzzo2006c} (this kind of switch-like looping
+transition has also been studied in the context of transcriptional
+regulation~\cite{Saiz2006a}). In order to show this, we have
+considered explicitly the following simplified partition
 function~\cite{Marenduzzo2006c,Saiz2006a},
 \begin{equation}
   \label{eq:Zloop}
@@ -545,30 +545,32 @@ function~\cite{Marenduzzo2006c,Saiz2006a},
 where $C$ runs over the possible bridging states, with degeneracy
 $d_C$
 %%% (see Appendix XXX)
-%%% da decidere se fare un'appendix in cui spieghiamo un po' meglio
-and $n_b$ is the number of bridging interactions, estimated as the
-number of pairs of interacting bridging monomers in a given
-configuration. For example, for $p=4$, $n_b^{\mathrm{(min)}}=0$,
-$n_b^{\mathrm{(max)}}=6$. In general, if we would ignore the effect of
-hard core repulsion and finite length attractive interactions we would
-obtain $n_b^{\mathrm{(max)}}=p(p-1)/2$ while in presence of hard core
-repulsion the term grow linearly with $p$.
+%%% 
+and $n_b$ is the number of bridging interactions in a given
+configuration.  For small $p$ this can be estimated as the number of
+pairs of interacting bridging monomers. For example, for $p=4$,
+$n_b^{\mathrm{(min)}}=0$, and $n_b^{\mathrm{(max)}}=6$
+(i.e. $n_b^{\mathrm{(max)}}=p(p-1)/2$).  For large cores of bridging
+beads, the effects of hard core repulsion and finite-length attractive
+interactions make this term linear in $p$ (proportional to the core
+volume).
 %
 We suppose that there is only one ``fully collapsed'' state $C^*$
 where the bridging interactions are concentrated in a spherical shaped
 core (we neglect for the moment surface effects in the core, see
-below). The probability for such state is:
+below). The probability for such state is
 \begin{equation}
   \label{eq:prob_collapseZ}
-  P(C^*) = Z^{-1}  e^{\beta n_b^{\mathrm{(max)}} \epsilon_l - \Delta S(C^*)}
+  P(C^*) = Z^{-1}  e^{\beta n_b^{\mathrm{(max)}} \epsilon_l - \Delta
+    S(C^*)} \ .
 \end{equation}
 
-To estimate the entropy loss contributions for each loop, one can
-measure with simulations the first return probability for the polymer
-of length $g = (N-p)/p$. This can be estimated for large $g$ as return
-probability of $P_\mathrm{(loop)} \simeq (a^3/\lambda^3) g^{-3/2}$ by
-using mean field theory, this estimation is correct for ghost polymers
-while the scaling for the swollen state is $P_\mathrm{(loop)} \sim
+To estimate the entropy loss contributions for each loop, we use the
+first return probability for the polymer of length $g = (N-p)/p$. This
+can be estimated for large $g$ as the return probability of a random
+walk. i.e. $P_\mathrm{(loop)} \simeq (a^3/\lambda^3) g^{-3/2}$; this
+approximation is correct for ghost polymers while the scaling for the
+swollen state is $P_\mathrm{(loop)} \sim
 g^{-2.27}$~\cite{Marenduzzo2006c}.
 %
 While the entropy of many configurations can be estimated as a
@@ -580,17 +582,12 @@ emerges, connecting bridging points 1-3 and 2-4).  Fig.~\ref{fig:3}A
 shows a comparison of the calculation carried out for $p=4$, and
 direct simulation.  The agreement between the estimated and
 measured $P(C^*)$ is satisfactory, indicating that indeed a loop
-entropy reduction switch is relevant. \rev{The prediction looses
-  quantitative precision for increasing number of loops, due to the
-  fact that the entropy reduction due to interactions between loops
-  (as in star polymers) is
-  neglected. We verified that the estimate is precise for a ghost
-  chain, and produced a refined estimate keeping into account the
-  star-polymer contributions (see Appendix and Fig. \ref{fig:6}AB) } 
+entropy reduction switch is relevant. 
+
 %
-Additionally, we find that for $\eta$ sufficiently small, the
-dominant contribution to the estimate is the collapsed state $C^*$, and
-the transition can be captured by a simplified two-state partition
+Additionally, we find that for $p$ sufficiently small, the dominant
+contribution to the estimate is the collapsed state $C^*$, and the
+transition can be captured by a simplified two-state partition
 function keeping into account only the fully unfolded and the fully
 bridged configurations (Fig.~\ref{fig:3}A),
 %
@@ -599,28 +596,48 @@ bridged configurations (Fig.~\ref{fig:3}A),
 %
 \begin{equation}
   Z_R = (p - 1)! + P_\mathrm{loop}(g)^{p-1}
-            e^{\beta \epsilon_l n_b^{\mathrm{(max)}}} \ .
+            e^{\beta \epsilon_l n_b^{\mathrm{(max)}}} \ ,
   \label{eq:Zloop_red}
 \end{equation}
-\rev{obtained from equation \ref{eq:Zloop} and \ref{eq:prob_collapseZ} with
-$\Delta S(C^*) = (p - 1)\ln\left[ P_\mathrm{loop}(g)\right]$.
-???  $(p-1)!$ factorial term???}
-This kind of switch-like looping transition has been studied in the
-context of transcriptional regulation~\cite{Saiz2006a}.
+%%%%%???  $(p-1)!$ factorial term???
+%
+%
+obtained from equation \ref{eq:Zloop} and \ref{eq:prob_collapseZ} with
+$\Delta S(C^*) = (p - 1)\log\left[ P_\mathrm{loop}(g)\right]$.
+%%
+%%
+The prediction looses quantitative precision for increasing $p$, due
+to the fact that the entropy reduction due to interactions between
+loops~\cite{Hsu2004} is neglected. We verified that the estimate is
+accurate for a ghost chain, and produced a refined estimate keeping
+into account the star-polymer contributions at scaling level (see
+Appendix~\ref{sec:incl-star-polym} and
+Fig.~\ref{fig:6}AB). Altogether, this evidence supports the picture of
+a switch-like transition to a rosette state, driven by the competition
+between bridging attraction and looping entropy.  
+
 
 %
 Fig~\ref{fig:3}B shows the observed collapse curves for the swelling
-ratio for different densities of bridging interactions $\eta$. There
-is a crossover between the switch-like behavior just discussed and the
-classical homopolymer collapse behavior (as shown in
-Fig.~\ref{fig:2}), which naturally emerges when $\eta$ is sufficiently
-large. This problem has been addressed classically: for example, a
-transition from collapse to freezing has been found for $\eta \simeq
+ratio for different numbers of bridging interactions $p$ at fixed
+$N$. 
+%
+We noted that, for small $p$, the transition points agree show better
+agreement if one uses the total energy ($p \epsilon_l$) as control
+parameter, than with $1/eta=p/N$ as rescaling factor for $\epsilon_l$,
+confirming that for small $p$ $\eta$ and $p$ are not equivalent.
+\textbf{MCL: appendix figure to show this?}
+%
+Importantly, there is a crossover between the switch-like behavior
+just discussed and the classical homopolymer collapse behavior (as
+shown in Fig.~\ref{fig:2}), when $\eta$ and $p$ are sufficiently large. This
+problem has been addressed classically: for example, a transition from
+collapse to freezing has been found for $\eta = p/N \simeq
 0.6$~\cite{Camacho1997}. However, we are not aware of existing studies
 characterizing the crossover between a switch-like and mean-field-like
 collapse. While we have not explored systematically this crossover, we
 find that in our simulations polymers show mean-field collapse for
-values of $\eta$ greater then $0.4$.
+values of $\eta$ greater than $0.3-0.4$.
 % ROUGH NUMBER \textbf{check this: per mettere questo
 %  numero controlla a occhio per che valori di eta la teoria mean field
 %  comincia a pigliarci decentemente...}.
@@ -655,17 +672,17 @@ model (Fig.~\ref{fig:3}C).
 \begin{figure}
   \centering
   \includegraphics[width=0.4\textwidth]{fig4}
-  \caption{Combined collapse from bridging interactions and
-      homogeneous self-attraction.  A: Snapshot of a typical simulated
-      collapsed configuration with bridging interaction stronger than
-      uniform self-attraction. In this regime, the collapse is driven
-      by bridging, 
-      while the rest of the polymer forms closed swollen loops
-      \textbf{config in cui i loop uniformi non sono swollen ?}.
+  \caption{Combined effects of bridging interactions and
+      homogeneous self-attraction.  A: Snapshots of  typical simulated
+      collapsed configurations with bridging interaction stronger than
+      uniform self-attraction. Left: the collapse is driven
+      by bridging,  while the rest of the polymer forms closed swollen
+      loops. Right: if $\epsilon_u$ is sufficiently large, both core
+      of bridging beads and looped arms are collapsed. 
 %%
-    B: collapse curves (swelling ration $\alpha$ vs $\epsilon_l$) shown for
+    B: collapse curves (swelling ratio $\alpha$ vs $\epsilon_l$) shown for
     different values of $\epsilon_u$ (coded by color and symbols, see
-    legend) and $\eta = 8/256$.
+    legend) and $p/N = 8/256$.
 %
     For larger values of homogeneous attraction energy $\epsilon_u$
     which put the homogenous part of the polymer below the theta
@@ -674,7 +691,7 @@ model (Fig.~\ref{fig:3}C).
     $\left.{\epsilon_l}^*\right|_{\epsilon_u > \epsilon_u^*} \simeq 2k_bT$
     appears to depend only weakly on $\epsilon_u$.
 %
-    Simulations were with performed with $N=256$ and $\eta=8/256$
+    Simulations were  performed with $N=256$ and $p=8$
     \textbf{CHECK} for XXX Monte Carlo sweeps, and with varying values
     of $\epsilon_u$ and $\epsilon_l$ }
   \label{fig:4}
@@ -690,8 +707,8 @@ that the bridging interactions are stronger $\epsilon_l >
 \epsilon_u$).
 %%% MCL: $\theta$ <- Non userei questa notazione non standard - ho
 %%% messo quella di 1/2 - \Chi ... non so se ti va bene
-Figure \ref{fig:4}B shows different collapse curves for the swelling
-ratio of the polymer in the two regimes, for $\eta = 8/256$. In the
+Fig.~\ref{fig:4}B shows different collapse curves for the swelling
+ratio of the polymer in the two regimes, for $p/N = 8/256$. In the
 regime where the loops of the rosette are swollen ($1/2 - \chi_u > 0$)
 the collapse is driven by the homogeneus interactions while in the
 regime where the arms are collapsed ($1/2 - \chi_u < 0$) this does not
@@ -712,51 +729,46 @@ considerably smaller.
 As previously observed~\cite{Dasmahapatra2006}, the collapse curve for
 increasing $\epsilon_u$ in the first regime resembles the collapse of
 a homopolymer even in the presence of a small fraction of monomers
-which interact differently. Figure \ref{fig:4}B shows that the effect
+which interact more strongly. Fig.~\ref{fig:4}B shows that the effect
 of bridging interactions on the swelling ratio is negligible before a
 critical energy $\left.{\epsilon_l}^*\right|_{\epsilon_u >
-  \epsilon_u^*} \simeq 2k_bT$, which depends on $\eta$, where the
+  \epsilon_u^*} \simeq 2k_bT$, which depends on $p$, where the
 bridging interactions form a core at the center of the globule. This
-effect shows up on the swelling ratio since the end beads are
-bridging.
-% there will be a snapshot of this situaiton if fig 4A
-\textbf{MCL: Quindi un polimero ad anello non dovrebbe avere questa
-  transizione?  e' notevole anche che ci sia una transizione del
-  volume in questo regime, dato che sono entrambi oggetti
-  collassati. Per qualche ragione quello dominato dal bridging occupa
-  meno spazio, ma non so perche'. VFS: Perche' stiamo misurando non il
-  raggio di girazione  ma bensi' lo swelling parameter (end to end
-  distance). Le estremita` sono privilegiate perche` entrambe sono
-  bridging. }
+effect modifies the swelling ratio (defined from the end-to-end
+vector) since the end beads are bridging.
+% 
+% \textbf{MCL: Quindi un polimero ad anello non dovrebbe avere questa
+%   transizione?  e' notevole anche che ci sia una transizione del
+%   volume in questo regime, dato che sono entrambi oggetti
+%   collassati. Per qualche ragione quello dominato dal bridging occupa
+%   meno spazio, ma non so perche'. VFS: Perche' stiamo misurando non il
+%   raggio di girazione  ma bensi' lo swelling parameter (end to end
+%   distance). Le estremita` sono privilegiate perche` entrambe sono
+%   bridging. }
 
-
-The dependence of the free energy in the looped chains from the
-coefficient $v$ can be estimated by the analogy of the rosette-like
-collapsed conformation to a star polymer with $f = 2 p$ ``arms''. By
-elaborating the theory of Daoud and Cotton~\cite{Daoud1982} of the
-enthropy of the star polymer we estimate the free-energy difference to
-b scale as
+The dependency of the free energy in the looped chains from the
+excluded volume coefficient $v$ can be estimated by the analogy of the
+rosette-like collapsed conformation to a star polymer with $f \simeq
+p$ arms. Following Daoud and Cotton~\cite{Daoud1982} (see
+Appendix~\ref{sec:scal-argum-entr}), we estimate this entropic
+contribution to the free energy to scale as
 \begin{equation}
 \beta F_\mathrm{(corona)} \sim f^{3/2} \log\left(Nf^{7/6} v^{1/3}
-  \left( \frac{b}{r_0}\right)^{5/3} \right)
+  \left( \frac{b}{r_0}\right)^{5/3} \right) \ ,
 \label{eq:corona}
 \end{equation}
 %% Attenzione questa formula va verificata, il v nel logaritmo e`
 %% strano ma sembra che fitti per v "grande" -- simulations are on the
 %% way to explore the divergence at v \sim 0
 %%%% OK!!!! 
-(see Appendix). This theory introduces a logarithm dependence for the
-transition from $v = 0$ which can be seen in figure \ref{fig:4}B as
-the way the transition energy
-$\left.{\epsilon_l}^*\right|_{\epsilon_u}$ in the second phase
-($\epsilon_u < \theta$) approach the transition energy in the first
-phase from the right of the graph ($\sim 2 k_B T$).  
+for $v>0$ where $b$ is the monomer size and $r_0$ the size of the core. 
+%%
+%%
+Inserting Eq.~\eqref{eq:corona} as additional term in the mean-field
+theory leads to predict a logarithmic shift of the transition point
+from $v = 0$, which is consistent with simulated data
+(see Fig.~\ref{fig:4}B and Fig.~\ref{fig:6}C).
 
-
-% \textbf{check this: servono informazioni sulla mappa di contatto
-% quando eps uniforme si avvicina alla transizione: vogliaos apere se
-% un globulo collassato con energia di interaz discreta maggiore di
-% uniforme e' }
 
 
 \subsection*{Compartmentalization}
@@ -764,22 +776,25 @@ phase from the right of the graph ($\sim 2 k_B T$).
 
 Intriguingly, we find that the switch-like collapse, in the presence
 of sparse interactions can lead to long-lived states where
-\emph{multiple} collapsed domains exist. Fig.~\ref{fig:5}A shows a
-snapshot of such a configuration. Multiple domains are visible from
-interaction maps, i.e. tables where the indexes are the discrete
-arc-length coordinates of the polymer beads and the entries are
-proportional to \rev{the mean square distances(Fig.~\ref{fig:5}B)}.
+\emph{multiple} collapsed micelle-like domains
+coexist. Fig.~\ref{fig:5}A shows snapshots of such
+configurations. Multiple domains are also visible from interaction
+maps, i.e. tables where the indexes are the discrete arc-length
+coordinates of the polymer beads and the entries are proportional to
+the mean-square distances between beads with given coordinates
+(Fig.~\ref{fig:5}AB).
 % the probability of finding the two monomers within a
 % threshold distance \textbf{check this: le tue non sono queste - come
 %   hai definito le mappe??} (Fig.~\ref{fig:5}B). Questa misura e`
 %   molto difficile da fare (richiede troppa statistica) per questo
 %   uso la mean square distance
-States with multiple
-domains were stable in our simulations for as long as we could
-measure. Additionally, states prepared with the initial conditions of
-a single domain would switch to a two- or three-domain state, which
-was then observed to be stable (Fig.~\ref{fig:5}B). This observation
-leads us to believe that they might 
+States with multiple domains were stable in our simulations for as
+long as we could measure. Additionally, states prepared with the
+initial conditions of a single domain would switch to a two- or
+three-domain state, which was then observed to be stable
+(Fig.~\ref{fig:5}B). This observation leads us to believe that the
+multi-domain configurations might not be metastable, but true
+equlibrium states.
 %
 Additionally, the states can be observed also in presence of
 homogeneous self-attraction, i.e. for $\epsilon_u>0$, and the
@@ -788,8 +803,10 @@ the collapsed globules, measured as the ratio between the first and
 the third eigenvalue of the polymer's inertia matrix
 (Fig.~\ref{fig:5}C). Evaluation of these quantities suggests that the
 elongated configurations can be stable only if $\epsilon_u$ is such
-that the polymer is above its theta point \textbf{check this manca
-  valutazione diretta da mappa di contatto}.
+that the polymer is above its theta point.
+%
+%
+%%%\textbf{check this manca valutazione diretta da mappa di contatto}
 
 In order to argue that multi-domain states could be stable, we rely on
 the following scaling argument, related to the case of
@@ -797,8 +814,8 @@ polysoaps~\citep{Borisov1997,Borisov1996}. We consider a configuration
 with $q$ domains, made of a ``core'' of $p/q$ bridging monomers and a
 ``corona'' of $p-1\simeq p/q$ loops.  Treating the loops of each
 domain as a star polymer~\cite{Borisov1997} with $f=p/q$ ``arms'', and
-knowing that the entropy of such an object scales as
-$f^{3/2}$\cite{Daoud1982} leads to estimate the free energy change by
+considering the leading contribution to the entropy scaling
+$f^{3/2}$~\cite{Daoud1982} leads to estimate the free energy change by
 subdivision into $q$ domains as
 \begin{equation}
   \Delta F_\mathrm{(corona)} \sim p^{3/2}q^{-1/2}
@@ -820,17 +837,13 @@ continuous) leads to the expected equilibrium number of domains
 indicating that the number of stable domains should increase for
 larger $p$ and decrease if $\epsilon_l$ is too large. 
 
-
-This  behavior is observed in our simulations.  However, this
-argument can be regarded as only qualitative. For example, a slightly
-more precise evaluation of the entropy of a star polymer leads to $
-\Delta F_\mathrm{(corona)} \sim f^{3/2} \log\left(Nf^{7/6} v^{1/3} (b
-/ r_0)^{5/3}) \right)$, where $r_0 \sim q^{1/3}$
-is the core volume, see Appendix. Equivalently, $ \Delta
+This behavior is observed in our simulations.  However, this argument
+can be regarded as only qualitative. For example, the estimate in
+Eq.~\eqref{eq:corona}, since $r_0 \sim q^{1/3}$ implies $ \Delta
 F_\mathrm{(corona)} \sim p^{3/2}q^{-1/2} \log\left( p^{5/3}q^{-2/3}
 \right)$, which (even neglecting prefactors) affects the predicted
 scaling. Additionally, the argument for the entropy is consistent only
-when the arms are above the theta point.
+when the arms are above the theta point ($v>0$).
 %%%
 Note that, differently from the case of polysoaps, the multi-domain
 states in this picture are due to the trade-off between the energetic
@@ -840,44 +853,55 @@ number of arms.  Hence, according to the argument, a multi-domain
 state is stable because partitioning $(p-1)$ arms into more than one
 domain is less costly compared to the energy cost of partitioning the
 bridging proteins in multiple domains.
-  
+%%
+%% Anton argument
+Finally, for large cores, an additional contribution to the entropy
+can be expected from the non-bridging beads that are ``buried'' in the
+core because of their vicinity to bridging beads. The most naive
+estimate for this additional cost for core size assumes that if a
+bridging bead is at position $r<r_0$ within the core, it brings in
+$(r_0 -r)^2$ beads (i.e. buried beads will behave like a theta-point
+polymer within the core). since there are order $r^2$ beads in each
+shell of the core, integrating along the radial coordinate will make
+the cost scale as $r_0^5$ (i.e. $p^{5/3}$) explicitly favoring
+fragmentation into multiple domains. While this effect might only need
+to quantitative corrections in our simulations (since typically $p$ is
+small), it might be important in realistic situations.
 
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.4\textwidth]{fig5}
+  \includegraphics[width=0.6\textwidth]{fig5}
   \caption{Self-assembled micro-segregation into domains and shape
-    anisotropy.  A: Snapshot of a typical two-domain configuration;
-    the two domains are stable due the entropic repulsion of the
+    anisotropy.  A: Snapshots and colormaps of mean-square distance between
+    polymer segments (in units of $l_0^2$)
+  shown  for  typical two-domain
+  (left, $\epsilon_l+\epsilon_u=2.4$, $\epsilon_u=0.15$, $10^8$  Monte
+  Carlo sweeps) and three-domain (right, $\epsilon_l+\epsilon_u=2.4$, 
+  $\epsilon_u=0.005$, $10^7$  Monte Carlo sweeps) stable configurations;
+    multiple domains are stable due the entropic repulsion of the
     loops arranged in a star-like configuration.   
 %
 B: Stability of multi-domain configurations over single-domain
-collapsed state. Colormaps of mean distance between polymer segments
-shown for increasing Monte Carlo times.
+collapsed state. The interaction maps of panel A are shown for
+increasing Monte Carlo times. 
 %
-In lexicographic order:  (i)  initial configuration of the simulation 
-prepared as a single domain (as in Fig.~\ref{fig:4}A), (ii and iii) after
-$9.3\cdot10^6$ and $3.7\cdot10^7$ Monte Carlo sweeps the system (simulated for
-$\epsilon_l+\epsilon_u=2.4$, $\epsilon_u=0.15$)  shows a
+The  initial configuration of the simulation 
+prepared as a single domain (left, as in Fig.~\ref{fig:4}A),  after
+$9.3\cdot10^6$ and $3.7\cdot10^7$ Monte Carlo sweeps the system
+(parameters as in panel A)  shows a
 disintegration of the single-domain configuration and a progressive
-reordering of the stable configuration in two distinct clusters, (iii)
-at $10^8$ sweeps a two-domain configuration is stable; (iv) different
-parameters ($\epsilon_l+\epsilon_u=2.4$, $\epsilon_u=0.005$) lead to a stable
-three-domain configuration after $10^7$ sweeps.
+reordering of the stable configuration in distinct clusters (middle), (right)
+at $10^8$ sweeps a two-domain configuration is stable. 
 %  
-C: The shape anisotropy of the collapsed globules (measured as the
+C: The shape anisotropy due to multiple domains (measured as the
 ratio between the first and the third eigenvalue of the inertia
-matrix)  shows a transition when the difference between the
-uniform  
-interaction  lower to a negative threshold. The
-transition is due to 
-the increasing repulsive interaction within the loops. The inset
-    show that with  the same transition is visible  the volume-energy
-    law.
+matrix)  shows a transition when the attractive energy $\epsilon_u$
+crosses a threshold. The transition is due to coalescence of multiple
+domains.  
 %
-\textbf{Simulation parameters. }
 Simulations are performed with $N = 512$, $\sigma = 0.027$ 
- $\lambda = 0.057$,  $p=32$, $\eta=0.125$.}
+ $\lambda = 0.057$,  $p=32$.}
   \label{fig:5}
 \end{figure}
 
@@ -897,83 +921,125 @@ Simulations are performed with $N = 512$, $\sigma = 0.027$
 % \end{figure}
 
 
-\section{Discussion. }
+\section{Discussion and Conclusions. }
 \label{sec:Disc}
 
 
-While computational models that describe well several aspects of
-bacterial and eukaryotic chromosome organization are abundant,
-theoretical arguments helping understand the behavior and place it in
-the framework of known polymer physics.  
+We have analyzed a generic model of polymer collapse driven by a
+combination of homogeneous and sparse attractive interactions.
+Quantitative scaling arguments and simulation in parallel allowed us
+to access some basic aspects of the equilibrium behavior of this
+system.
+%
+%
+There are two main results. 
+%%%%
+First, we find a crossover between mean-field collapse and switch-like
+compaction where bridging counterbalances loop formation. Both
+phenomenologies often feature as ingredients of simple physical models
+for
+chromatin~\cite{Marenduzzo2006c,Brackley2013,Barbieri2013b,Mirny2011}.
+%%%
+Second, we find that multiple stable micelle-like domains can exist,
+in a manner that is reminiscent of micellar
+polysoaps~\cite{Borisov1996}.
+%
+Both of our main results are backed a series of simple
+mean-field/scaling arguments, which help linking them with generic
+knowledge in different sectors of the polymer physics literature
+(mean-field and micelle-like
+collapse~\cite{DeGennes1975,Marenduzzo2006c},
+polysoaps~\cite{Borisov1996}, star polymers~\cite{Daoud1982,Hsu2004}).
 %%
-In this study, we considered the case of polymer collapse driven by a
-combination of homogeneous and sparse attractive interactions, and
-made an effort to capture the observed phenomenology by developing
-quantitative scaling arguments and simulation in parallel. 
+While little of this knowledge can be called new, we believe that
+there is an importance in elucidating these links, especially because
+they are not always kept into account in the current landscape of
+models of (bacterial) chromatin~\cite{Benza2012,Barbieri2013a}
 %%
-Additionally, we connected the main results found here with related
-findings in different sectors of the polymer physics literature. 
+Such theoretical arguments are also useful to elucidate the main
+ingredients causing a specific effect. In particular, they lead us to
+speculate that the stability of multi-micelle configurations is
+conferred by the competition between surface tension of the core and
+the entropic cost of the corona, which is similar to a star
+polymer. Our simulation results appear to be in line with this
+hypothesis. A further entropic cost due to burial of non-bridging
+bonds in the core is speculated to play a role for  large cores.
 
-The simple model of compaction
 
 % OTHER INGREDIENTS
-
-
-%%% LINEAR ORDERING
-% For cells that are not replicating the genome, the position of
-% genetic loci along the chromosome is linearly correlated with their
-% position in the
-% cell~\cite{Viollier2004a,Breier2004,Wiggins2010}. The exact
-% subcellular positioning of different loci varies in different
-% bacteria~\cite{Toro2010}.
-%
-% usa hp polysoap
-
-
-%%% SUPERCOILING
-There is another possibly important ingredient,
-supercoiling/branching, which we disregard for simplicity. Reasons why
-we can disregard it?
-
-What could it do? Modulates the loop entropy and the loop
-probability. Changes the contact map. Affects the radius of gyration
-at fixed conditions.
-
-%%% ENTANGLEMENT
-%% Beyond the reach of the simulation method.
+The model explored here is solely based on self-adhesion and bridging,
+as are motivated by recent observations on bacterial chromatin.  Other
+possibly important factors were voluntarily left out, in order to
+obtain a cleaner description of theoretical consequences of these two
+ingredients. 
 %%
-% 
+%%% SUPERCOILING
 %
+A possibly important feature of bacterial chromosomes disregarded by
+this model is. the role of supercoiling, and the effectively branched
+structure of plectonemes.  However, a numerical description of
+supercoil induced branching is difficult. Additionally, little
+knowledge regarding the detailed organization of supercoil branches is
+available, excluding fairly recent studies~\cite{Le2013}.
 %
-
-
-
-
-%%% SEGREGATION & NONEQ ASPECTS 
-Finally, we have assumed that an equilibrium model can give some
-insight into the process of bacterial chromosome organization. While
-this might be true at certain time- and lenght-scales, we note that
-non-equilibrium aspects are emerging as an important feature of
-nucleoid organization.  Firstly, on the time scale of cell division
-the chromosomes segregate following a well-defined
-``choreography,''~\cite{Youngren2014,Fisher2013,Kuwada2013,Toro2010}.
+Regarding the specific findings reported here, we believe that a
+branched structure induced by supercoiling could modulate both the
+loop formation entropy and the loop-loop interaction entropy, thus
+affecting both the contact map and the polymer size at fixed
+conditions. 
+% We aim to include a description of these effects in our future work.
 %
-% During replication, daughter chromosomes demix and segregate before
-% cell division. In \emph{ E.~coli}, the two arms of the chromosome
-% are segregated in an organized $<$left-right-left-right$>$
-% asymmetric fashion from the center of the
-% cell~\cite{WLP+06,NYH+07,Toro2010}. Replicated chromosomal loci are
-% thought to be immediately recondensed, as they appear to preserve
-% the linear arrangement while they are moved in opposite directions
-% to assume their final position in the incipient daughter
-% cell~\cite{Thanbichler2005,Thanbichler2006}.
-Secondly even on very short time scales, different non-equilibrium
-active phenomena are reported, including non-thermal loci
-motion~\cite{Weber2012a}, longitudinal compression
-waves~\cite{Fisher2013} and very rapid transitions driving segregation
-itself ``snaps''~\cite{Fisher2013,Joshi2011,EMB08}.  Such processes
-are they are beyond the reach most available polymer-physics modeling
-approaches used to investigate the nucleoid.
+%%
+%%
+It would be premature to draw any clearcut conclusions regarding
+phenomena occurring in real chromosomes.  The  main biological insight
+of this work is  the generic notion that the tendency to form domains
+could be intrinsic of the bridging (and tuned by the osmotic
+self-adhesion), and require in priciple little or no inter-specificity
+of domains~\cite{Barbieri2012}. We speculate that this kind of
+spontaneous organization might play a role in the observed correlation
+between the position of genetic loci along the chromosome and their
+position in the cell~\cite{Wiggins2010}.
+%%% ENTANGLEMENT & TOPOLOGICAL CONSTRAINTS
+Due to limitations of our simulation technique, we also left out from this
+modeling framework topological constraints, which have been implicated
+for eukaryotes~\cite{Mirny2011,Halverson2014}. Such constraints lead
+to long-lived metastable states in a collapsing polymer or a melt of
+rings, characterized by a dense fractal-like organization (and in
+contrast with the dense but non-fractal organization of an equilibrium
+globule). We have hypothesized~\cite{Benza2012} that the peculiar
+sub-diffusive dynamics of \emph{E.~coli} chromosomal
+loci~\cite{Weber2010,Javer2013} might be connected to this kind of
+organization.
+
+
+
+
+
+% %%% SEGREGATION & NONEQ ASPECTS 
+% Finally, we have assumed that an equilibrium model can give some
+% insight into the process of bacterial chromosome organization. While
+% this might be true at certain time- and lenght-scales, we note that
+% non-equilibrium aspects are emerging as an important feature of
+% nucleoid organization.  Firstly, on the time scale of cell division
+% the chromosomes segregate following a well-define*963.
+% % During replication, daughter chromosomes demix and segregate before
+% % cell division. In \emph{ E.~coli}, the two arms of the chromosome
+% % are segregated in an organized $<$left-right-left-right$>$
+% % asymmetric fashion from the center of the
+% % cell~\cite{WLP+06,NYH+07,Toro2010}. Replicated chromosomal loci are
+% % thought to be immediately recondensed, as they appear to preserve
+% % the linear arrangement while they are moved in opposite directions
+% % to assume their final position in the incipient daughter
+% % cell~\cite{Thanbichler2005,Thanbichler2006}.
+% Secondly even on very short time scales, different non-equilibrium
+% active phenomena are reported, including non-thermal loci
+% motion~\cite{Weber2012a}, longitudinal compression
+% waves~\cite{Fisher2013} and very rapid transitions driving
+% segregation itself ``snaps''~\cite{Fisher2013,Joshi2011,EMB08}.
+% Such processes are they are beyond the reach most available
+% polymer-physics modeling approaches used to investigate the
+% nucleoid.
 
 
 
@@ -982,12 +1048,15 @@ approaches used to investigate the nucleoid.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{acknowledgments}
-  We are very grateful to Peter Olmsted, Mario Nicodemi, Emanuela del
-  Gado, Bianca Sclavi
+  We are very grateful to Peter Olmsted for pointing us to the
+  literature on polysoaps, to Anton Goloborodko for suggesting the
+  contribution of buried beads to the core entropy, to Leonid Mirny,
+  Marco Baiesi, Enrico Carlon, Mario Nicodemi, Emanuela del Gado,
+  Bianca Sclavi
 %%% ALTRI (?) 
-  for discussions, useful feedback, and to
+  for discussions and useful feedback, and to \textbf{XXX YYY ZZZ}
 %%%%
-  comments on this manuscript.  This work was supported by the
+  for comments on this manuscript.  This work was supported by the
   International Human Frontier Science Program Organization, grant
   RGY0069/2009-C.
 \end{acknowledgments}
@@ -999,8 +1068,8 @@ approaches used to investigate the nucleoid.
 
 \appendix
 
-\section{Scaling procedure for matching the parameters with
-  experimental data}
+% \section{Scaling procedure for matching the parameters with
+%   experimental data}
 
 
 %%%% qui teoria riscalata e stima parametri
@@ -1026,145 +1095,151 @@ approaches used to investigate the nucleoid.
 % more details on switch argument?
 %
 
-\section{Inclusion of star polymer terms in the collapse due to sparse
-interactions}
+\section{Role of loop interactions in the collapse due to sparse
+  bridging.}
+\label{sec:incl-star-polym}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.4\textwidth]{fig6}
-  \caption{Inclusion of star polymer terms in the collapse due to
-    sparse interactions: A Collapse for the ghost polymer with
-    bridging interactions, the graph shows agreement of the
-    predictions of Eq. \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red}
-    to simulation data. The formulas include a scaling of
-    $P_\mathrm{loop} \sim g^{-3/2}$ measured from simulations. Panel B
-    shows a version of fig. \ref{fig:3}B where the theoretical
-    predictions are improved by a shift in the transition energy of
-    value $\Delta S_{star} = \mathrm{A0} (2p - 3/2)^{1.68}
-    \log[256/p]$ (see eq. \ref{eq:grass}) where $\mathrm{A0} =
-    0.00258$ is a fitted parameter. Panel C shows the agreement of
-    the scaling of the transition point between the simulations for
-    the polymer with bridging interactions ($\eta = 8/256$) in the
-    swollen arm regime and the predictions of eq. \ref{eq:corona}, the
-    ordinate shows the difference between the transition energy and
-    the critical transition energy of $\sim 2 k_b T$ where the polymer
-    switch to the collapsed-arms regime.}
+  \caption{Role of entropy loss due to loop excluded volume
+    interactions in the collapse due to sparse bridging. A: Collapse
+    of a ghost polymer with bridging interactions. In this case, the
+    inter-arms interactions are absent, and the plot shows good
+    agreement of the predictions of Eqs.~\ref{eq:prob_collapseZ} and
+    \ref{eq:Zloop_red} to simulation data. The formulas include a
+    scaling of $P_\mathrm{loop} \sim g^{-3/2}$ measured from
+    simulations. B: improved theoretical predictions by a shift in the
+    transition energy of value $\Delta S_{star} = a_0 (2p -
+    3/2)^{1.68} \log[256/p]$ (see Eq.~\ref{eq:grass}) where $ a_0 =
+    0.00258$ is a fitted parameter. C: Agreement of the scaling of the
+    transition point between the simulations for the polymer with
+    bridging interactions ($p/N = 8/256$) in the swollen arm regime
+    and the predictions of Eq.~\ref{eq:corona}.}
   \label{fig:6}
 \end{figure}
 
-Equations \ref{eq:prob_collapseZ} and \ref{eq:Zloop_red} don't show
-perfect agreement with simulation data in figure \ref{fig:3}B because
-we neglected the entropy reduction due to the interactions between
-loops. While the approximation of Eq.~ \ref{eq:Zloop_red} is only
-valid for small number of loops, it is precise only for
-ghost chains (see Fig. \ref{fig:6}A). The scaling of the probability
-of collapse for swollen arms of depends on the excluded volume
-interaction parameter $v$ through two effects: the first one is the
-swelling of the arms due to the self-interactions which changes the
-scaling for the probability of contact from $P_\mathrm{loop} \sim g^{-3/2}$
-to $P_\mathrm{loop} \sim g^{-2.27}$~\cite{Marenduzzo2006c}, the second
-one is the interactions between the arms due to the peculiar star-like
-configuration of the collapsed polymer. The latter is more tricky
-since it depends not only on the arm length $g$ and the interaction
-parameter $v$ but also on the branching number $2p$.
+This Appendix briefly addresses how accounting for loop interactions
+can improve the estimates for the switch-like collaps presented in
+Fig.~\ref{fig:3}A.  The scaling of the probability of collapse for
+swollen arms depends on the excluded volume interaction parameter $v$
+through two effects.  Firstly, as already mentioned, and accounted in
+the estimates, the swelling of the arms due to the self-interactions
+changes the scaling for the contact probability from $P_\mathrm{loop}
+\sim g^{-3/2}$ to $P_\mathrm{loop} \sim
+g^{-2.27}$~\cite{Marenduzzo2006c}.  Secondly, and more importantly,
+there is an interaction, so far neglected between the arms due to the
+peculiar star-like configuration of the collapsed polymer.
+%%
+The estimates of the switch-like transition from
+Eqs.~\ref{eq:prob_collapseZ} and \ref{eq:Zloop_red} do not show
+perfect agreement with simulations (Fig.~\ref{fig:3}A) with oncreasing
+$p$ because this entropy reduction due to the excluded volume
+interactions between loops is neglected. This is confirmed by the fact
+that the approximation of Eq.~\ref{eq:Zloop_red} (valid for
+sufficiently small $p$) is very accurate for ghost chains
+(Fig.~\ref{fig:6}A).
 
-The entropy reduction for a star polymer with
-$f$ arms of length $N/f$ has been studied in the thermodynamic
-limit ($N \to \infty$)\cite{Schafer1992}.
-
-One can define a set of scaling exponents $\gamma_f$ which sets the
-scaling between the number of configuration of a star polymer made of
-$f$ arms each of length $N/f$ as:
+A loop interaction term must depends on the arm length $g$ as well as
+from the interaction parameter $v$ and the number of arms $f$.  The
+entropy reduction for a star polymer with $f$ arms of length $N/f$ has
+been studied in the thermodynamic limit ($N \to
+\infty$)~\cite{Schafer1992}. One can define a set of scaling exponents
+$\gamma_f$ which define the scaling between the number of
+configurations of a star polymer made of $f$ arms each of length $N/f$
+as
 \begin{equation}
-Z = \mu^{-N} \left(N/f\right)^{\gamma_f - 1}.
+  Z = \mu^{-N} \left(N/f\right)^{\gamma_f - 1} \ .
 \end{equation}
-
 Due to the effect of this scaling, the collapse energy of the polymer
 with bridging interactions is shifted to higher values for increasing
-$p$ by an entropic contribution as\cite{Hanke2003}:
+$p$ by an entropic contribution as~\cite{Hanke2003}
 \begin{equation}
 \Delta S_{star} = \sigma_{2p} \log \frac{N}{p-1},\ 
-\mathrm{with}\ \sigma_{2p} = \gamma_p - \frac{\gamma_1 + 1}{2}.
+\mathrm{with}\ \sigma_{2p} = \gamma_p - \frac{\gamma_1 + 1}{2} \ .
 \label{eq:sstar}
 \end{equation}
+Numerical calculations of $\gamma_f$ for selected values of $f$ have
+been carried out using field-theoretical methods~\cite{Schafer1992}
+and lattice polymer
+simulations~\cite{Batoulis1989,Grest1994,Caracciolo1998,Zifferer1999,Shida2000,
+  Hsu2004}.
 
-Numerical calculations of the $\gamma_f$ for selected values of $f$
-have been carried out using field theoretical
-estimations\cite{Schafer1992} and on-lattice polymer simulations 
-\cite{Batoulis1989,Grest1994,Caracciolo1998,Zifferer1999,Shida2000,
-Hsu2004}.
-
-In a complementary way the problem of the star
-polymer has been solved by using renormalization theory and scaling
-properties of polymer blobs\cite{Daoud1982}, this way it is possible
-to show that the scaling of the free energy of the star polymer is
-proportional to $\sim f^{3/2}$~\cite{Witten1986}. This approach led to
-the scaling of the $\gamma_f$ exponents by the
-exponent $3/2$. The same simulations which were used to calculate
-numerically $\gamma_f$ obtained\cite{Hsu2004} for the results scaling
-given by the relation 
+In a complementary way, the problem of the star polymer has been
+approached by scaling arguments based on polymer
+blobs~\cite{Daoud1982}. This approach shows that the scaling of the
+free energy of the star polymer is proportional to $\sim
+f^{3/2}$~\cite{Witten1986}, setting a scaling for $\gamma_f$. The
+simulations used to compute $\gamma_f$ numerically gave~\cite{Hsu2004}
+the relation
 \begin{equation}
 \gamma_f - 1 \sim -(f-3/2)^{1.68}
 \label{eq:grass}
 \end{equation}
-which is in agreement to the scaling of the free energy $\sim 3/2$.
+which is in agreement with the scaling estimate.
+%%
 
-We propose a scaling for the entropic cost of the star
-polymer term as in Eq. \ref{eq:corona}, this version of the scaling
-includes also the logarithmic prefactor which depends on the
-homogeneous interaction term which is not a constant. For a detailed
-explanation of the derivation of this equation check the next
-appendix.
+
+The simulations and scaling estimates discussed so far do not account
+for the excluded volume strength. In order to include the role of
+excluded volume, we propose a scaling for the entropic cost of the
+star polymer term as in Eq.~\ref{eq:corona} (see
+Appendix~\ref{sec:scal-argum-entr}), which includes also the
+logarithmic correction factor depending on the homogeneous interaction
+term (and containing the parameter $v$ measuring interaction
+strength).
 %
-The improved agreement of the theoretical predicted collapsed curves
-with the addition of a component which scales according to equation
-\ref{eq:corona} is shown in Fig. \ref{fig:6}B and Fig. \ref{fig:6}C.
+Fig.~\ref{fig:6}B shows that adding such a term (scaling as
+Eq.~\ref{eq:corona}) in Eq.~\ref{eq:Zloop_red} sensibly improves the
+agreement of the theoretical estimate with the simulated switch-like
+collapse.  Fig.~\ref{fig:6}C specifically tests the role of the
+logarithmic dependency of the transition point from $v$, finding
+satisfactory qualitative agreement.
 
 \section{Scaling argument for the entropy of a star polymer.}
+\label{sec:scal-argum-entr}
 
-These notes describe the calculation of the number of blobs of a star
-polymer with $f$ arms, each of length $N$, bridging some implicit
-parts of the calculation carried out by Daoud and Cotton
-(1982)\cite{Daoud1982}. The number of blobs can then be used as a
-proxy for the entropy (blob ansatz).
-
+These notes sketch the calculation of the number of blobs of a star
+polymer with $f$ arms, each of length $N$, following Daoud and
+Cotton~\cite{Daoud1982}. The number of blobs are then used as a proxy
+for the entropy (blob ansatz).
+%%
 The polymer is described as a series of concentric shells, each of
-which by definition has to contain $f$ blobs (one for each
-arm). However, the size of the blobs $\xi$ will depend on the radial
-coordinate of the shell (called $r$). Since the shell at $r$ has
-surface $\sim r^2$, the size of each blob is $\xi^2 = r^2/f$, which
-means that $\xi \sim r / f^{1/2}$, i.e. $\xi = a r$, with $a = C
-f^{-1/2} $.  $\xi$ is also the thickness of the shell at coordinate
-$r$.
-
+which by definition contains $f$ blobs (one for each arm). The size of
+the blobs $\xi$ depends on the radial coordinate of the shell (called
+$r$). Since the shell at $r$ has surface $\sim r^2$, the size of each
+blob is $\xi^2 = r^2/f$, which means that $\xi \sim r / f^{1/2}$,
+i.e. $\xi = a r$, with $a = C f^{-1/2} $.  $\xi$ is also the thickness
+of the shell at coordinate $r$.
 
 Starting form a core of size $r_0$ we now imagine to stack
 (iteratively) discrete blobs of the proper size on each shell. Each
 stacked shell will determine the coordinate of the following one, and
-hence its blob size. We thus write
+hence its blob size. 
 \begin{displaymath}
   r_i = a \sum_{k=1}^{i-1} r_k + a \frac{r_i}{2} + a r_0 \ ,  
 \end{displaymath}
 with
 \begin{displaymath}
-  \xi_i = \xi(r_i) = a r_i \ .
+  \xi_i = \xi(r_i) = a r_i \ ,
 \end{displaymath}
-
-Immediately one has 
+%
+% Immediately one has 
+% \begin{displaymath}
+%   r_i \left(1 -\frac{a}{2} \right) = a \sum_{k=0}^{i-1} r_k
+% \end{displaymath}
+% i.e. 
+% \begin{displaymath}
+%   r_1 \left(1 -\frac{a}{2} \right) = a r_0
+% \end{displaymath}
+% \begin{displaymath}
+%   r_2 \left(1 -\frac{a}{2} \right) = r_0 a(1+a)
+% \end{displaymath}
+%
+leading to the expressions
 \begin{displaymath}
-  r_i \left(1 -\frac{a}{2} \right) = a \sum_{k=0}^{i-1} r_k
+  r_n \left(1 -\frac{a}{2} \right) = r_0 a (1+a)^{n-1} \ ,
 \end{displaymath}
-i.e. 
-\begin{displaymath}
-  r_1 \left(1 -\frac{a}{2} \right) = a r_0
-\end{displaymath}
-\begin{displaymath}
-  r_2 \left(1 -\frac{a}{2} \right) = r_0 a(1+a)
-\end{displaymath}
-\begin{displaymath}
-  r_n \left(1 -\frac{a}{2} \right) = r_0 a (1+a)^{n-1} \ .
-\end{displaymath}
-
 and
 \begin{displaymath}
   \xi_n = r_0 a^2 (1+a)^{n-1} \ .
@@ -1181,20 +1256,17 @@ where
 \begin{displaymath}
  A= \frac{(a^2 r_0)^{5/3}}{v^{1/3} b^{5/3}} . 
 \end{displaymath}
-
-The important part is that  
-\begin{displaymath}
-  g_n \simeq A e^{\frac{5}{3}n a} \ ,  
-\end{displaymath}
-for $n$ sufficiently large.
+% The important part is that  
+% \begin{displaymath}
+%   g_n \simeq A e^{\frac{5}{3}n a} \ ,  
+% \end{displaymath}
+% for $n$ sufficiently large.
 
 We now follow (on one branch of the star) all the monomers in all the
 blobs, and impose that their total has to be $N$. Inverting this
-relationship will give an estimate for $N_{\mathbf{blob}}$. This can
-be used to estimate $\beta F \simeq f N_{\mathbf{blob}}$ (since the
-argument only involves the blobs of one arm).
-
-One has
+relationship gives an estimate for $ \beta F \simeq f
+N_{\mathbf{blob}}$ (since the argument involves the blobs of one
+arm). One has
 \begin{displaymath}
   \sum_{n=1}^{N_{\mathbf{blob}}} g_n = N \ ,
 \end{displaymath}
@@ -1207,27 +1279,25 @@ from which
 \begin{displaymath}
   N_{\mathbf{blob}} \sim \frac{1}{a} \log N a / A
 \end{displaymath}
-where we neglected additive and multiplicative numerical constants
-
-This leads to the final expression
+where we neglected additive and multiplicative numerical constants,
+leading to the expression
 \begin{displaymath}
   \beta F \sim f^{3/2} \log 
-  \left(  N f^{7/6} v^{1/3}  \left(\frac{b}{r_0} \right)^{5/3} \right)
+  \left(  N f^{7/6} v^{1/3}  \left(\frac{b}{r_0} \right)^{5/3} \right) \ ,
 \end{displaymath}
+which is Eq.~\eqref{eq:corona}.
 
-Notes:
+% Notes:
 
-(i) The prefactor of $f^{3/2}$ is numerical and cannot contain $v$,
-since it comes from the dimensionless exponent of $g_n$, which is
-proportional to $n a$, and ultimately from the purely geometric
-relationship $\xi^2 = r^2/f$.
+% (i) The prefactor of $f^{3/2}$ is numerical and cannot contain $v$,
+% since it comes from the dimensionless exponent of $g_n$, which is
+% proportional to $n a$, and ultimately from the purely geometric
+% relationship $\xi^2 = r^2/f$.
 
-(ii) Not sure about the exponent of $f$ in the log (last time I did it
-I had one power less of a, giving exponent 1/3, but now it seems OK
-this way...).
+% (ii) Not sure about the exponent of $f$ in the log (last time I did it
+% I had one power less of a, giving exponent 1/3, but now it seems OK
+% this way...).
 
-% \section{}
-% more details on polysoap argument?
 
 
 
