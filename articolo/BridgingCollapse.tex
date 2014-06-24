@@ -52,11 +52,11 @@ pre]{revtex4}
 % \affiliation{I.N.F.N. Milano, Via Celoria 16, 20133 Milano, Italy}
 % 
 %
-\author{Vincenzo~G. Benza}
-%
-\affiliation{Dipartimento di Fisica e Matematica, Universit\`a
-  dell'Insubria, Como, Italy} 
-%
+% \author{Vincenzo~G. Benza}
+% %
+% \affiliation{Dipartimento di Fisica e Matematica, Universit\`a
+%   dell'Insubria, Como, Italy} 
+% %
 \author{Marco Cosentino Lagomarsino}
 %%
 \affiliation{Sorbonne Universit\'es, UPMC Univ Paris 06, UMR 7238,
@@ -386,8 +386,8 @@ parameter).
     $\sigma$ the inflexion point of the collapse curve becomes very
     steep, and moves towards larger values of $\epsilon_u$
     energy. This feature is qualitatively captured by the modified
-    mean-field theory. We observed that the numerical collapse points
-    match the re entrant inflexion points of the theoretical curves
+    mean-field theory. The numerical collapse points
+    matched the reentrant inflexion points of the theoretical curves
     (indicated by stars on the solid lines in the plot.  }
   \label{fig:2}
 \end{figure}
@@ -457,18 +457,17 @@ role of an effective ``excluded volume'' parameter and $B_2 = (v_1)^2
 coming from the prefactor of the radial distribution of a
 freely-jointed chain.
 %
-% Or it comes from the enthropic cost of making a globule due
+% Or it comes from the entropic cost of making a globule due
 % to the contact probability?
 %
 This term becomes relevant for $\alpha < 1$ and its addition captures
 rather efficiently the simulation behavior described above
-(Fig.~\ref{fig:2}B).  For extremely small excluded volumes, this
-mean-field theory also fails quantitatively (Fig.~\ref{fig:2}C), but
-we noticed that (for unexplained reasons) the reentrant inflexion
-points of the theoretical collapse curve correspond remarkably well to
-the collapse points observed in our simulations. To avoid confusion,
-in the following we will restrict ourselves to parameter values where
-this sharp collapse phenomenology does not occur.
+(Fig.~\ref{fig:2}B).  For extremely small excluded volumes,  the
+reentrant inflexion points of the theoretical collapse curve appear to
+match rather well (Fig.~\ref{fig:2}C) the collapse points observed
+in our simulations. To avoid confusion, in the following we will
+restrict ourselves to parameter values where this sharp collapse
+phenomenology \emph{does not} occur.
 
 
 
@@ -614,7 +613,9 @@ into account the star-polymer contributions at scaling level (see
 Appendix~\ref{sec:incl-star-polym} and
 Fig.~\ref{fig:6}AB). Altogether, this evidence supports the picture of
 a switch-like transition to a rosette state, driven by the competition
-between bridging attraction and looping entropy.  
+between bridging attraction and looping entropy, and somewhat
+reminiscent of microphase separation in diblock
+copolymers~\cite{Leibler1980}.
 
 
 %
@@ -622,22 +623,32 @@ Fig~\ref{fig:3}B shows the observed collapse curves for the swelling
 ratio for different numbers of bridging interactions $p$ at fixed
 $N$. 
 %
-We noted that, for small $p$, the transition points agree show better
+We noted that, for small $p$, the transition points show better
 agreement if one uses the total energy ($p \epsilon_l$) as control
-parameter, than with $1/eta=p/N$ as rescaling factor for $\epsilon_l$,
-confirming that for small $p$ $\eta$ and $p$ are not equivalent.
-\textbf{MCL: appendix figure to show this?}
+parameter, rather than using $1/eta=p/N$ as rescaling factor for
+$\epsilon_l$, confirming that for small $p$, $\eta$ and $p$ are not
+equivalent (in the thermodynamic limit, $p$ has to be linear in $N$ in
+order to observe collapse~\cite{Kantor1996,Camacho1997}).
+%%% \textbf{MCL: appendix figure to show this?}
 %
-Importantly, there is a crossover between the switch-like behavior
-just discussed and the classical homopolymer collapse behavior (as
-shown in Fig.~\ref{fig:2}), when $\eta$ and $p$ are sufficiently large. This
-problem has been addressed classically: for example, a transition from
-collapse to freezing has been found for $\eta = p/N \simeq
-0.6$~\cite{Camacho1997}. However, we are not aware of existing studies
-characterizing the crossover between a switch-like and mean-field-like
-collapse. While we have not explored systematically this crossover, we
-find that in our simulations polymers show mean-field collapse for
-values of $\eta$ greater than $0.3-0.4$.
+Importantly, there is a crossover between the switch-like transition
+(likely a first order phase transition, similar to diblock copolymers)
+just discussed and the  mean-field (second order) homopolymer collapse
+behavior (as shown in Fig.~\ref{fig:2}), when $\eta$ and $p$ are
+sufficiently large.
+%%
+While we were not able in this study to explore systematically this
+crossover, we find agreement with mean-field collapse for values of
+$\eta = p/N$ greater than $0.3-0.4$.
+%%
+Camacho and Schanke~\cite{Camacho1997}, working on a very similar
+system, suggested the possibility of a first-order collapse transition
+for sparse bridging, changing to second order for $\eta \simeq 0.6$.
+However, we are not aware of existing studies fully characterizing the
+crossover between the switch-like and the mean-field-like collapse. A
+less exotic possibility is that (as in a liquid-gas phase transition)
+in the thermodynamic limit the transition is always first-order,
+unless $\eta=1$.
 % ROUGH NUMBER \textbf{check this: per mettere questo
 %  numero controlla a occhio per che valori di eta la teoria mean field
 %  comincia a pigliarci decentemente...}.
@@ -938,7 +949,7 @@ First, we find a crossover between mean-field collapse and switch-like
 compaction where bridging counterbalances loop formation. Both
 phenomenologies often feature as ingredients of simple physical models
 for
-chromatin~\cite{Marenduzzo2006c,Brackley2013,Barbieri2013b,Mirny2011}.
+chromatin~\cite{Marenduzzo2006c,Brackley2013,Barbieri2013b,Mirny2011,Buenemann2010}.
 %%%
 Second, we find that multiple stable micelle-like domains can exist,
 in a manner that is reminiscent of micellar
@@ -947,7 +958,7 @@ polysoaps~\cite{Borisov1996}.
 Both of our main results are backed a series of simple
 mean-field/scaling arguments, which help linking them with generic
 knowledge in different sectors of the polymer physics literature
-(mean-field and micelle-like
+(e.g. mean-field and micelle-like
 collapse~\cite{DeGennes1975,Marenduzzo2006c},
 polysoaps~\cite{Borisov1996}, star polymers~\cite{Daoud1982,Hsu2004}).
 %%
@@ -964,6 +975,10 @@ the entropic cost of the corona, which is similar to a star
 polymer. Our simulation results appear to be in line with this
 hypothesis. A further entropic cost due to burial of non-bridging
 bonds in the core is speculated to play a role for  large cores.
+%%
+In analogy with diblock copolymers, one can speculate the existence of
+more complex micellar phases, for example with cylindrical symmetry,
+which might be exploited biologically. 
 
 
 % OTHER INGREDIENTS
@@ -989,17 +1004,7 @@ affecting both the contact map and the polymer size at fixed
 conditions. 
 % We aim to include a description of these effects in our future work.
 %
-%%
-%%
-It would be premature to draw any clearcut conclusions regarding
-phenomena occurring in real chromosomes.  The  main biological insight
-of this work is  the generic notion that the tendency to form domains
-could be intrinsic of the bridging (and tuned by the osmotic
-self-adhesion), and require in priciple little or no inter-specificity
-of domains~\cite{Barbieri2012}. We speculate that this kind of
-spontaneous organization might play a role in the observed correlation
-between the position of genetic loci along the chromosome and their
-position in the cell~\cite{Wiggins2010}.
+%
 %%% ENTANGLEMENT & TOPOLOGICAL CONSTRAINTS
 Due to limitations of our simulation technique, we also left out from this
 modeling framework topological constraints, which have been implicated
@@ -1011,6 +1016,21 @@ globule). We have hypothesized~\cite{Benza2012} that the peculiar
 sub-diffusive dynamics of \emph{E.~coli} chromosomal
 loci~\cite{Weber2010,Javer2013} might be connected to this kind of
 organization.
+
+R%
+%%
+It would be premature to draw any clearcut conclusions based on this
+simple model regarding phenomena occurring in real chromosomes.  The
+main biological insight of this work is the generic notion that the
+tendency to form domains could be intrinsic of the bridging (and tuned
+by the osmotic self-adhesion), and require in principle little or no
+inter-specificity of domains~\cite{Barbieri2012}.  This kind of
+spontaneous sorting mechanism might play a role in the observed correlation
+between the position of genetic loci along the chromosome and their
+position in the cell~\cite{Wiggins2010,Mercier2008}, and possibly also
+in the resolution of the identity of segregating sister
+chromosomes~\cite{Lesterlin2012}.
+
 
 
 
@@ -1050,9 +1070,9 @@ organization.
 \begin{acknowledgments}
   We are very grateful to Peter Olmsted for pointing us to the
   literature on polysoaps, to Anton Goloborodko for suggesting the
-  contribution of buried beads to the core entropy, to Leonid Mirny,
-  Marco Baiesi, Enrico Carlon, Mario Nicodemi, Emanuela del Gado,
-  Bianca Sclavi
+  contribution of buried beads to the core entropy, to Gino Benza,
+  Leonid Mirny, Marco Baiesi, Enrico Carlon, Mario Nicodemi, Emanuela
+  del Gado, Bianca Sclavi
 %%% ALTRI (?) 
   for discussions and useful feedback, and to \textbf{XXX YYY ZZZ}
 %%%%
