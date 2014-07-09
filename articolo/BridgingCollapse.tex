@@ -79,10 +79,11 @@ pre]{revtex4}
   phenomenology of polymer collapse induced by these dual
   contributions, in the case of regularly-spaced bridging.
 %
-  Our results distinguish a regime of classical mean-field collapse
-  dictated by the interplay of excluded volume and attractive energy
-  and a switch-like collapse where bridging interaction compete with
-  entropy loss terms from the looped arms of a star-like rosette.
+  Our results distinguish a regime of classical Flory-like
+  coil-globule collapse dictated by the interplay of excluded volume
+  and attractive energy and a switch-like collapse where bridging
+  interaction compete with entropy loss terms from the looped arms of
+  a star-like rosette.
 %
   Additionally, we show that bridging can induce stable
   compartmentalized domains. In these configurations, different
@@ -90,9 +91,9 @@ pre]{revtex4}
   polymer loops in an entropically favorable multi-domain
   configuration, with a mechanism that parallels micellar polysoaps.
 %%
-  Such compartmentalized domains are self-organized, and do not need
-  any specific interactions driving their segregation.  Domains can be
-  stable also in presence of uniform attraction, as long as the
+  Such compartmentalized domains are stable, and do not need any
+  intra-specific interactions driving their segregation.  Domains can
+  be stable also in presence of uniform attraction, as long as the
   uniform collapse is above its theta point.
 % %%%
 \end{abstract}
@@ -129,8 +130,8 @@ Of particular interest are bridging interactions~\cite{Wiggins2009}
 (possible at least from Fis, H-NS, and MukBEF), which can in principle
 induce looped domain formation, through mechanisms that are believed
 to be important also for eukaryotic
-chromatin~\cite{Brackley2013,Barbieri2013b}.  For example, a study
-combining super-resolution microscopy with genetic
+chromatin~\cite{Brackley2013,Barbieri2013b,Junier2010}.  For example,
+a study combining super-resolution microscopy with genetic
 ``chromosome-conformation capture'' (3C) techniques on the NAP H-NS
 explicitly reported it to form a small set of foci in the cell,
 bringing together distant binding sites~\cite{Wang2011a}. Additionally
@@ -259,9 +260,9 @@ finer-scale experiments are expected to appear soon.
 %%%% Our Work 
 While the bridging and loop-forming interactions are sometimes
 incorporated in polymer models of the bacterial
-chromosome~\cite{Junier2013,Fritsche2012,Heermann2012}, the standard
-approach is to neglect a possible self-adhesion and consider a
-confined polymer within the cell volume.
+chromosome~\cite{Barbieri2013a,Junier2013,Fritsche2012,Heermann2012,Barbieri2012,Junier2010},
+the standard approach is to neglect a possible self-adhesion and
+consider a confined polymer within the cell volume.
 %%
 Here, we set out to investigate how the combination of bridging and
 homogeneous collapse in a generic polymer physics (equilibrium)
@@ -273,7 +274,7 @@ our intent is to generically explore the consequences of these two
 basic ingredients, in order to help more realistic model development
 and to link the phenomenology with the vast existing knowledge in
 polymer physics, and with chromosome models available in the
-literature~\cite{Barbieri2013a,Benza2012}.
+literature~\cite{Barbieri2013a,Junier2010,Benza2012}.
 %%
 In this spirit, we deliberately ignore the role of supercoiling, and
 we do not consider confinement. We also neglect segregation dynamics
@@ -281,15 +282,16 @@ and other non-equilibrium drives (see the Discussion).
 %% ( these aspects could possibly be incorporated in a later stage into
 %% this model).
 %%% Main results
-Our main results are a qualitative characterization of the phase
+Our main results are a qualitative characterization of the state
 diagram of this model, where we observe a sharp collapse to a
 rosette-like state where bridging interactions overcome entropy loss
-by loops. This collapse can be described by classical mean-field
-arguments only when the density of bridges is sufficiently high, and
-homogeneous self-attraction modulates the collapse by affecting the
-interactions between rosette arms. Finally we find that bridging can
-form multiple rosette domains, which are stable under a wide set of
-conditions and whose number is set by the model parameters.
+by loops. This collapse can be described by classical Flory-like
+mean-field arguments only when the density of bridges is sufficiently
+high, and homogeneous self-attraction modulates the collapse by
+affecting the interactions between rosette arms. Finally we find that
+bridging can form multiple rosette domains, which are stable under a
+wide set of conditions and whose number is set by the model
+parameters.
 %%% magari piu' specifico / spelled out.
 
 
@@ -357,7 +359,7 @@ where bridging beads are equally spaced, in number $p$;  $\eta=p/N$ is
 the total fraction of beads occupied by the bridging regions. We are
 especially interested in the regime where $p$ is fairly small (note
 that in this regime the value of $p$ may be explicitly relevant, and
-consequently we will not refer to $\eta$ alone as the control
+consequently we will not refer to $eta$ alone as the control
 parameter). 
 %%% 
 
@@ -375,17 +377,17 @@ parameter).
   \centering
   \includegraphics[width=0.4\textwidth]{fig2}
   \caption{Collapse under homogeneous short-ranged attraction and
-    mean-field theory. A: Collapse curve of the swelling parameter
+    FLory mean-field theory. A: Collapse curve of the swelling parameter
     $\alpha$, plotted as a function of the attraction energy
     $\epsilon_u$, for different values of $N$. B and C: Comparison of
     collapse curves with mean-field theory for polymers with different
     excluded volume (varying $\sigma$) and $N=320$.  Solid lines are
     solutions of the modified mean-field theory,
     Eq.~(\ref{eq:deg_mfield}), while dashed lines are solutions of the
-    standard mean-field theory. Panel C shows that for small values of
+    Flory mean-field theory. Panel C shows that for small values of
     $\sigma$ the inflexion point of the collapse curve becomes very
     steep, and moves towards larger values of $\epsilon_u$
-    energy. This feature is qualitatively captured by the modified
+    energy. This feature is qualitatively captured by the modified Flory
     mean-field theory. The numerical collapse points
     matched the reentrant inflexion points of the theoretical curves
     (indicated by stars on the solid lines in the plot.  }
@@ -501,14 +503,15 @@ B: Collapse curves (swelling parameter vs
     $B_2$, which is an acceptable theory for the case of large $\eta= p/N$.
 %%
 C:  Transition energy plotted as a function of an effective
-concentration  of bridging proteins, estimated  from $p,N$, by a
-simple 
-Langmuir model. We assumed different effective dissociation constants $K_d$ 
+concentration  of bridging proteins, estimated  from $p,N$, by a 
+Langmuir model at equilibrium. We assumed different effective
+dissociation constants $K_d$  
 for the binders with a range of values typical for transcription
-factors \cite{Buchler29042003}. Dashed lines are guides to the
+factors~\cite{Buchler29042003}. Dashed lines are guides to the
 eye. The region of low binder concentration is expected to produce a
 switch-like transition to a rosette state, while the
-high-concentration regime is expected to follow mean-field behavior. An
+high-concentration regime is expected to follow Flory-like mean-field
+behavior. An 
 increase of $K_d$ corresponds to a rescaling of the transition curve. 
 %
 Simulations were performed using 256 beads and varying
@@ -524,10 +527,10 @@ Monte Carlo sweeps.  }
 We now discuss the case of collapse driven by sparse bridging
 interactions only ($\epsilon_u = 0$). This case is sometimes presented
 as analogous to the classical collapse transition of a
-homopolymer~\cite{Barbieri2013a}. While we confirm this analogy, we
-also find that there are important physical differences between the
-two situations. The conventional theta point and collapse are
-determined essentially by a balance between excluded volume and
+homopolymer~\cite{Barbieri2013a,Junier2010}. While we confirm this
+analogy, we also find that there are important physical differences
+between the two situations. The conventional theta point and collapse
+are determined essentially by a balance between excluded volume and
 attractive interaction. In presence of sparse bridging points, the
 relevant contribution to the partition function balanced by attractive
 energy is not monomer excluded volume, but rather the entropy
@@ -633,22 +636,22 @@ order to observe collapse~\cite{Kantor1996,Camacho1997}).
 %
 Importantly, there is a crossover between the switch-like transition
 (likely a first order phase transition, similar to diblock copolymers)
-just discussed and the  mean-field (second order) homopolymer collapse
-behavior (as shown in Fig.~\ref{fig:2}), when $\eta$ and $p$ are
-sufficiently large.
+just discussed and the Flory-like mean-field (second order)
+homopolymer collapse behavior (as shown in Fig.~\ref{fig:2}), when
+$\eta$ and $p$ are sufficiently large.
 %%
 While we were not able in this study to explore systematically this
-crossover, we find agreement with mean-field collapse for values of
+crossover, we resembles a standard second-order collapse for values of
 $\eta = p/N$ greater than $0.3-0.4$.
 %%
 Camacho and Schanke~\cite{Camacho1997}, working on a very similar
 system, suggested the possibility of a first-order collapse transition
 for sparse bridging, changing to second order for $\eta \simeq 0.6$.
 However, we are not aware of existing studies fully characterizing the
-crossover between the switch-like and the mean-field-like collapse. A
-less exotic possibility is that (as in a liquid-gas phase transition)
-in the thermodynamic limit the transition is always first-order,
-unless $\eta=1$.
+crossover between the switch-like transition driven by loop entropy
+and the Flory-like collapse. A less exotic possibility is that (as in
+a liquid-gas phase transition) in the thermodynamic limit the
+transition is always first-order, unless $\eta=1$.
 % ROUGH NUMBER \textbf{check this: per mettere questo
 %  numero controlla a occhio per che valori di eta la teoria mean field
 %  comincia a pigliarci decentemente...}.
@@ -670,11 +673,21 @@ eukaryotic chromatin~\cite{Barbieri2012,Barbieri2013b}.
 The only difference between the two situations is that in the SBS
 model a pre-defined set of sparse bridging interactions can be
 occupied or not by a gas of bridging binders, while the set of
-bridging locations is fixed in the model considered here. However, one
-can map the two situations with a simple Langmuir process, assumed to
-be in chemical equilibrium. We find that this operation leads to a
-phase diagram that reproduces qualitatively the features of the SBS
-model (Fig.~\ref{fig:3}C).
+bridging locations is fixed in the model considered here. To produce
+an estimate mapping the two situations, we considered a Langmuir
+process, and assumed it to be in chemical equilibrium.
+%
+This procedure gives a mean value of $p$ corresponding to a binder
+concentration, depending on the dissociation constant $K_d$ of the
+binders (we assumed $K_d$ within the range of values typical of
+transcription factors~\cite{Buchler29042003}, around 1$\mu$M
+\textbf{MCL: put some number here}). Specifically, $p \simeq N /
+(1+K_d/c)$, where $c$ is the concentration of binders
+\textbf{!MCL:CHECK THIS!}.
+%
+We find that this rough estimate leads to a state diagram that
+reproduces qualitatively the features of the SBS model
+(Fig.~\ref{fig:3}C).
 
 
 
@@ -716,13 +729,14 @@ homogeneus interactions are large or small with respect to the
 collapse energy for the homopolymer alone (we assume in both cases
 that the bridging interactions are stronger $\epsilon_l >
 \epsilon_u$).
-%%% MCL: $\theta$ <- Non userei questa notazione non standard - ho
-%%% messo quella di 1/2 - \Chi ... non so se ti va bene
+%%% 
+%%% 
 Fig.~\ref{fig:4}B shows different collapse curves for the swelling
 ratio of the polymer in the two regimes, for $p/N = 8/256$. In the
-regime where the loops of the rosette are swollen ($1/2 - \chi_u > 0$)
+regime where the loops of the rosette are swollen ($v  > 0$)
 the collapse is driven by the homogeneus interactions while in the
-regime where the arms are collapsed ($1/2 - \chi_u < 0$) this does not
+regime where the arms are collapsed ($v  < 0$) this does not
+%%% v = 1/2 - \chi_u
 happen. 
 %
 
@@ -837,7 +851,7 @@ contain a core volume term (proportional to $\epsilon_l$) which is not
 affected by the partitioning the polymer into domains, and the surface
 tension term leading to the change
 \begin{equation}
-  \Delta F_\mathrm{(core)} \sim \epsilon_l (p)^{2/3}q^{-2/3} \ .
+  \Delta F_{\mathrm{(core)}} \sim \epsilon_l (p)^{2/3}q^{-2/3} \ .
  \label{eq:poly2}
 \end{equation}
 Minimizing the two contributions with respect to $q$ (assumed
@@ -851,7 +865,7 @@ larger $p$ and decrease if $\epsilon_l$ is too large.
 This behavior is observed in our simulations.  However, this argument
 can be regarded as only qualitative. For example, the estimate in
 Eq.~\eqref{eq:corona}, since $r_0 \sim q^{1/3}$ implies $ \Delta
-F_\mathrm{(corona)} \sim p^{3/2}q^{-1/2} \log\left( p^{5/3}q^{-2/3}
+F_{\mathrm{(corona)}} \sim p^{3/2}q^{-1/2} \log\left( p^{5/3}q^{-2/3}
 \right)$, which (even neglecting prefactors) affects the predicted
 scaling. Additionally, the argument for the entropy is consistent only
 when the arms are above the theta point ($v>0$).
@@ -945,16 +959,25 @@ system.
 %
 There are two main results. 
 %%%%
-First, we find a crossover between mean-field collapse and switch-like
-compaction where bridging counterbalances loop formation. Both
-phenomenologies often feature as ingredients of simple physical models
-for
-chromatin~\cite{Marenduzzo2006c,Brackley2013,Barbieri2013b,Mirny2011,Buenemann2010}.
+First, we find a crossover between Flory-like collapse and a
+switch-like, presumablt first order compaction where bridging
+counterbalances loop formation. Both phenomenologies often feature as
+ingredients of simple physical models for
+chromatin~\cite{Marenduzzo2006c,Brackley2013,Barbieri2013b,Mirny2011,Buenemann2010},
+but the interplay between the two is relatively inexplored.
 %%%
-Second, we find that multiple stable micelle-like domains can exist,
-in a manner that is reminiscent of micellar
-polysoaps~\cite{Borisov1996}.
+Second, states with multiple micelle-like domains can exist, in a
+manner that is reminiscent of micellar
+polysoaps~\cite{Borisov1996}. We find that such multi-domain states
+are stable: similar conclusions were reached by a recent study of a
+polymer model with sprse bridging interactions, motivated by
+transcription factories~\cite{Junier2010}, and motivated with a
+Flory-like theory for a macroscopic extended network of foci. To
+explain these structures, our work takes the complementary approach of
+considering the stability of star-like rosettes.
 %
+
+
 Both of our main results are backed a series of simple
 mean-field/scaling arguments, which help linking them with generic
 knowledge in different sectors of the polymer physics literature
@@ -962,10 +985,10 @@ knowledge in different sectors of the polymer physics literature
 collapse~\cite{DeGennes1975,Marenduzzo2006c},
 polysoaps~\cite{Borisov1996}, star polymers~\cite{Daoud1982,Hsu2004}).
 %%
-While little of this knowledge can be called new, we believe that
-there is an importance in elucidating these links, especially because
-they are not always kept into account in the current landscape of
-models of (bacterial) chromatin~\cite{Benza2012,Barbieri2013a}
+While little of this knowledge can be called radically new, we believe
+that there is an importance in elucidating these links, especially
+because they are not always kept into account in the current landscape
+of models of (bacterial) chromatin~\cite{Benza2012,Barbieri2013a}
 %%
 Such theoretical arguments are also useful to elucidate the main
 ingredients causing a specific effect. In particular, they lead us to
@@ -979,6 +1002,14 @@ bonds in the core is speculated to play a role for  large cores.
 In analogy with diblock copolymers, one can speculate the existence of
 more complex micellar phases, for example with cylindrical symmetry,
 which might be exploited biologically. 
+%%
+Overall, compared to previous literature, our work provides a more
+precise analysis of the collapse transitions by comparing simulations
+in different regimes and discusses in some more detail the orders
+of transitions. Additionally, we address the role of homogeneous
+self-attraction, which is usually disregarded in studies motivated by
+genome organization.
+
 
 
 % OTHER INGREDIENTS
@@ -1074,10 +1105,10 @@ chromosomes~\cite{Lesterlin2012}.
   Leonid Mirny, Marco Baiesi, Enrico Carlon, Mario Nicodemi, Emanuela
   del Gado, Bianca Sclavi
 %%% ALTRI (?) 
-  for discussions and useful feedback, and to \textbf{XXX YYY ZZZ}
+  for discussions and useful feedback, and to Ivan Junier 
 %%%%
-  for comments on this manuscript.  This work was supported by the
-  International Human Frontier Science Program Organization, grant
+  for useful comments on this manuscript.  This work was supported by
+  the International Human Frontier Science Program Organization, grant
   RGY0069/2009-C.
 \end{acknowledgments}
 
