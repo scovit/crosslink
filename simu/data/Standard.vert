@@ -1,6 +1,6 @@
-#version 330
+#version 120
 
-layout(location = 0) in vec4 position;
+attribute vec4 position;
 
 uniform vec3 offset;
 uniform mat4 perspectiveMatrix;

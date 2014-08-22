@@ -3,6 +3,8 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+#include <vector>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include "gl-subs.hxx"
@@ -73,12 +75,17 @@ namespace renderer {
     return shader;
   }
 
-  GLuint CreateProgram(GLuint *shaderList, int n)
+  GLuint CreateProgram(std::vector<GLuint> shaderList,
+                       std::vector<std::string> &iList)
   {
     GLuint program = glCreateProgram();
 
-    for(size_t iLoop = 0; iLoop < n; iLoop++)
+    for(size_t iLoop = 0; iLoop < shaderList.size(); iLoop++)
       glAttachShader(program, shaderList[iLoop]);
+
+    for(size_t iLoop = 0; iLoop < iList.size(); iLoop++){
+      glBindAttribLocation(program, iLoop, iList[iLoop].c_str());
+    }
 
     glLinkProgram(program);
 
@@ -95,7 +102,7 @@ namespace renderer {
 	free(strInfoLog);
       }
 
-    for(size_t iLoop = 0; iLoop < n; iLoop++)
+    for(size_t iLoop = 0; iLoop < shaderList.size(); iLoop++)
       glDetachShader(program, shaderList[iLoop]);
 
     return program;

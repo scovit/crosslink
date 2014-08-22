@@ -32,13 +32,16 @@ namespace renderer {
   }
 
   void sphere::InitializeProgram() {
-    GLuint shaderList[2];
+    std::vector<std::string> inputList = { "position" };
 
-    shaderList[0] = renderer::LoadShader(GL_VERTEX_SHADER,
-					 "data/sphere.vert");
-    shaderList[1] = renderer::LoadShader(GL_FRAGMENT_SHADER,
-					 "data/sphere.frag");
-    theProgram = renderer::CreateProgram(shaderList, 2);
+    std::vector<GLuint> shaderList = {
+        renderer::LoadShader(GL_VERTEX_SHADER,
+	                     "data/sphere.vert"),
+        renderer::LoadShader(GL_FRAGMENT_SHADER,
+			     "data/sphere.frag")
+    };
+
+    theProgram = renderer::CreateProgram(shaderList, inputList);
 
     offsetUniform = glGetUniformLocation(theProgram, "offset");
 
