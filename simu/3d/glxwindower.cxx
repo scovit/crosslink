@@ -218,7 +218,7 @@ namespace renderer {
  
     ctx = 0;
  
-    // Install an X error handler so the application won't exit if GL 3.3
+    // Install an X error handler so the application won't exit if GL 2.1
     // context allocation fails.
     //
     // Note this error handler is global.  All display connections in
@@ -240,13 +240,13 @@ namespace renderer {
 	ctx = glXCreateNewContext( display, bestFbc, GLX_RGBA_TYPE, 0, True );
       }
  
-    // If it does, try to get a GL 3.0 context!
+    // If it does, try to get a GL 2.1 context!
     else
       {
 	int context_attribs[] =
 	  {
-	    GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-	    GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+	    GLX_CONTEXT_MAJOR_VERSION_ARB, 2,
+	    GLX_CONTEXT_MINOR_VERSION_ARB, 1,
 	    //GLX_CONTEXT_FLAGS_ARB        , 
 	    // GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 	    None
@@ -259,10 +259,10 @@ namespace renderer {
 	// Sync to ensure any errors generated are processed.
 	XSync( display, False );
 	if ( !ctxErrorOccurred && ctx )
-	  printf( "Created GL 3.3 context\n" );
+	  printf( "Created GL 2.1 context\n" );
 	else
 	  {
-	    printf( "Failed to create GL 3.0 context"
+	    printf( "Failed to create GL 2.1 context"
 		    " ... dieing\n" );
 	    exit(-1);
 	  }

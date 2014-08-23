@@ -88,7 +88,7 @@ namespace renderer {
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER,
-    		 3 * L * sizeof(float)/*sizeof(buffer)*/,
+    		 3 * L * sizeof(float),
     		 buffer, GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
@@ -102,6 +102,12 @@ namespace renderer {
 
     if (!psize)
       glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+//    GLenum err;
+//    while ((err = glGetError()) != GL_NO_ERROR) {
+//	fprintf(stderr, "%s: %d\n", "OpenGL error drawing sphere", err);
+//    }
+
 
     /*
     glPointSize(psize);
