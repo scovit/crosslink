@@ -207,6 +207,7 @@ extern "C" void *glumain(void *threadarg) {
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
+  glEnable(GL_POINT_SPRITE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   renderer::Poly = new renderer::polymer(renderer::perspectiveMatrix,
