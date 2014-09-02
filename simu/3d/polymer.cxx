@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
+#include <vector>
+#include <string>
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -41,14 +43,17 @@ namespace renderer {
   }
 
   void polymer::InitializeProgram() {
-    GLuint shaderList[2];
 
-    shaderList[0] = renderer::LoadShader(GL_VERTEX_SHADER,
-					 "data/Standard.vert");
-    shaderList[1] = renderer::LoadShader(GL_FRAGMENT_SHADER,
-					 "data/Standard.frag");
+    std::vector<std::string> inputList = { "position" };
 
-    theProgram = renderer::CreateProgram(shaderList, 2);
+    std::vector<GLuint> shaderList = {
+            renderer::LoadShader(GL_VERTEX_SHADER,
+				 "data/Standard.vert"),
+    	    renderer::LoadShader(GL_FRAGMENT_SHADER,
+				 "data/Standard.frag")
+    };
+
+    theProgram = renderer::CreateProgram(shaderList, inputList);
 
     offsetUniform = glGetUniformLocation(theProgram, "offset");
 

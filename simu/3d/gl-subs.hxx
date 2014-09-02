@@ -4,11 +4,16 @@
 #ifndef INCLUDE_GL_SUBS
 #define INCLUDE_GL_SUBS
 
+#include <vector>
+#include <string>
+
 namespace renderer {
   GLuint CreateShader(GLenum eShaderType, const char *strShaderFile);
   GLuint LoadShader(GLenum eShaderType, const char *strShaderFilename);
 
-  GLuint CreateProgram(GLuint *shaderArray, int n);
+  GLuint CreateProgram(std::vector<GLuint> shaderList,
+                       std::vector<std::string> &iList);
+
 }
 
 #endif
