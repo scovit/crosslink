@@ -27,7 +27,8 @@ CPUFGL=${GPUF64}
 GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/polymer.o build/sphere.o build/inputmain.o
 GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 
-all: nucleoid nucleoid.32 nucleoid.npc nucleoid.gl
+# all: nucleoid nucleoid.32 nucleoid.npc nucleoid.gl
+all: nucleoid nucleoid.npc nucleoid.gl
 
 nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o -lm -lz
@@ -39,7 +40,7 @@ nucleoid.npc: build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o
 	${CC} ${CFLAGS} ${CPUF64NPC} -DNUM_THREADS=1 -o nucleoid.npc build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o -lm -lz
 
 nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o ${GLFILES}
-	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o ${GLLIBS} -lm -lz
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o ${GLLIBS} -lm -lz -lX11
 
 build/simulazione.o: simulazione.c simulazione.h simprivate.h raytracing.h
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o build/simulazione.o -c simulazione.c
