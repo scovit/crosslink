@@ -57,7 +57,7 @@ extern "C" {
 #endif
 
   struct simufiles_t {
-    gzFile *xyzfile;
+    gzFile xyzfile;
     FILE *accfile;
     FILE *ctcfile;
     FILE *inffile;
