@@ -33,7 +33,14 @@ namespace renderer {
 
     bool isExtensionSupported(const char *extList, const char *extension);
   public:
+
     int create_window(int w, int h);
+
+    ~glxwindower() {
+      destroy();
+    }
+
+
     void swap();
     void destroy();
     void process_events();

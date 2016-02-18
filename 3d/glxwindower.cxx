@@ -297,14 +297,17 @@ namespace renderer {
   }
 
   void glxwindower::destroy() {
-    glXMakeCurrent( display, 0, 0 );
-    glXDestroyContext( display, ctx );
- 
-    XDestroyWindow( display, win );
-    XFreeColormap( display, cmap );
-    XCloseDisplay( display );
+    if (is_created)
+      {
+        glXMakeCurrent( display, 0, 0 );
+        glXDestroyContext( display, ctx );
 
-    is_created = false;
+        XDestroyWindow( display, win );
+        XFreeColormap( display, cmap );
+        XCloseDisplay( display );
+
+        is_created = false;
+      }
   }
 
   void glxwindower::swap() {

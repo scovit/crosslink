@@ -41,11 +41,6 @@ namespace renderer {
       Keyboarder = 0;
     }
 
-    ~windower () {
-      if (is_created)
-	this -> destroy();
-    }
-
   };
 
 }
