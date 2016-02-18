@@ -27,7 +27,7 @@ extern "C" {
   } dots;
 
   // link allocation out degree
-#define ODGRMAX 2
+#define ODGRMAX 6
 
   __attribute__ ((aligned (16))) int *restrict lpl;
   __attribute__ ((aligned (16))) int *restrict lpl_index;

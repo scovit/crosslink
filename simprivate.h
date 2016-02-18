@@ -16,33 +16,37 @@ static dsfmt_t dsfmt;
 
 /* variables */
 float lambda;
-#ifdef HARDCORE
+#if (defined(HARDCORE) || defined (UNIFORM) ||	\
+     defined (LOCALIZED) || defined(XLINK))
 float sigma;
 #endif
-#ifdef UNIFORM
+#if (defined(UNIFORM) || defined(XLINK))
 float alfa_uniform;
 double beta_uniform;
 #endif
-#ifdef LOCALIZED
+#if defined(LOCALIZED)
 float alfa_localized;
 double beta_localized;
 #endif
-#ifdef CONFINEMENT
+#if defined(CONFINEMENT)
 float conf_sqradius;
 #endif
 
 /* Comparisons */
-#ifdef HARDCORE
+#if defined(HARDCORE)
 static __m128 comp_hc __attribute__ ((aligned (16)));
 #endif
-#ifdef UNIFORM
+#if defined(UNIFORM)
 static __m128 comp_sb __attribute__ ((aligned (16)));
 #endif
-#ifdef LOCALIZED
+#if defined(LOCALIZED)
 static __m128 comp_sp __attribute__ ((aligned (16)));
 #endif
-#ifdef TOPO
+#if defined(TOPO)
 static __m128 comp_top __attribute__ ((aligned (16)));
+#endif
+#if defined(XLINK)
+static __m128 comp_xl __attribute__ ((aligned (16)));
 #endif
 
 static float D; /* Displacement */
@@ -59,6 +63,12 @@ static int contacts_loc;
 // list of possible topological barrier break
 static int topolistlength;
 static int *restrict topolist;
+#endif
+
+#ifdef XLINK
+// list of possible topological barrier break
+static int xlinklistlength;
+static int *restrict xlinklist;
 #endif
 
 #ifdef GETPERF

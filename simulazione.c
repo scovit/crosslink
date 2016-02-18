@@ -77,8 +77,8 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
 #endif
 			    ) {
 
-#if defined(TOPO)
-  static const uint8_t topohittable[64] __attribute__ ((aligned (16))) = {
+#if (defined(TOPO) || defined(XLINK))
+  static const uint8_t hittable[64] __attribute__ ((aligned (16))) = {
     0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,
     2, 0, 0, 0, 0, 2, 0, 0, 1, 2, 0, 0, 0, 1, 2, 0,
     3, 0, 0, 0, 0, 3, 0, 0, 1, 3, 0, 0, 0, 1, 3, 0,
@@ -86,7 +86,8 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
   };
 #endif
 
-#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && !defined(LOCALIZED)
+#if (!defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && \
+     !defined(LOCALIZED) && !defined(XLINK))
   return 0; // Se ghost
 #endif
 
@@ -107,6 +108,9 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
 #endif
 #if defined(TOPO)
   topolistlength = 0;
+#endif
+#if defined(XLINK)
+  xlinklistlength = 0;
 #endif
 
   __m128 npx = _mm_load1_ps(np);
@@ -150,15 +154,26 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
       *locali_new += msk_popcount_4(stickyball & bitmask & locmask[i / 4]);
     }
 #endif
+#if defined(XLINK)
+    uint8_t xlinkhit = _mm_movemask_ps(_mm_cmple_ps(distances_new,comp_xl)) &
+      bitmask;
+    if (unlikely(xlinkhit)) {
+      xlinklist[xlinklistlength] = i + hittable[4 * xlinkhit];
+      xlinklist[xlinklistlength + 1] = i + hittable[4 * xlinkhit + 1];
+      xlinklist[xlinklistlength + 2] = i + hittable[4 * xlinkhit + 2];
+      xlinklist[xlinklistlength + 3] = i + hittable[4 * xlinkhit + 3];
+      xlinklistlength += msk_popcount_4(xlinkhit);
+    }
+#endif
 
 #if defined(TOPO)
     uint8_t topohit = _mm_movemask_ps(_mm_cmple_ps(distances_new,comp_top)) &
       bitmask;
     if (unlikely(topohit)) {
-      topolist[topolistlength] = i + topohittable[4 * topohit];
-      topolist[topolistlength + 1] = i + topohittable[4 * topohit + 1];
-      topolist[topolistlength + 2] = i + topohittable[4 * topohit + 2];
-      topolist[topolistlength + 3] = i + topohittable[4 * topohit + 3];
+      topolist[topolistlength] = i + hittable[4 * topohit];
+      topolist[topolistlength + 1] = i + hittable[4 * topohit + 1];
+      topolist[topolistlength + 2] = i + hittable[4 * topohit + 2];
+      topolist[topolistlength + 3] = i + hittable[4 * topohit + 3];
       topolistlength += msk_popcount_4(topohit);
     }
 #endif
@@ -189,6 +204,9 @@ static int prob_pot_hc(float *restrict np, unsigned int m) {
 #if defined(TOPO)
   topolistlength = 0;
 #endif
+#if defined(XLINK)
+  xlinklistlength = 0;
+#endif
 
   for ( int i = 0; i < N; i ++)
     if (i != m) {
@@ -202,6 +220,12 @@ static int prob_pot_hc(float *restrict np, unsigned int m) {
 #if defined(UNIFORM)
       if (distance < (sigma + alfa_uniform)*(sigma + alfa_uniform))
 	sticky++;
+#endif
+#if defined(XLINK)
+      if (distance < lambda*lambda) {
+	xlinklist[xlinklistlength] = i;
+	xlinklistlength++;
+      }
 #endif
 #if defined(TOPO)
       if (distance < (4.0f*lambda*4.0f*lambda)) {
@@ -354,6 +378,14 @@ static inline void displace_sphere(float *restrict np,
   np[2] = d2 + D * (float)x2;
 }
 
+static void push_in_laplacian(int pos, int value) {
+  for (int q = lpl_index[N] - 1; q >= lpl_index[pos + 1]; q--)
+    lpl[q + 1] = lpl[q];
+  lpl[lpl_index[pos + 1]] = value;
+  for (int q = pos + 1; q <= N; q++)
+    lpl_index[q]++;
+}
+
 #if defined(FASTEXP)
 #define EXPLOOKUPSIZE 256
 #define EXPLOOKUPFIRST 64
@@ -416,6 +448,12 @@ static int move_ele() {
   if (n_pos[0]*n_pos[0] + n_pos[1]*n_pos[1] + n_pos[2]*n_pos[2] >
       conf_sqradius)
     return 0;
+#endif
+
+#if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED) \
+     && !defined(HARDCORE) && !defined(TOPO))
+  if (lpl_index[buf_p + 1] - lpl_index[buf_p] == ODGRMAX)
+    goto accept; // Optimization don't calculate anything
 #endif
 
 #if defined(UNIFORM)
@@ -497,7 +535,6 @@ static int move_ele() {
   }
 #endif
 
-
 #if defined(TOPO)
   // Topological interaction, maybe faster to move it before
   // the metropolis test  
@@ -513,12 +550,33 @@ static int move_ele() {
   contacts_loc += newc_loc - oldc_loc;
 #endif
 
+#if defined(XLINK)
+  if (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX) {
+    for (int i = 0; i < xlinklistlength; i++) {
+      double r = dsfmt_genrand_open_open(&dsfmt);
+      if (r < 1e-7) { // Arbitrary number
+	for (int q = lpl_index[buf_p]; q < lpl_index[buf_p+1]; q++)
+	  if (xlinklist[i] == lpl[q])
+	    goto out; // Already connected
+
+	// Arrived here, let's connect it
+	push_in_laplacian(buf_p, xlinklist[i]);
+	push_in_laplacian(xlinklist[i], buf_p);
+	fprintf(stderr, "Connected %d with %d\n", buf_p, xlinklist[i]);
+      }
+    out:
+      ;
+    }
+  }
+#endif
+
 #if defined(GETPERF)
   displ += (n_pos[0] - dots.x[buf_p])*(n_pos[0] - dots.x[buf_p])
     + (n_pos[1] - dots.y[buf_p])*(n_pos[1] - dots.y[buf_p])
     + (n_pos[2] - dots.z[buf_p])*(n_pos[2] - dots.z[buf_p]);
 #endif
 
+ accept:
   dots.x[buf_p] = n_pos[0];
   dots.y[buf_p] = n_pos[1];
   dots.z[buf_p] = n_pos[2];
@@ -560,7 +618,7 @@ static inline void recenter(void) {
   }
 }
 
-static inline void print_buffer_gz(gzFile *out) {
+static inline void print_buffer_gz(gzFile out) {
   unsigned long long int time = mc_time.DYN_STEPS - mc_time.t;
   for (unsigned int i = 0; i < N; i++)
     gzprintf(out, "%llu\t%.10f\t%.10f\t%.10f\n", time,
@@ -610,16 +668,17 @@ void set_param_normalized(int enne, double big_sigma,
   N = enne;
 
   if (N % 16) {
-    fputs("N should be a multiple of 16\n", stderr);
+    fprintf(stderr, "N should be a multiple of %d\n", 16);
     exit(-1);
   }
 
   lambda = sqrt(5.0 / 3.0 / N);
   double sigmal = cbrt(3.0 * big_sigma / (4.0 * N * M_PI));
-#ifdef HARDCORE
+#if (defined(HARDCORE) || defined(UNIFORM) \
+     || defined(LOCALIZED))
   sigma = sigmal;
 #endif
-#ifdef UNIFORM
+#if defined(UNIFORM)
   alfa_uniform = /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
   beta_uniform = energy_uniform;
 #endif
@@ -647,6 +706,9 @@ void set_param_normalized(int enne, double big_sigma,
   //conservative topological cutoff 
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
+#ifdef XLINK
+  comp_xl = _mm_set1_ps(lambda*lambda/4);
+#endif
 
 #ifdef FASTEXP
   populate_lookup_tables();
@@ -660,6 +722,11 @@ static void allocate_memory() {
 #else
   size_t locmaskalloc = (size_t)0;
 #endif
+#if defined(XLINK)
+  size_t xlinklistalloc = N * sizeof(int);
+#else
+  size_t xlinklistalloc = (size_t)0;
+#endif
 #if defined(TOPO)
   size_t topolistalloc = N * sizeof(int);
 #else
@@ -668,7 +735,7 @@ static void allocate_memory() {
   size_t lpl_indexalloc = (N + 4) * sizeof(int);
   size_t lplalloc = ODGRMAX * N * sizeof(int);
   if(posix_memalign((void **)&buffer, 16,
-		    dotsalloc + locmaskalloc + topolistalloc +
+		    dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
 		    lpl_indexalloc + lplalloc)) {
     fprintf(stderr, "Error allocating memory\n");
     exit(-8);
@@ -679,13 +746,17 @@ static void allocate_memory() {
 #if defined(LOCALIZED)
   locmask = (uint8_t *restrict)((uint8_t *)buffer + dotsalloc);
 #endif
+#if defined(XLINK)
+  xlinklist = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc);
+#endif
 #if defined(TOPO)
-  topolist = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc);
+  topolist = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
+			     + xlinklistalloc);
 #endif
   lpl_index = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			      + topolistalloc);
+			      + xlinklistalloc + topolistalloc);
   lpl = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			+ topolistalloc + lpl_indexalloc);
+			+ xlinklistalloc + topolistalloc + lpl_indexalloc);
 }
 
 static __attribute__ ((noinline))

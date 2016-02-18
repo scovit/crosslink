@@ -30,7 +30,7 @@ struct inputvari_t {
 };
 
 extern "C" void print_buffer(FILE *out);
-#if defined(UNIFORM)
+#if (defined(UNIFORM) || defined(XLINK))
 extern double beta_uniform;
 #endif
 #if defined(LOCALIZED)
@@ -163,7 +163,7 @@ const std::vector<inputvari_t> inputvari = {
       return "\t\t\tflush the output files write cache";
     }
   },
-#if defined(UNIFORM)
+#if (defined(UNIFORM) || defined(XLINK))
   {"beta_uniform=",
     [] (const std::string cosa) {
       double temp = boost::lexical_cast<double>(cosa);
