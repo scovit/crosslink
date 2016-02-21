@@ -1,5 +1,8 @@
 #if NUM_THREADS > 1
  #include <pthread.h>
+ #ifdef __APPLE__
+ #include "mac_pthread.h"
+ #endif
 #endif
 
 #include <stdio.h>

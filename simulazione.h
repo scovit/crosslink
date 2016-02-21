@@ -41,6 +41,9 @@ extern "C" {
   struct mc_time_t {
     unsigned long long t;
     unsigned long long DYN_STEPS;
+    unsigned long long RELAX_TIME;
+    unsigned long long CORRL_TIME;
+    int STATISTIC;
   };
   __attribute__ ((aligned (16))) struct mc_time_t mc_time;
 

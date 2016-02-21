@@ -16,9 +16,15 @@ MEASUREMENTS=-DGETXYZ -DGETENERGY
 # "-DFASTEXP" is an experimental optimization
 # -ffast-math -funsafe-math-optimizations
 DEBUG=-Ofast -fno-fast-math
+#DEBUG=-g -O0
 
 CXXFLAGS=${DEBUG} -std=c++0x -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
 CFLAGS=${DEBUG} -std=gnu99 -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS += -I/opt/X11/include -L/opt/X11/lib
+	CXXFLAGS += -I/opt/X11/include -L/opt/X11/lib
+endif
 CPUF32=-DHAVE_SSE2=1 -m32 -march=core2 -mtune=core2 -mfpmath=sse
 CPUF64NPC=-DHAVE_POPCNT=0 -DHAVE_SSE2=1 -m64 -march=opteron -mtune=opteron -fprefetch-loop-arrays
 CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=corei7 -mtune=corei7 -fprefetch-loop-arrays
@@ -92,6 +98,9 @@ build/glxwindower.o: 3d/glxwindower.cxx 3d/glxwindower.hxx 3d/windower.hxx
 
 build/polymer.o: 3d/polymer.cxx 3d/polymer.hxx 3d/buffered_geom.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/polymer.o -c 3d/polymer.cxx
+
+build/xlinker.o: 3d/xlinker.cxx 3d/xlinker.hxx 3d/buffered_geom.hxx
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/xlinker.o -c 3d/xlinker.cxx
 
 build/sphere.o: 3d/sphere.cxx 3d/sphere.hxx 3d/buffered_geom.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/sphere.o -c 3d/sphere.cxx

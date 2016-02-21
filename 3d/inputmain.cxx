@@ -1,4 +1,10 @@
+#if NUM_THREADS > 1
 #include <pthread.h>
+ #ifdef __APPLE__
+ #include "../mac_pthread.h"
+ #endif
+#endif
+
 #include <string>
 #include <cstdio>
 #include <time.h>
@@ -207,7 +213,6 @@ static inline std::string readcomando(char *prompt) {
     std::cout << std::endl;
 
   add_history(a);
-  append_history(1,"/tmp/accia_history");
 
   std::string retval = (a ? a : "exit");
   free(a);
@@ -220,9 +225,7 @@ extern "C" void *inputmain(void *threadarg) {
   pthread_barrier_wait(&firstbarr);
   int argc = ((struct thread_data *) threadarg) -> argc;
   char **argv = ((struct thread_data *) threadarg) -> argv;
-
   close(open("/tmp/accia_history", O_CREAT | O_EXCL, 0644));
-  history_truncate_file("/tmp/accia_history", 1000);
   read_history("/tmp/accia_history");
 
   std::string comando;
@@ -261,5 +264,9 @@ extern "C" void *inputmain(void *threadarg) {
 
   }
 
+  write_history("/tmp/accia_history");
+  close(open("/tmp/accia_history", O_CREAT | O_EXCL, 0644));
+  history_truncate_file("/tmp/accia_history", 1000);
+  close(open("/tmp/accia_history", O_CREAT | O_EXCL, 0644));
   return NULL;
 }

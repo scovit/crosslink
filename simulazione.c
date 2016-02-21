@@ -1,5 +1,8 @@
 #if NUM_THREADS > 1
  #include <pthread.h>
+ #ifdef __APPLE__
+ #include "mac_pthread.h"
+ #endif
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -551,7 +554,8 @@ static int move_ele() {
 #endif
 
 #if defined(XLINK)
-  if (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX) {
+  if (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX
+      && mc_time.t > mc_time.RELAX_TIME) {
     for (int i = 0; i < xlinklistlength; i++) {
       double r = dsfmt_genrand_open_open(&dsfmt);
       if (r < 1e-7) { // Arbitrary number
@@ -1221,9 +1225,9 @@ void *simulazione(void *threadarg) {
 
   /* Prova */
   /**/
-  const unsigned long long CORRL_TIME = 2*458ULL * N * N;
-  const unsigned long long RELAX_TIME = 100ULL * CORRL_TIME; //200
-  const int STATISTIC = 1000;
+  mc_time.CORRL_TIME = 2*458ULL * N * N;
+  mc_time.RELAX_TIME = 100ULL * mc_time.CORRL_TIME; //200
+  mc_time.STATISTIC  = 1000;
   /**/
 
   /* Simulations (for the Cacciuto stuff) */
@@ -1250,7 +1254,8 @@ void *simulazione(void *threadarg) {
   const int STATISTIC = 1;
   */
 
-  mc_time.DYN_STEPS = RELAX_TIME + CORRL_TIME * STATISTIC + 1;
+  mc_time.DYN_STEPS = mc_time.RELAX_TIME
+    + mc_time.CORRL_TIME * mc_time.STATISTIC + 1;
 
 #if !defined(HARDCORE)
   float sigma = NAN;
@@ -1270,7 +1275,8 @@ void *simulazione(void *threadarg) {
   print_infos(N, cnffilepath, lplfilepath, sigma, lambda, D, 
 	      alfa_uniform, alfa_localized,
 	      beta_uniform, beta_localized, conf_sqradius,
-	      seed, RELAX_TIME, CORRL_TIME, STATISTIC, mc_time.DYN_STEPS);
+	      seed, mc_time.RELAX_TIME, mc_time.CORRL_TIME,
+	      mc_time.STATISTIC, mc_time.DYN_STEPS);
 
 #if NUM_THREADS > 1
   pthread_barrier_wait(&startbarr);
@@ -1291,7 +1297,7 @@ void *simulazione(void *threadarg) {
   mc_time.t = mc_time.DYN_STEPS - resume_elapsed;
 
   unsigned long long int toprint = mc_time.t -
-    (RELAX_TIME + CORRL_TIME);
+    (mc_time.RELAX_TIME + mc_time.CORRL_TIME);
 
   for ( ; mc_time.t != 0; mc_time.t-- ) {
 #if NUM_THREADS > 1
@@ -1301,7 +1307,7 @@ void *simulazione(void *threadarg) {
     //       - load with datafiles from fortran simulation
 
     if ( unlikely(mc_time.t == toprint) ) {
-      toprint -= CORRL_TIME;
+      toprint -= mc_time.CORRL_TIME;
 
       rewind(simufiles.rndfile);
       write_dsfmt_file(&dsfmt, simufiles.rndfile);
