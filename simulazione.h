@@ -31,6 +31,10 @@ extern "C" {
 
   __attribute__ ((aligned (16))) int *restrict lpl;
   __attribute__ ((aligned (16))) int *restrict lpl_index;
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  __attribute__ ((aligned (16))) int *restrict crx;
+  __attribute__ ((aligned (16))) int *restrict crx_index;
+#endif
 
 #ifdef LOCALIZED
   __attribute__ ((aligned (16))) uint8_t *restrict locmask;

@@ -28,6 +28,9 @@ float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 namespace renderer {
 
   polymer *Poly;
+#ifdef XLINK
+  polymer *Xlink;
+#endif
 #ifdef LOCALIZED
   sphere  *Sph;
   sphere  *SphUni;
@@ -93,6 +96,9 @@ namespace renderer {
     perspectiveMatrix[5] = fFrustumScale;
 
     Poly -> update_global_uniforms();
+#ifdef XLINK
+    Xlink -> update_global_uniforms();
+#endif
 #ifdef LOCALIZED
     Sph -> update_global_uniforms();
     SphUni -> update_global_uniforms();
@@ -154,6 +160,9 @@ namespace renderer {
     }
 
     Poly -> update_global_uniforms();
+#ifdef XLINK
+    Xlink -> update_global_uniforms();
+#endif
 #ifdef LOCALIZED
     Sph -> update_global_uniforms();
     SphUni -> update_global_uniforms();
@@ -167,6 +176,10 @@ namespace renderer {
     pthread_spin_lock (&spinsum);
 
     transpose_data(Poly -> buffer);
+#ifdef XLINK
+    transpose_data(Xlink -> buffer);
+    Xlink -> update_laplacian(crx, crx_index);
+#endif
 #ifdef LOCALIZED
     interaction_data(Sph -> buffer, SphUni -> buffer);
 #endif
@@ -184,6 +197,9 @@ namespace renderer {
     // draw the polymer
 
     Poly -> draw();
+#ifdef XLINK
+    Xlink -> draw();
+#endif
 #ifdef LOCALIZED
     Sph -> draw();
     SphUni -> draw();
@@ -217,8 +233,14 @@ extern "C" void *glumain(void *threadarg) {
 
   renderer::Poly = new renderer::polymer(renderer::perspectiveMatrix,
 					 renderer::offsetVector, 
-					 N, lpl, lpl_index, ODGRMAX);
-
+					 N, lpl, lpl_index, ODGRMAX,
+					 0.0f, 0.0f, 1.0f, 1.0f);
+#ifdef XLINK
+  renderer::Xlink = new renderer::polymer(renderer::perspectiveMatrix,
+					  renderer::offsetVector, 
+					  N, crx, crx_index, ODGRMAX,
+					  1.0f, 0.0f, 0.0f, 1.0f);
+#endif
 #ifdef LOCALIZED
   renderer::Sph = new renderer::sphere(renderer::perspectiveMatrix,
 				       renderer::offsetVector, locnum,

@@ -387,6 +387,13 @@ static void push_in_laplacian(int pos, int value) {
   lpl[lpl_index[pos + 1]] = value;
   for (int q = pos + 1; q <= N; q++)
     lpl_index[q]++;
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  for (int q = crx_index[N] - 1; q >= crx_index[pos + 1]; q--)
+    crx[q + 1] = crx[q];
+  crx[crx_index[pos + 1]] = value;
+  for (int q = pos + 1; q <= N; q++)
+    crx_index[q]++;
+#endif
 }
 
 #if defined(FASTEXP)
@@ -731,6 +738,13 @@ static void allocate_memory() {
 #else
   size_t xlinklistalloc = (size_t)0;
 #endif
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  size_t crx_indexalloc = (N + 4) * sizeof(int);
+  size_t crxalloc       = ODGRMAX * N * sizeof(int);
+#else
+  size_t crx_indexalloc = (size_t)0;
+  size_t crxalloc       = (size_t)0;
+#endif
 #if defined(TOPO)
   size_t topolistalloc = N * sizeof(int);
 #else
@@ -740,7 +754,7 @@ static void allocate_memory() {
   size_t lplalloc = ODGRMAX * N * sizeof(int);
   if(posix_memalign((void **)&buffer, 16,
 		    dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
-		    lpl_indexalloc + lplalloc)) {
+		    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc)) {
     fprintf(stderr, "Error allocating memory\n");
     exit(-8);
   }
@@ -761,6 +775,14 @@ static void allocate_memory() {
 			      + xlinklistalloc + topolistalloc);
   lpl = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
 			+ xlinklistalloc + topolistalloc + lpl_indexalloc);
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  crx_index = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
+			      + xlinklistalloc + topolistalloc
+			      + lpl_indexalloc + lplalloc);
+  crx = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
+			+ xlinklistalloc + topolistalloc + lpl_indexalloc
+			+ lpl_indexalloc + lplalloc + crx_indexalloc);
+#endif
 }
 
 static __attribute__ ((noinline))
@@ -789,6 +811,10 @@ void set_laplacian_null() {
 	  " in simprivate.h\n", stderr);
     exit(-4);
   }
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  for (int i = 0; i < N + 4; i++)
+    crx_index[i] = 0;
+#endif
 }
 
 static __attribute__ ((noinline))

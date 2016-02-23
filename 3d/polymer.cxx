@@ -10,19 +10,7 @@
 
 namespace renderer {
 
-  void polymer::InitializeData(int *laplacian,
-			       int *laplacian_index, int max_out) {
-
-    int err = (posix_memalign((void **)&buffer, 16,
-			      sizeof(GLfloat) * 3 * L));
-    err += posix_memalign((void **)&indexData, 16,
-			   sizeof(GLshort) * max_out * L);
-
-    if(err) {
-      fprintf(stderr, "Error allocating memory\n");
-      exit(-1);
-    }
-  
+  void polymer::update_laplacian(int *laplacian, int *laplacian_index) {
     nsegdraw = 0;
     for (int i = 0; i < L; i++) {
       for (int q = laplacian_index[i]; q < laplacian_index[i+1]; q++) {
@@ -36,6 +24,24 @@ namespace renderer {
 	nsegdraw += 2;
       }
     }
+    FeedVertexBuffer();
+    FeedVertexArrayObjects();
+  }
+
+  void polymer::InitializeData(int *laplacian,
+			       int *laplacian_index, int max_out) {
+
+    int err = (posix_memalign((void **)&buffer, 16,
+			      sizeof(GLfloat) * 3 * L));
+    err += posix_memalign((void **)&indexData, 16,
+			   sizeof(GLshort) * max_out * L);
+
+    if(err) {
+      fprintf(stderr, "Error allocating memory\n");
+      exit(-1);
+    }
+  
+    update_laplacian(laplacian, laplacian_index);
   }
 
   polymer::~polymer() {
@@ -54,18 +60,23 @@ namespace renderer {
     };
 
     theProgram = renderer::CreateProgram(shaderList, inputList);
+    glUseProgram(theProgram);
+
+    colorUniform = glGetUniformLocation(theProgram, "Color");
 
     offsetUniform = glGetUniformLocation(theProgram, "offset");
 
     perspectiveMatrixUnif = glGetUniformLocation(theProgram,
 						 "perspectiveMatrix");
 
+    glUniform4f(colorUniform, color[0], color[1], color[2], color[3]);
+    glUseProgram(0);
+
     update_global_uniforms();
   }
 
-  void polymer::InitializeVertexBuffer()
+  void polymer::FeedVertexBuffer()
   {
-    glGenBuffers(1, &vertexBufferObject);
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER,
@@ -73,16 +84,14 @@ namespace renderer {
 		 buffer, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &indexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		 sizeof(GL_SHORT) * nsegdraw, indexData, GL_STATIC_DRAW);
+		 sizeof(GL_SHORT) * nsegdraw, indexData, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
-  void polymer::InitializeVertexArrayObjects()
+  void polymer::FeedVertexArrayObjects()
   {
-    glGenVertexArrays(1, &vaoObject);
 
     glBindVertexArray(vaoObject);
 

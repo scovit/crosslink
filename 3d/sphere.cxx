@@ -42,6 +42,7 @@ namespace renderer {
     };
 
     theProgram = renderer::CreateProgram(shaderList, inputList);
+    glUseProgram(theProgram);
 
     offsetUniform = glGetUniformLocation(theProgram, "offset");
 
@@ -52,7 +53,6 @@ namespace renderer {
     lightdirUniform = glGetUniformLocation(theProgram, "lightDir");
     pointsizeUniform = glGetUniformLocation(theProgram, "pointsize");
 
-    glUseProgram(theProgram);
     glUniform4f(colorUniform, color[0], color[1], color[2], color[3]);
     glUniform3f(lightdirUniform, 0.0f, 0.0f, 1.0f);
     glUniform1f(pointsizeUniform, pointsize);
