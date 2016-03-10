@@ -42,12 +42,18 @@ extern double beta_uniform;
 #if defined(LOCALIZED)
 extern double beta_localized;
 #endif
+#if defined(XLINK)
+extern double xlink_conc;
+#endif
 
 extern float BackGround[4];
 
 struct mc_time_t {
   unsigned long long t;
   unsigned long long DYN_STEPS;
+  unsigned long long RELAX_TIME;
+  unsigned long long CORRL_TIME;
+  int STATISTIC;
 };
 extern mc_time_t mc_time;
 
@@ -151,9 +157,13 @@ const std::vector<inputvari_t> inputvari = {
     [] (const std::string cosa) {
       fprintf(stderr,
 	      "TOTAL STEPS: %llu\n"
+	      "RELAX TIME:  %llu\n"
 	      "STEPS DONE:  %llu\n"
 	      "STEPS TO GO: %llu\n", 
-	      mc_time.DYN_STEPS, mc_time.DYN_STEPS - mc_time.t, mc_time.t);
+	      mc_time.DYN_STEPS,
+	      mc_time.RELAX_TIME,
+	      mc_time.DYN_STEPS - mc_time.t,
+	      mc_time.t);
     },
     []() -> std::string {
       return "\t\t\tshow the time constants";
@@ -203,6 +213,21 @@ const std::vector<inputvari_t> inputvari = {
       oss << std::setprecision(4) << beta_localized << "\tset the variable";
       return oss.str();
     }
+  },
+#endif
+#if defined(XLINK)
+  {"xlink_conc=",
+   [] (const std::string cosa) {
+      double temp = boost::lexical_cast<double>(cosa);
+      xlink_conc = temp;
+      std::cout << "xlink_conc=" << xlink_conc << std::endl;
+    },
+   []() -> std::string {
+     std::ostringstream oss;
+     oss.setf(std::ostringstream::scientific);
+     oss << std::setprecision(2) << xlink_conc << "\tset the variable";
+     return oss.str();
+   }
   }
 #endif
 };

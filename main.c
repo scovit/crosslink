@@ -18,17 +18,17 @@ struct thread_data thread_data_array[NUM_THREADS];
 
 static void usage(int argc, char *argv[]) {
   printf ("Usage: %s { start | resume } N outstring inconf.gz inlpl inloc "
-	  "big_sigma beta_uniform beta_localized conf_volume\n"
+	  "big_sigma beta_uniform beta_localized conf_volume xlink_conc\n"
 	  "\n"
-	  "Suggested parameters: start 192 ciao RAND NULL NULL 0.05 0 0 1.0\n"
+	  "Suggested parameters: start 192 ciao RAND NULL NULL 0.05 0 0 1.0 1e-2\n"
 	  "\n",
 	  argv[0]);
   exit (-1);
 }
 
 static int error_arguments(int argc, char *argv[]) {
-  return (argc < 2) || !((!strcmp(argv[1], "start") && (argc == 11)) ||
-			 (!strcmp(argv[1], "resume") && (argc == 11)));
+  return (argc < 2) || !((!strcmp(argv[1], "start") && (argc == 12)) ||
+			 (!strcmp(argv[1], "resume") && (argc == 12)));
 }
 
 void sigusr1_handler(int sig) {

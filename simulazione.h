@@ -72,6 +72,9 @@ extern "C" {
     FILE *locfile;
     FILE *rndfile;
     FILE *chkfile;
+#if defined(GETXLINK) 
+    FILE *xlkfile;
+#endif
   };
   __attribute__ ((aligned (16))) struct simufiles_t simufiles;
 

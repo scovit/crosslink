@@ -31,6 +31,9 @@ double beta_localized;
 #if defined(CONFINEMENT)
 float conf_sqradius;
 #endif
+#if defined(XLINK)
+double xlink_conc;
+#endif
 
 /* Comparisons */
 #if defined(HARDCORE)
@@ -90,6 +93,7 @@ static const char *siminfostring =
   "beta_uniform=%g\n"
   "beta_localized=%g\n"
   "conf_sqradius=%g\n"
+  "xlink_conc=%g\n"
   "seed=%u\n"
   "RELAX_TIME=%llu\n"
   "CORRL_TIME=%llu\n"

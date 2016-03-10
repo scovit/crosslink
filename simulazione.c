@@ -396,6 +396,16 @@ static void push_in_laplacian(int pos, int value) {
 #endif
 }
 
+static inline bool connected_laplacian(int i, int j) {
+
+  for (int q = lpl_index[i]; q < lpl_index[i+1]; q++)
+    if (lpl[q] == j)
+      return true; // Already connected
+
+  return false;
+}
+
+
 #if defined(FASTEXP)
 #define EXPLOOKUPSIZE 256
 #define EXPLOOKUPFIRST 64
@@ -561,22 +571,23 @@ static int move_ele() {
 #endif
 
 #if defined(XLINK)
-  if (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX
-      && mc_time.t > mc_time.RELAX_TIME) {
+  if (mc_time.DYN_STEPS - mc_time.t > mc_time.RELAX_TIME) {
     for (int i = 0; i < xlinklistlength; i++) {
-      double r = dsfmt_genrand_open_open(&dsfmt);
-      if (r < 1e-7) { // Arbitrary number
-	for (int q = lpl_index[buf_p]; q < lpl_index[buf_p+1]; q++)
-	  if (xlinklist[i] == lpl[q])
-	    goto out; // Already connected
+      if (dsfmt_genrand_open_open(&dsfmt) < 1e-2 // 1e-7
+	  && (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX)
+	  && (lpl_index[xlinklist[i] + 1] - lpl_index[xlinklist[i]] < ODGRMAX)
+	  && (!connected_laplacian(buf_p, xlinklist[i]))) {
 
 	// Arrived here, let's connect it
 	push_in_laplacian(buf_p, xlinklist[i]);
 	push_in_laplacian(xlinklist[i], buf_p);
-	fprintf(stderr, "Connected %d with %d\n", buf_p, xlinklist[i]);
+#if defined(GETXLINK)
+	fprintf(simufiles.xlkfile, "%llu\t%u\t%u\n",
+		mc_time.DYN_STEPS - mc_time.t,
+		buf_p, xlinklist[i]);
+#endif
+
       }
-    out:
-      ;
     }
   }
 #endif
@@ -648,7 +659,8 @@ void print_infos(int pN, char *pcnffile, char *plplfile,
 		 double psigma, double plambda, double pD,
 		 double palfa_uniform, double palfa_localized,
 		 double pbeta_uniform,  double pbeta_localized,
-		 double pconf_sqradius, unsigned int seed,
+		 double pconf_sqradius, double pxlink_conf,
+		 unsigned int seed,
 		 unsigned long long int pRELAX_TIME,
 		 unsigned long long int pCORRL_TIME,
 		 int pSTATISTIC, unsigned long long int pDYN_STEPS) {
@@ -662,7 +674,7 @@ void print_infos(int pN, char *pcnffile, char *plplfile,
 	  pN, pcnffile, plplfile, psigma, plambda, pD, 
 	  palfa_uniform, palfa_localized,
 	  pbeta_uniform, pbeta_localized,
-	  pconf_sqradius, seed,
+	  pconf_sqradius, pxlink_conf, seed,
 	  pRELAX_TIME, pCORRL_TIME, pSTATISTIC, pDYN_STEPS);
   fflush(simufiles.inffile);
 }
@@ -675,7 +687,7 @@ int cmpint(const void *p1, const void *p2) {
 static __attribute__ ((noinline))
 void set_param_normalized(int enne, double big_sigma,
 			  double energy_uniform, double energy_localized,
-			  double volume_variable) {
+			  double volume_variable, double xlinker_conc) {
   N = enne;
 
   if (N % 16) {
@@ -701,6 +713,9 @@ void set_param_normalized(int enne, double big_sigma,
 #ifdef CONFINEMENT
   conf_sqradius = cbrt(volume_variable) * cbrt(volume_variable);
 #endif
+#ifdef XLINK
+  xlink_conc = xlinker_conc;
+#endif
 
   D = 0.6 * (lambda);
 
@@ -718,7 +733,7 @@ void set_param_normalized(int enne, double big_sigma,
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  comp_xl = _mm_set1_ps(lambda*lambda/4);
+  comp_xl = _mm_set1_ps(lambda*lambda / 1024);
 #endif
 
 #ifdef FASTEXP
@@ -1114,6 +1129,7 @@ void openfiles(char *outstring, const char *mode,
   const char *infext = ".info";
   const char *rndext = ".rndstate";
   const char *chkext = ".chk";
+  const char *xlkext = ".xlk";
   int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
   char filename[lenght];
   bool mode_is_a = !strcmp(mode, "a");
@@ -1124,6 +1140,12 @@ void openfiles(char *outstring, const char *mode,
   strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, xyzext);
   simufiles.xyzfile = gzopen(filename, mode);
+
+#if defined(GETXLINK)
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, xlkext);
+  simufiles.xlkfile = fopen(filename, mode);
+#endif
 
   strcpy(filename, dir); strcat(filename, outstring);
   strcat(filename, accext);
@@ -1168,6 +1190,9 @@ void closefiles() {
   fclose(simufiles.ctcfile);
   fclose(simufiles.rndfile);
   fclose(simufiles.chkfile);
+#if defined (GETXLINK)
+  fclose(simufiles.xlkfile);
+#endif
 
   time_t tstamp = time(NULL);
   char *timestr = ctime(&tstamp);
@@ -1185,6 +1210,7 @@ void flushfiles() {
   fflush(simufiles.ctcfile);
   fflush(simufiles.rndfile);
   fflush(simufiles.chkfile);
+  fflush(simufiles.xlkfile);
 }
 
 void *simulazione(void *threadarg) {
@@ -1203,7 +1229,8 @@ void *simulazione(void *threadarg) {
 		       atof(((struct thread_data *)threadarg) -> argv[7]),
 		       atof(((struct thread_data *)threadarg) -> argv[8]),
 		       atof(((struct thread_data *)threadarg) -> argv[9]),
-		       atof(((struct thread_data *)threadarg) -> argv[10]));
+		       atof(((struct thread_data *)threadarg) -> argv[10]),
+		       atof(((struct thread_data *)threadarg) -> argv[11]));
 
   // initialize seed
   struct timeval t1;
@@ -1252,7 +1279,7 @@ void *simulazione(void *threadarg) {
   /* Prova */
   /**/
   mc_time.CORRL_TIME = 2*458ULL * N * N;
-  mc_time.RELAX_TIME = 100ULL * mc_time.CORRL_TIME; //200
+  mc_time.RELAX_TIME = 1ULL * mc_time.CORRL_TIME / 20; // 200
   mc_time.STATISTIC  = 1000;
   /**/
 
@@ -1297,11 +1324,15 @@ void *simulazione(void *threadarg) {
 #if !defined(CONFINEMENT)
   float conf_sqradius = NAN;
 #endif
+#if !defined(XLINK)
+  double xlink_conc = NAN;
+#endif
 
   print_infos(N, cnffilepath, lplfilepath, sigma, lambda, D, 
 	      alfa_uniform, alfa_localized,
 	      beta_uniform, beta_localized, conf_sqradius,
-	      seed, mc_time.RELAX_TIME, mc_time.CORRL_TIME,
+	      xlink_conc, seed, mc_time.RELAX_TIME,
+	      mc_time.CORRL_TIME,
 	      mc_time.STATISTIC, mc_time.DYN_STEPS);
 
 #if NUM_THREADS > 1
