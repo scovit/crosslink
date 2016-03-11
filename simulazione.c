@@ -738,8 +738,11 @@ void set_param_normalized(int enne, double big_sigma,
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  comp_xl = _mm_set1_ps((sigma + (lambda - sigma) / 64) *
-			(sigma + (lambda - sigma) / 64)   );
+  double xlink_rad =  cbrt(1./ 64 / 64 / 64 
+			   * (pow(lambda, 3) - pow(sigma, 3))
+			   + pow(sigma, 3));
+
+  comp_xl = _mm_set1_ps(xlink_rad * xlink_rad);
 #endif
 
 #ifdef FASTEXP
