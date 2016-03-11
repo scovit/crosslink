@@ -216,22 +216,22 @@ static int prob_pot_hc(float *restrict np, unsigned int m) {
       float distance = squareDist(np[0], np[1], np[2], 
 				  dots.x[i], dots.y[i], dots.z[i]);
 #if defined(HARDCORE)
-      if (distance < (sigma*sigma)) {
+      if (distance < comp_hc[0] * comp_hc[0]) {
 	return -1;
       }
 #endif
 #if defined(UNIFORM)
-      if (distance < (sigma + alfa_uniform)*(sigma + alfa_uniform))
+      if (distance < comp_sb[0] * comp_sb[0])
 	sticky++;
 #endif
 #if defined(XLINK)
-      if (distance < lambda*lambda) {
+      if (distance < comp_xl[0] * comp_xl[0]) {
 	xlinklist[xlinklistlength] = i;
 	xlinklistlength++;
       }
 #endif
 #if defined(TOPO)
-      if (distance < (4.0f*lambda*4.0f*lambda)) {
+      if (distance < comp_top[0] * comp_top[0]) {
 	topolist[topolistlength] = i;
 	topolistlength++;
       }
@@ -472,7 +472,8 @@ static int move_ele() {
 
 #if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED) \
      && !defined(HARDCORE) && !defined(TOPO))
-  if (lpl_index[buf_p + 1] - lpl_index[buf_p] == ODGRMAX)
+  if (lpl_index[buf_p + 1] - lpl_index[buf_p] == ODGRMAX
+      || mc_time.DYN_STEPS - mc_time.t <= mc_time.RELAX_TIME)
     goto accept; // Optimization don't calculate anything
                  // but this is asking for troubles
 #endif
@@ -737,7 +738,8 @@ void set_param_normalized(int enne, double big_sigma,
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  comp_xl = _mm_set1_ps(lambda*lambda / 1024);
+  comp_xl = _mm_set1_ps((sigma + (lambda - sigma) / 64) *
+			(sigma + (lambda - sigma) / 64)   );
 #endif
 
 #ifdef FASTEXP
