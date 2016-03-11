@@ -474,6 +474,7 @@ static int move_ele() {
      && !defined(HARDCORE) && !defined(TOPO))
   if (lpl_index[buf_p + 1] - lpl_index[buf_p] == ODGRMAX)
     goto accept; // Optimization don't calculate anything
+                 // but this is asking for troubles
 #endif
 
 #if defined(UNIFORM)
@@ -571,12 +572,13 @@ static int move_ele() {
 #endif
 
 #if defined(XLINK)
-  if (mc_time.DYN_STEPS - mc_time.t > mc_time.RELAX_TIME) {
+  if (mc_time.DYN_STEPS - mc_time.t > mc_time.RELAX_TIME
+      && lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX) {
     for (int i = 0; i < xlinklistlength; i++) {
-      if (dsfmt_genrand_open_open(&dsfmt) < 1e-2 // 1e-7
-	  && (lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX)
-	  && (lpl_index[xlinklist[i] + 1] - lpl_index[xlinklist[i]] < ODGRMAX)
-	  && (!connected_laplacian(buf_p, xlinklist[i]))) {
+      if (lpl_index[xlinklist[i] + 1] - lpl_index[xlinklist[i]] < ODGRMAX
+	  && !connected_laplacian(buf_p, xlinklist[i])
+	  // Monte-carlo
+	  && dsfmt_genrand_open_open(&dsfmt) < xlink_conc) {
 
 	// Arrived here, let's connect it
 	push_in_laplacian(buf_p, xlinklist[i]);
@@ -592,13 +594,13 @@ static int move_ele() {
   }
 #endif
 
+ accept:
 #if defined(GETPERF)
   displ += (n_pos[0] - dots.x[buf_p])*(n_pos[0] - dots.x[buf_p])
     + (n_pos[1] - dots.y[buf_p])*(n_pos[1] - dots.y[buf_p])
     + (n_pos[2] - dots.z[buf_p])*(n_pos[2] - dots.z[buf_p]);
 #endif
 
- accept:
   dots.x[buf_p] = n_pos[0];
   dots.y[buf_p] = n_pos[1];
   dots.z[buf_p] = n_pos[2];
@@ -700,6 +702,8 @@ void set_param_normalized(int enne, double big_sigma,
 #if (defined(HARDCORE) || defined(UNIFORM) \
      || defined(LOCALIZED))
   sigma = sigmal;
+#else
+  float sigma = 0;
 #endif
 #if defined(UNIFORM)
   alfa_uniform = /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
