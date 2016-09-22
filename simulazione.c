@@ -198,7 +198,7 @@ static inline float squareDist(const float a0, const float a1, const float a2,
 // Volume escluso
 static int prob_pot_hc(float *restrict np, unsigned int m) {
 
-#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO)
+#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && !defined(XLINK)
   return 0; // Se ghost
 #endif
 
@@ -586,7 +586,7 @@ static int move_ele() {
 	push_in_laplacian(xlinklist[i], buf_p);
 #if defined(GETXLINK)
 	fprintf(simufiles.xlkfile, "%llu\t%u\t%u\n",
-		mc_time.DYN_STEPS - mc_time.t,
+		mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME,
 		buf_p, xlinklist[i]);
 #endif
 
@@ -738,7 +738,7 @@ void set_param_normalized(int enne, double big_sigma,
   comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  double xlink_rad =  cbrt(1./ 64 / 64 / 64 
+  double xlink_rad =  cbrt(1./ pow(128, 3)
 			   * (pow(lambda, 3) - pow(sigma, 3))
 			   + pow(sigma, 3));
 
@@ -817,24 +817,16 @@ void set_laplacian_null() {
 	  " in simprivate.h\n", stderr);
     exit(-4);
   }
-  lpl_index[0] = 0;
-  lpl[0] = 1;
-  int k = 1;
-  for (int i = 1; i < N - 1; i++) {
-    lpl_index[i] = k;
-    lpl[k] = i - 1;
-    lpl[k+1] = i + 1;
-    k += 2;
+
+  for (int i = 0; i < N; i++) {
+    lpl_index[i] = 2 * i;
+    lpl[2 * i] = i - 1;
+    lpl[2 * i + 1] = i + 1;
   }
-  lpl_index[N-1] = k;
-  lpl[k] = N-2;
-  k += 1;
-  lpl_index[N] = k;
-  if (k > ODGRMAX * N /* lplalloc */) {
-    fputs("I need more memory, please modify constant ODGRMAX"
-	  " in simprivate.h\n", stderr);
-    exit(-4);
-  }
+  lpl_index[N] = 2 * N;
+  lpl[0] = 0;
+  lpl[2 * N - 1] = N - 1;
+
 #if ((NUM_THREADS > 1) && defined(XLINK))
   for (int i = 0; i < N + 4; i++)
     crx_index[i] = 0;
@@ -1288,8 +1280,8 @@ void *simulazione(void *threadarg) {
   /* Prova */
   /**/
   mc_time.CORRL_TIME = 2*458ULL * N * N;
-  mc_time.RELAX_TIME = 1ULL * mc_time.CORRL_TIME / 20; // 200
-  mc_time.STATISTIC  = 1000;
+  mc_time.RELAX_TIME = mc_time.CORRL_TIME / 2; // 200ULL
+  mc_time.STATISTIC  = 1;
   /**/
 
   /* Simulations (for the Cacciuto stuff) */
@@ -1390,7 +1382,9 @@ void *simulazione(void *threadarg) {
       gettimeofday(now, NULL);
       unsigned long long ellapsed_time = (now->tv_sec - then->tv_sec) *
 	1000000ULL + (now->tv_usec - then->tv_usec);
-      fprintf(simufiles.accfile, "%d\t%d\t%g\t%llu\t%g\t%g\n", accepted, total, 
+      fprintf(simufiles.accfile, "%llu\t%d\t%d\t%g\t%llu\t%g\t%g\n",
+	      mc_time.DYN_STEPS - mc_time.t,
+	      accepted, total,
 	      (float)accepted / total, ellapsed_time,
 	      displ, displ / ellapsed_time);
 
@@ -1398,7 +1392,9 @@ void *simulazione(void *threadarg) {
       struct timeval *temp = now;
       now = then; then = temp;
 #else
-      fprintf(simufiles.accfile, "%g\n", (float) accepted / total);
+      fprintf(simufiles.accfile, "%llu\t%g\n",
+	      mc_time.DYN_STEPS - mc_time.t,
+	      (float) accepted / total);
 #endif
 
       total = 0;
@@ -1422,8 +1418,16 @@ void *simulazione(void *threadarg) {
 #endif
     }
 
-    if (move_ele())
+    unsigned int result = move_ele();
+    if (result) {
       accepted++;
+    }
+    
+    if (result == 256) {
+      printf("%llu\t%.10f\t%.10f\t%.10f\n",
+	      mc_time.DYN_STEPS - mc_time.t,
+	      dots.x[255], dots.y[255], dots.z[255]);
+    }
     total++;
 
 #if NUM_THREADS > 1
