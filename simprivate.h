@@ -37,19 +37,19 @@ double xlink_conc;
 
 /* Comparisons */
 #if defined(HARDCORE)
-static __m128 comp_hc __attribute__ ((aligned (16)));
+static __m256 comp_hc __attribute__ ((aligned (32)));
 #endif
 #if defined(UNIFORM)
-static __m128 comp_sb __attribute__ ((aligned (16)));
+static __m256 comp_sb __attribute__ ((aligned (32)));
 #endif
 #if defined(LOCALIZED)
-static __m128 comp_sp __attribute__ ((aligned (16)));
+static __m256 comp_sp __attribute__ ((aligned (32)));
 #endif
 #if defined(TOPO)
-static __m128 comp_top __attribute__ ((aligned (16)));
+static __m256 comp_top __attribute__ ((aligned (32)));
 #endif
 #if defined(XLINK)
-static __m128 comp_xl __attribute__ ((aligned (16)));
+static __m256 comp_xl __attribute__ ((aligned (32)));
 #endif
 
 static float D; /* Displacement */

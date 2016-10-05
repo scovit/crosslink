@@ -14,6 +14,7 @@
 #include <time.h>
 #include <math.h>
 #include <xmmintrin.h>
+#include <immintrin.h>
 #include <zlib.h>
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "simulazione.h"
@@ -23,46 +24,29 @@
 #include "raytracing.h"
 #endif
 
-// Distances sse optimized - requires SSE2
+// Distances sse optimized - requires AVX
 static inline
-__m128 sse_square_dist(const __m128 npx, const __m128 npy, const __m128 npz,
-		       const __m128 x, const __m128 y, const __m128 z) {
+__m256 avx_square_dist(const __m256 npx, const __m256 npy, const __m256 npz,
+		       const __m256 x, const __m256 y, const __m256 z) {
 
-  __m128 dx = _mm_sub_ps(x, npx);
-  __m128 dy = _mm_sub_ps(y, npy);
-  __m128 dz = _mm_sub_ps(z, npz);
+  __m256 dx = _mm256_sub_ps(x, npx);
+  __m256 dy = _mm256_sub_ps(y, npy);
+  __m256 dz = _mm256_sub_ps(z, npz);
 
-  dx = _mm_mul_ps(dx, dx);
-  dy = _mm_mul_ps(dy, dy);
-  dz = _mm_mul_ps(dz, dz);
+  dx = _mm256_mul_ps(dx, dx);
+  dy = _mm256_mul_ps(dy, dy);
+  dz = _mm256_mul_ps(dz, dz);
 
-  __m128 sum = _mm_add_ps (dz, _mm_add_ps(dx, dy));
+  __m256 sum = _mm256_add_ps (dz, _mm256_add_ps(dx, dy));
 
   // now we have (sqr 4, sqr 3, sqr 2, sqr 1)
 
   return sum;
 }
 
-/* This function uses magic. Only wizards need venture within */
-static inline int msk_popcount_32(uint32_t x) {
-#if HAVE_POPCNT == 1
+
+static inline uint8_t msk_popcount_8(const uint8_t x) {
   return __builtin_popcount(x);
-#else
-  x -= ((x >> 1) & 0x55555555);
-  x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-  x = (((x >> 4) + x) & 0x0f0f0f0f);
-  return (x * 0x01010101) >> 24;
-#endif
-}
-/* This one we use because we need only 4 bit */
-static inline uint8_t msk_popcount_4(const uint8_t x) {
-#if HAVE_POPCNT == 1
-  return __builtin_popcount(x);
-#else
-  static const uint8_t bit_lookup[16] = { 0, 1, 1, 2, 1, 2, 2, 3,
-					  1, 2, 2, 3, 2, 3, 3, 4 };
-  return bit_lookup[x & 15];
-#endif
 }
 
 /* count the number of contacts or reject in case of overlap 
@@ -81,11 +65,266 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
 			    ) {
 
 #if (defined(TOPO) || defined(XLINK))
-  static const uint8_t hittable[64] __attribute__ ((aligned (16))) = {
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0,
-    2, 0, 0, 0, 0, 2, 0, 0, 1, 2, 0, 0, 0, 1, 2, 0,
-    3, 0, 0, 0, 0, 3, 0, 0, 1, 3, 0, 0, 0, 1, 3, 0,
-    2, 3, 0, 0, 0, 2, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3,
+  static const uint8_t hittable[2048] __attribute__ ((aligned (32))) = {
+    // seq 0 255 | perl6 -ne 'my @g = .Int.base(2).comb.reverse.grep: 1, :k;
+    //                        @g = @g.append(0 xx 8);
+    //                        say @g[0..7].join(", "), ","'
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 0, 0, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0,
+    2, 0, 0, 0, 0, 0, 0, 0,
+    0, 2, 0, 0, 0, 0, 0, 0,
+    1, 2, 0, 0, 0, 0, 0, 0,
+    0, 1, 2, 0, 0, 0, 0, 0,
+    3, 0, 0, 0, 0, 0, 0, 0,
+    0, 3, 0, 0, 0, 0, 0, 0,
+    1, 3, 0, 0, 0, 0, 0, 0,
+    0, 1, 3, 0, 0, 0, 0, 0,
+    2, 3, 0, 0, 0, 0, 0, 0,
+    0, 2, 3, 0, 0, 0, 0, 0,
+    1, 2, 3, 0, 0, 0, 0, 0,
+    0, 1, 2, 3, 0, 0, 0, 0,
+    4, 0, 0, 0, 0, 0, 0, 0,
+    0, 4, 0, 0, 0, 0, 0, 0,
+    1, 4, 0, 0, 0, 0, 0, 0,
+    0, 1, 4, 0, 0, 0, 0, 0,
+    2, 4, 0, 0, 0, 0, 0, 0,
+    0, 2, 4, 0, 0, 0, 0, 0,
+    1, 2, 4, 0, 0, 0, 0, 0,
+    0, 1, 2, 4, 0, 0, 0, 0,
+    3, 4, 0, 0, 0, 0, 0, 0,
+    0, 3, 4, 0, 0, 0, 0, 0,
+    1, 3, 4, 0, 0, 0, 0, 0,
+    0, 1, 3, 4, 0, 0, 0, 0,
+    2, 3, 4, 0, 0, 0, 0, 0,
+    0, 2, 3, 4, 0, 0, 0, 0,
+    1, 2, 3, 4, 0, 0, 0, 0,
+    0, 1, 2, 3, 4, 0, 0, 0,
+    5, 0, 0, 0, 0, 0, 0, 0,
+    0, 5, 0, 0, 0, 0, 0, 0,
+    1, 5, 0, 0, 0, 0, 0, 0,
+    0, 1, 5, 0, 0, 0, 0, 0,
+    2, 5, 0, 0, 0, 0, 0, 0,
+    0, 2, 5, 0, 0, 0, 0, 0,
+    1, 2, 5, 0, 0, 0, 0, 0,
+    0, 1, 2, 5, 0, 0, 0, 0,
+    3, 5, 0, 0, 0, 0, 0, 0,
+    0, 3, 5, 0, 0, 0, 0, 0,
+    1, 3, 5, 0, 0, 0, 0, 0,
+    0, 1, 3, 5, 0, 0, 0, 0,
+    2, 3, 5, 0, 0, 0, 0, 0,
+    0, 2, 3, 5, 0, 0, 0, 0,
+    1, 2, 3, 5, 0, 0, 0, 0,
+    0, 1, 2, 3, 5, 0, 0, 0,
+    4, 5, 0, 0, 0, 0, 0, 0,
+    0, 4, 5, 0, 0, 0, 0, 0,
+    1, 4, 5, 0, 0, 0, 0, 0,
+    0, 1, 4, 5, 0, 0, 0, 0,
+    2, 4, 5, 0, 0, 0, 0, 0,
+    0, 2, 4, 5, 0, 0, 0, 0,
+    1, 2, 4, 5, 0, 0, 0, 0,
+    0, 1, 2, 4, 5, 0, 0, 0,
+    3, 4, 5, 0, 0, 0, 0, 0,
+    0, 3, 4, 5, 0, 0, 0, 0,
+    1, 3, 4, 5, 0, 0, 0, 0,
+    0, 1, 3, 4, 5, 0, 0, 0,
+    2, 3, 4, 5, 0, 0, 0, 0,
+    0, 2, 3, 4, 5, 0, 0, 0,
+    1, 2, 3, 4, 5, 0, 0, 0,
+    0, 1, 2, 3, 4, 5, 0, 0,
+    6, 0, 0, 0, 0, 0, 0, 0,
+    0, 6, 0, 0, 0, 0, 0, 0,
+    1, 6, 0, 0, 0, 0, 0, 0,
+    0, 1, 6, 0, 0, 0, 0, 0,
+    2, 6, 0, 0, 0, 0, 0, 0,
+    0, 2, 6, 0, 0, 0, 0, 0,
+    1, 2, 6, 0, 0, 0, 0, 0,
+    0, 1, 2, 6, 0, 0, 0, 0,
+    3, 6, 0, 0, 0, 0, 0, 0,
+    0, 3, 6, 0, 0, 0, 0, 0,
+    1, 3, 6, 0, 0, 0, 0, 0,
+    0, 1, 3, 6, 0, 0, 0, 0,
+    2, 3, 6, 0, 0, 0, 0, 0,
+    0, 2, 3, 6, 0, 0, 0, 0,
+    1, 2, 3, 6, 0, 0, 0, 0,
+    0, 1, 2, 3, 6, 0, 0, 0,
+    4, 6, 0, 0, 0, 0, 0, 0,
+    0, 4, 6, 0, 0, 0, 0, 0,
+    1, 4, 6, 0, 0, 0, 0, 0,
+    0, 1, 4, 6, 0, 0, 0, 0,
+    2, 4, 6, 0, 0, 0, 0, 0,
+    0, 2, 4, 6, 0, 0, 0, 0,
+    1, 2, 4, 6, 0, 0, 0, 0,
+    0, 1, 2, 4, 6, 0, 0, 0,
+    3, 4, 6, 0, 0, 0, 0, 0,
+    0, 3, 4, 6, 0, 0, 0, 0,
+    1, 3, 4, 6, 0, 0, 0, 0,
+    0, 1, 3, 4, 6, 0, 0, 0,
+    2, 3, 4, 6, 0, 0, 0, 0,
+    0, 2, 3, 4, 6, 0, 0, 0,
+    1, 2, 3, 4, 6, 0, 0, 0,
+    0, 1, 2, 3, 4, 6, 0, 0,
+    5, 6, 0, 0, 0, 0, 0, 0,
+    0, 5, 6, 0, 0, 0, 0, 0,
+    1, 5, 6, 0, 0, 0, 0, 0,
+    0, 1, 5, 6, 0, 0, 0, 0,
+    2, 5, 6, 0, 0, 0, 0, 0,
+    0, 2, 5, 6, 0, 0, 0, 0,
+    1, 2, 5, 6, 0, 0, 0, 0,
+    0, 1, 2, 5, 6, 0, 0, 0,
+    3, 5, 6, 0, 0, 0, 0, 0,
+    0, 3, 5, 6, 0, 0, 0, 0,
+    1, 3, 5, 6, 0, 0, 0, 0,
+    0, 1, 3, 5, 6, 0, 0, 0,
+    2, 3, 5, 6, 0, 0, 0, 0,
+    0, 2, 3, 5, 6, 0, 0, 0,
+    1, 2, 3, 5, 6, 0, 0, 0,
+    0, 1, 2, 3, 5, 6, 0, 0,
+    4, 5, 6, 0, 0, 0, 0, 0,
+    0, 4, 5, 6, 0, 0, 0, 0,
+    1, 4, 5, 6, 0, 0, 0, 0,
+    0, 1, 4, 5, 6, 0, 0, 0,
+    2, 4, 5, 6, 0, 0, 0, 0,
+    0, 2, 4, 5, 6, 0, 0, 0,
+    1, 2, 4, 5, 6, 0, 0, 0,
+    0, 1, 2, 4, 5, 6, 0, 0,
+    3, 4, 5, 6, 0, 0, 0, 0,
+    0, 3, 4, 5, 6, 0, 0, 0,
+    1, 3, 4, 5, 6, 0, 0, 0,
+    0, 1, 3, 4, 5, 6, 0, 0,
+    2, 3, 4, 5, 6, 0, 0, 0,
+    0, 2, 3, 4, 5, 6, 0, 0,
+    1, 2, 3, 4, 5, 6, 0, 0,
+    0, 1, 2, 3, 4, 5, 6, 0,
+    7, 0, 0, 0, 0, 0, 0, 0,
+    0, 7, 0, 0, 0, 0, 0, 0,
+    1, 7, 0, 0, 0, 0, 0, 0,
+    0, 1, 7, 0, 0, 0, 0, 0,
+    2, 7, 0, 0, 0, 0, 0, 0,
+    0, 2, 7, 0, 0, 0, 0, 0,
+    1, 2, 7, 0, 0, 0, 0, 0,
+    0, 1, 2, 7, 0, 0, 0, 0,
+    3, 7, 0, 0, 0, 0, 0, 0,
+    0, 3, 7, 0, 0, 0, 0, 0,
+    1, 3, 7, 0, 0, 0, 0, 0,
+    0, 1, 3, 7, 0, 0, 0, 0,
+    2, 3, 7, 0, 0, 0, 0, 0,
+    0, 2, 3, 7, 0, 0, 0, 0,
+    1, 2, 3, 7, 0, 0, 0, 0,
+    0, 1, 2, 3, 7, 0, 0, 0,
+    4, 7, 0, 0, 0, 0, 0, 0,
+    0, 4, 7, 0, 0, 0, 0, 0,
+    1, 4, 7, 0, 0, 0, 0, 0,
+    0, 1, 4, 7, 0, 0, 0, 0,
+    2, 4, 7, 0, 0, 0, 0, 0,
+    0, 2, 4, 7, 0, 0, 0, 0,
+    1, 2, 4, 7, 0, 0, 0, 0,
+    0, 1, 2, 4, 7, 0, 0, 0,
+    3, 4, 7, 0, 0, 0, 0, 0,
+    0, 3, 4, 7, 0, 0, 0, 0,
+    1, 3, 4, 7, 0, 0, 0, 0,
+    0, 1, 3, 4, 7, 0, 0, 0,
+    2, 3, 4, 7, 0, 0, 0, 0,
+    0, 2, 3, 4, 7, 0, 0, 0,
+    1, 2, 3, 4, 7, 0, 0, 0,
+    0, 1, 2, 3, 4, 7, 0, 0,
+    5, 7, 0, 0, 0, 0, 0, 0,
+    0, 5, 7, 0, 0, 0, 0, 0,
+    1, 5, 7, 0, 0, 0, 0, 0,
+    0, 1, 5, 7, 0, 0, 0, 0,
+    2, 5, 7, 0, 0, 0, 0, 0,
+    0, 2, 5, 7, 0, 0, 0, 0,
+    1, 2, 5, 7, 0, 0, 0, 0,
+    0, 1, 2, 5, 7, 0, 0, 0,
+    3, 5, 7, 0, 0, 0, 0, 0,
+    0, 3, 5, 7, 0, 0, 0, 0,
+    1, 3, 5, 7, 0, 0, 0, 0,
+    0, 1, 3, 5, 7, 0, 0, 0,
+    2, 3, 5, 7, 0, 0, 0, 0,
+    0, 2, 3, 5, 7, 0, 0, 0,
+    1, 2, 3, 5, 7, 0, 0, 0,
+    0, 1, 2, 3, 5, 7, 0, 0,
+    4, 5, 7, 0, 0, 0, 0, 0,
+    0, 4, 5, 7, 0, 0, 0, 0,
+    1, 4, 5, 7, 0, 0, 0, 0,
+    0, 1, 4, 5, 7, 0, 0, 0,
+    2, 4, 5, 7, 0, 0, 0, 0,
+    0, 2, 4, 5, 7, 0, 0, 0,
+    1, 2, 4, 5, 7, 0, 0, 0,
+    0, 1, 2, 4, 5, 7, 0, 0,
+    3, 4, 5, 7, 0, 0, 0, 0,
+    0, 3, 4, 5, 7, 0, 0, 0,
+    1, 3, 4, 5, 7, 0, 0, 0,
+    0, 1, 3, 4, 5, 7, 0, 0,
+    2, 3, 4, 5, 7, 0, 0, 0,
+    0, 2, 3, 4, 5, 7, 0, 0,
+    1, 2, 3, 4, 5, 7, 0, 0,
+    0, 1, 2, 3, 4, 5, 7, 0,
+    6, 7, 0, 0, 0, 0, 0, 0,
+    0, 6, 7, 0, 0, 0, 0, 0,
+    1, 6, 7, 0, 0, 0, 0, 0,
+    0, 1, 6, 7, 0, 0, 0, 0,
+    2, 6, 7, 0, 0, 0, 0, 0,
+    0, 2, 6, 7, 0, 0, 0, 0,
+    1, 2, 6, 7, 0, 0, 0, 0,
+    0, 1, 2, 6, 7, 0, 0, 0,
+    3, 6, 7, 0, 0, 0, 0, 0,
+    0, 3, 6, 7, 0, 0, 0, 0,
+    1, 3, 6, 7, 0, 0, 0, 0,
+    0, 1, 3, 6, 7, 0, 0, 0,
+    2, 3, 6, 7, 0, 0, 0, 0,
+    0, 2, 3, 6, 7, 0, 0, 0,
+    1, 2, 3, 6, 7, 0, 0, 0,
+    0, 1, 2, 3, 6, 7, 0, 0,
+    4, 6, 7, 0, 0, 0, 0, 0,
+    0, 4, 6, 7, 0, 0, 0, 0,
+    1, 4, 6, 7, 0, 0, 0, 0,
+    0, 1, 4, 6, 7, 0, 0, 0,
+    2, 4, 6, 7, 0, 0, 0, 0,
+    0, 2, 4, 6, 7, 0, 0, 0,
+    1, 2, 4, 6, 7, 0, 0, 0,
+    0, 1, 2, 4, 6, 7, 0, 0,
+    3, 4, 6, 7, 0, 0, 0, 0,
+    0, 3, 4, 6, 7, 0, 0, 0,
+    1, 3, 4, 6, 7, 0, 0, 0,
+    0, 1, 3, 4, 6, 7, 0, 0,
+    2, 3, 4, 6, 7, 0, 0, 0,
+    0, 2, 3, 4, 6, 7, 0, 0,
+    1, 2, 3, 4, 6, 7, 0, 0,
+    0, 1, 2, 3, 4, 6, 7, 0,
+    5, 6, 7, 0, 0, 0, 0, 0,
+    0, 5, 6, 7, 0, 0, 0, 0,
+    1, 5, 6, 7, 0, 0, 0, 0,
+    0, 1, 5, 6, 7, 0, 0, 0,
+    2, 5, 6, 7, 0, 0, 0, 0,
+    0, 2, 5, 6, 7, 0, 0, 0,
+    1, 2, 5, 6, 7, 0, 0, 0,
+    0, 1, 2, 5, 6, 7, 0, 0,
+    3, 5, 6, 7, 0, 0, 0, 0,
+    0, 3, 5, 6, 7, 0, 0, 0,
+    1, 3, 5, 6, 7, 0, 0, 0,
+    0, 1, 3, 5, 6, 7, 0, 0,
+    2, 3, 5, 6, 7, 0, 0, 0,
+    0, 2, 3, 5, 6, 7, 0, 0,
+    1, 2, 3, 5, 6, 7, 0, 0,
+    0, 1, 2, 3, 5, 6, 7, 0,
+    4, 5, 6, 7, 0, 0, 0, 0,
+    0, 4, 5, 6, 7, 0, 0, 0,
+    1, 4, 5, 6, 7, 0, 0, 0,
+    0, 1, 4, 5, 6, 7, 0, 0,
+    2, 4, 5, 6, 7, 0, 0, 0,
+    0, 2, 4, 5, 6, 7, 0, 0,
+    1, 2, 4, 5, 6, 7, 0, 0,
+    0, 1, 2, 4, 5, 6, 7, 0,
+    3, 4, 5, 6, 7, 0, 0, 0,
+    0, 3, 4, 5, 6, 7, 0, 0,
+    1, 3, 4, 5, 6, 7, 0, 0,
+    0, 1, 3, 4, 5, 6, 7, 0,
+    2, 3, 4, 5, 6, 7, 0, 0,
+    0, 2, 3, 4, 5, 6, 7, 0,
+    1, 2, 3, 4, 5, 6, 7, 0,
+    0, 1, 2, 3, 4, 5, 6, 7
   };
 #endif
 
@@ -94,11 +333,11 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
   return 0; // Se ghost
 #endif
 
-  unsigned int highm = m & (~3);     // and clear them
-  uint8_t lowm = m & 3;              // take the lower bits
+  unsigned int highm = m & (~7);     // and clear them
+  uint8_t lowm = m & 7;              // take the lower bits
   
   unsigned int n = N;
-  uint8_t bmhighm =  0xF ^ (1 << lowm);
+  uint8_t bmhighm =  0xFF ^ (1 << lowm);
 
 #if defined(UNIFORM)
   *sticky_new = 0;
@@ -116,68 +355,85 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
   xlinklistlength = 0;
 #endif
 
-  __m128 npx = _mm_load1_ps(np);
-  __m128 npy = _mm_load1_ps(np + 1);
-  __m128 npz = _mm_load1_ps(np + 2);
-  __m128 opx = _mm_load1_ps(dots.x + m);
-  __m128 opy = _mm_load1_ps(dots.y + m);
-  __m128 opz = _mm_load1_ps(dots.z + m);
+  __m256 npx = _mm256_broadcast_ss(np);
+  __m256 npy = _mm256_broadcast_ss(np + 1);
+  __m256 npz = _mm256_broadcast_ss(np + 2);
+  __m256 opx = _mm256_broadcast_ss(dots.x + m);
+  __m256 opy = _mm256_broadcast_ss(dots.y + m);
+  __m256 opz = _mm256_broadcast_ss(dots.z + m);
 
-  for (int i = 0; i < n; i += 4) {
-    uint8_t bitmask = (i != highm ? 0xF : bmhighm);
+  for (int i = 0; i < n; i += 8) {
+    uint8_t bitmask = (i != highm ? 0xFF : bmhighm);
 
-    __m128 x = _mm_load_ps(dots.x + i);
-    __m128 y = _mm_load_ps(dots.y + i);
-    __m128 z = _mm_load_ps(dots.z + i);
+    __m256 x = _mm256_load_ps(dots.x + i);
+    __m256 y = _mm256_load_ps(dots.y + i);
+    __m256 z = _mm256_load_ps(dots.z + i);
 
-    __m128 distances_new = sse_square_dist(npx, npy, npz, x, y, z);
+    __m256 distances_new = avx_square_dist(npx, npy, npz, x, y, z);
 
 #if defined(HARDCORE)
-    uint8_t hardcore = _mm_movemask_ps(_mm_cmplt_ps(distances_new,comp_hc));
+    uint8_t hardcore = _mm256_movemask_ps(_mm256_cmp_ps(distances_new, comp_hc, _CMP_LT_OS));
 
     if (hardcore & bitmask)
       return false;
 #endif
 
 #if defined(UNIFORM) || defined(LOCALIZED)
-    __m128 distances_old = sse_square_dist(opx, opy, opz, x, y, z);
+    __m256 distances_old = sse_square_dist(opx, opy, opz, x, y, z);
     uint8_t stickyball;
 #endif
 #if defined(UNIFORM)
-    stickyball = _mm_movemask_ps(_mm_cmplt_ps(distances_new,comp_sb));
-    *sticky_new += msk_popcount_4(stickyball & bitmask);
-    stickyball = _mm_movemask_ps(_mm_cmplt_ps(distances_old,comp_sb));
-    *sticky_old += msk_popcount_4(stickyball & bitmask);
+    stickyball = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_sb, _CMP_LT_OS));
+    *sticky_new += msk_popcount_8(stickyball & bitmask);
+    stickyball = _mm256_movemask_ps(_mm256_cmp_ps(distances_old,comp_sb, _CMP_LT_OS));
+    *sticky_old += msk_popcount_8(stickyball & bitmask);
 #endif
 #if defined(LOCALIZED)
     if (topunctu) {
-      stickyball = _mm_movemask_ps(_mm_cmplt_ps(distances_old,comp_sp));
-      *locali_old += msk_popcount_4(stickyball & bitmask & locmask[i / 4]);
-      stickyball = _mm_movemask_ps(_mm_cmplt_ps(distances_new,comp_sp));
-      *locali_new += msk_popcount_4(stickyball & bitmask & locmask[i / 4]);
+      stickyball = _mm256_movemask_ps(_mm256_cmp_ps(distances_old,comp_sp, _CMP_LT_OS));
+      *locali_old += msk_popcount_8(stickyball & bitmask & locmask[i / 4]);
+      stickyball = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_sp, _CMP_LT_OS));
+      *locali_new += msk_popcount_8(stickyball & bitmask & locmask[i / 4]);
     }
 #endif
 #if defined(XLINK)
-    uint8_t xlinkhit = _mm_movemask_ps(_mm_cmple_ps(distances_new,comp_xl)) &
+    uint8_t xlinkhit = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_xl, _CMP_LT_OS)) &
       bitmask;
     if (unlikely(xlinkhit)) {
-      xlinklist[xlinklistlength] = i + hittable[4 * xlinkhit];
-      xlinklist[xlinklistlength + 1] = i + hittable[4 * xlinkhit + 1];
-      xlinklist[xlinklistlength + 2] = i + hittable[4 * xlinkhit + 2];
-      xlinklist[xlinklistlength + 3] = i + hittable[4 * xlinkhit + 3];
-      xlinklistlength += msk_popcount_4(xlinkhit);
+      // This generates shitty code because we are cvtepi8 to epi32
+      // in the AVX current standard (supported by my cluster)
+      // this cannot be done by intrinsics, not even cvtepi16 to epi32
+      // (which is in AVX2)
+      // future versions of AVX (2+) will allow for a rewrite using
+      // a couple of intrinsics, altough at that point we will work
+      // on groups of 16 links and so the hittable
+      // might get too big for a good cacheing and pheraps,
+      // will need to be retought
+      xlinklist[xlinklistlength] = i + hittable[8 * xlinkhit];
+      xlinklist[xlinklistlength + 1] = i + hittable[8 * xlinkhit + 1];
+      xlinklist[xlinklistlength + 2] = i + hittable[8 * xlinkhit + 2];
+      xlinklist[xlinklistlength + 3] = i + hittable[8 * xlinkhit + 3];
+      xlinklist[xlinklistlength + 4] = i + hittable[8 * xlinkhit + 4];
+      xlinklist[xlinklistlength + 5] = i + hittable[8 * xlinkhit + 5];
+      xlinklist[xlinklistlength + 6] = i + hittable[8 * xlinkhit + 6];
+      xlinklist[xlinklistlength + 7] = i + hittable[8 * xlinkhit + 7];
+      xlinklistlength += msk_popcount_8(xlinkhit);
     }
 #endif
 
 #if defined(TOPO)
-    uint8_t topohit = _mm_movemask_ps(_mm_cmple_ps(distances_new,comp_top)) &
+    uint8_t topohit = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_top, _CMP_LE_OS)) &
       bitmask;
     if (unlikely(topohit)) {
-      topolist[topolistlength] = i + hittable[4 * topohit];
-      topolist[topolistlength + 1] = i + hittable[4 * topohit + 1];
-      topolist[topolistlength + 2] = i + hittable[4 * topohit + 2];
-      topolist[topolistlength + 3] = i + hittable[4 * topohit + 3];
-      topolistlength += msk_popcount_4(topohit);
+      topolist[topolistlength] = i + hittable[8 * topohit];
+      topolist[topolistlength + 1] = i + hittable[8 * topohit + 1];
+      topolist[topolistlength + 2] = i + hittable[8 * topohit + 2];
+      topolist[topolistlength + 3] = i + hittable[8 * topohit + 3];
+      topolist[topolistlength + 4] = i + hittable[8 * topohit + 4];
+      topolist[topolistlength + 5] = i + hittable[8 * topohit + 5];
+      topolist[topolistlength + 6] = i + hittable[8 * topohit + 6];
+      topolist[topolistlength + 7] = i + hittable[8 * topohit + 7];
+      topolistlength += msk_popcount_8(topohit);
     }
 #endif
 
@@ -411,10 +667,10 @@ static inline bool connected_laplacian(int i, int j) {
 #define EXPLOOKUPFIRST 64
 
 #if defined(UNIFORM)
-__attribute__ ((aligned (16))) double uniform_exp_lookup[EXPLOOKUPSIZE];
+__attribute__ ((aligned (32))) double uniform_exp_lookup[EXPLOOKUPSIZE];
 #endif
 #if defined(LOCALIZED)
-__attribute__ ((aligned (16))) double localized_exp_lookup[EXPLOOKUPSIZE];
+__attribute__ ((aligned (32))) double localized_exp_lookup[EXPLOOKUPSIZE];
 #endif
 
 __attribute__ ((noinline))
@@ -725,24 +981,24 @@ void set_param_normalized(int enne, double big_sigma,
   D = 0.6 * (lambda);
 
 #ifdef HARDCORE
-  comp_hc = _mm_set1_ps(sigma*sigma);
+  comp_hc = _mm256_set1_ps(sigma*sigma);
 #endif
 #ifdef UNIFORM
-  comp_sb = _mm_set1_ps(alfa_uniform*alfa_uniform);
+  comp_sb = _mm256_set1_ps(alfa_uniform*alfa_uniform);
 #endif
 #ifdef LOCALIZED
-  comp_sp = _mm_set1_ps(alfa_localized*alfa_localized);
+  comp_sp = _mm256_set1_ps(alfa_localized*alfa_localized);
 #endif
 #ifdef TOPO
   //conservative topological cutoff 
-  comp_top = _mm_set1_ps(4.0f*lambda*4.0f*lambda);
+  comp_top = _mm256_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  double xlink_rad =  cbrt(1./ pow(128, 3)
+  double xlink_rad =  cbrt(1./ pow(64, 3)
 			   * (pow(lambda, 3) - pow(sigma, 3))
 			   + pow(sigma, 3));
 
-  comp_xl = _mm_set1_ps(xlink_rad * xlink_rad);
+  comp_xl = _mm256_set1_ps(xlink_rad * xlink_rad);
 #endif
 
 #ifdef FASTEXP
@@ -776,7 +1032,7 @@ static void allocate_memory() {
 #endif
   size_t lpl_indexalloc = (N + 4) * sizeof(int);
   size_t lplalloc = ODGRMAX * N * sizeof(int);
-  if(posix_memalign((void **)&buffer, 16,
+  if(posix_memalign((void **)&buffer, 32,
 		    dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
 		    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc)) {
     fprintf(stderr, "Error allocating memory\n");
@@ -1279,9 +1535,9 @@ void *simulazione(void *threadarg) {
 
   /* Prova */
   /**/
-  mc_time.CORRL_TIME = 2*458ULL * N * N;
+  mc_time.CORRL_TIME = 2*458ULL * N * N / 10;
   mc_time.RELAX_TIME = mc_time.CORRL_TIME / 2; // 200ULL
-  mc_time.STATISTIC  = 1;
+  mc_time.STATISTIC  = 256;
   /**/
 
   /* Simulations (for the Cacciuto stuff) */
@@ -1414,20 +1670,19 @@ void *simulazione(void *threadarg) {
 #else
               0);
 #endif
-
 #endif
+
+#if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED))
+    // Optimization, just finish
+    // but this is asking for troubles
+    if (lpl_index[N] >= ODGRMAX * N)
+      break;
+#endif
+
     }
 
-    unsigned int result = move_ele();
-    if (result) {
+    if (move_ele())
       accepted++;
-    }
-    
-    if (result == 256) {
-      printf("%llu\t%.10f\t%.10f\t%.10f\n",
-	      mc_time.DYN_STEPS - mc_time.t,
-	      dots.x[255], dots.y[255], dots.z[255]);
-    }
     total++;
 
 #if NUM_THREADS > 1

@@ -7,7 +7,7 @@ CXX=g++
 # EXTRA MEASUREMENTS INTERACTIONS CAN BE
 # -DGETXYZ -DGETENERGY -DGETPERF -DGETXLINK
 #
-INTERACTIONS=-DXLINK -DHARDCORE
+INTERACTIONS=-DXLINK
 MEASUREMENTS=-DGETXLINK
 
 #
@@ -18,8 +18,8 @@ MEASUREMENTS=-DGETXLINK
 DEBUG=-Ofast -fno-fast-math
 #DEBUG=-g -O0
 
-CXXFLAGS=${DEBUG} -std=c++0x -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
-CFLAGS=${DEBUG} -std=gnu99 -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
+CXXFLAGS=${DEBUG} -std=c++0x -mavx -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
+CFLAGS=${DEBUG} -std=gnu99 -mavx -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -I/opt/X11/include -L/opt/X11/lib
@@ -27,7 +27,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 CPUF32=-DHAVE_SSE2=1 -m32 -march=core2 -mtune=core2 -mfpmath=sse
 CPUF64NPC=-DHAVE_POPCNT=0 -DHAVE_SSE2=1 -m64 -march=opteron -mtune=opteron -fprefetch-loop-arrays
-CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=corei7 -mtune=corei7 -fprefetch-loop-arrays
+CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=haswell -mtune=haswell -fprefetch-loop-arrays
 CPUFGL=${GPUF64}
 
 GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/polymer.o build/sphere.o build/inputmain.o

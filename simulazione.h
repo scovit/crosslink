@@ -18,9 +18,9 @@ extern "C" {
   // number of elements
   int N;
   // elements
-  __attribute__ ((aligned (16))) void *restrict buffer;
+  __attribute__ ((aligned (32))) void *restrict buffer;
 
-  __attribute__ ((aligned (16))) struct {
+  __attribute__ ((aligned (32))) struct {
     float *x;
     float *y;
     float *z;
@@ -29,15 +29,15 @@ extern "C" {
   // link allocation out degree
 #define ODGRMAX 6
 
-  __attribute__ ((aligned (16))) int *restrict lpl;
-  __attribute__ ((aligned (16))) int *restrict lpl_index;
+  __attribute__ ((aligned (32))) int *restrict lpl;
+  __attribute__ ((aligned (32))) int *restrict lpl_index;
 #if ((NUM_THREADS > 1) && defined(XLINK))
-  __attribute__ ((aligned (16))) int *restrict crx;
-  __attribute__ ((aligned (16))) int *restrict crx_index;
+  __attribute__ ((aligned (32))) int *restrict crx;
+  __attribute__ ((aligned (32))) int *restrict crx_index;
 #endif
 
 #ifdef LOCALIZED
-  __attribute__ ((aligned (16))) uint8_t *restrict locmask;
+  __attribute__ ((aligned (32))) uint8_t *restrict locmask;
   int locnum;
 #endif
 
@@ -49,7 +49,7 @@ extern "C" {
     unsigned long long CORRL_TIME;
     int STATISTIC;
   };
-  __attribute__ ((aligned (16))) struct mc_time_t mc_time;
+  __attribute__ ((aligned (32))) struct mc_time_t mc_time;
 
   struct thread_data{
     int thread_id;
@@ -76,7 +76,7 @@ extern "C" {
     FILE *xlkfile;
 #endif
   };
-  __attribute__ ((aligned (16))) struct simufiles_t simufiles;
+  __attribute__ ((aligned (32))) struct simufiles_t simufiles;
 
   __attribute__ ((noinline)) void closefiles();
   __attribute__ ((noinline)) void flushfiles();
