@@ -15,8 +15,8 @@ MEASUREMENTS=-DGETXLINK
 # "-Ofast" (NO DEBUGGING) AND "-g -O0" (DEBUGGING)
 # "-DFASTEXP" is an experimental optimization
 # -ffast-math -funsafe-math-optimizations
-#DEBUG=-Ofast -fno-fast-math
-DEBUG=-g -O0
+DEBUG=-Ofast -fno-fast-math
+#DEBUG=-g -O0
 
 CXXFLAGS=${DEBUG} -std=c++0x -mavx -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
 CFLAGS=${DEBUG} -std=gnu99 -mavx -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}

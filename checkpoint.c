@@ -45,8 +45,6 @@ int prepare_checkpoint(unsigned int accepted,
   sigprocmask(SIG_BLOCK, &signal_set, NULL);
 #endif
 
-  fprintf(stderr, "here\n");
-
   void *dest = checkpoint;
   // Buffer
   memcpy(dest, buffer, buffer_size); dest += buffer_size;
@@ -65,6 +63,26 @@ int prepare_checkpoint(unsigned int accepted,
   sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 #endif
   return 0;
+}
+
+static
+void print_checkpointinfo(char *word, char *filename, char *checksum) {
+  time_t tstamp = time(NULL);
+
+  struct data_infofile info;
+  info.type = is_list_infofile;
+  info.list                 = malloc(sizeof(struct list_infofile));
+  info.list -> next         = malloc(sizeof(struct list_infofile));
+  info.list -> next -> next = malloc(sizeof(struct list_infofile));
+
+  info.list -> data.s                    = filename;
+  info.list -> next -> data.s            = checksum;
+  info.list -> next -> next -> data.time = tstamp;
+
+  info.list -> data.type = info.list -> next -> data.type = is_s_infofile;
+  info.list -> next -> next -> data.type = is_time_infofile;
+
+  append_infofile(infos, word, info);
 }
 
 // Before you should init_checkpoint
@@ -120,6 +138,8 @@ int load_checkpoint(const unsigned char* hash,
   *total = *(unsigned int *)source; source += sizeof(*total);
   *toprint = *(unsigned long long int *)source; source += sizeof(*toprint);
 
+  print_checkpointinfo("LOAD_CP", filename, checksum);
+
 #if NUM_THREADS > 1
   // Here too
 #else
@@ -146,23 +166,7 @@ int make_checkpoint() {
 
   bin2hex(checksum, hash, sizeof(hash));
 
-  // What time is it?
-  time_t tstamp = time(NULL);
-
-  struct data_infofile info;
-  info.type = is_list_infofile;
-  info.list                 = malloc(sizeof(struct list_infofile) * 3);
-  info.list -> next         = info.list + 1;
-  info.list -> next -> next = info.list + 2;
-
-  info.list -> data.s                    = filename;
-  info.list -> next -> data.s            = checksum;
-  info.list -> next -> next -> data.time = tstamp;
-
-  info.list -> data.type = info.list -> next -> data.type = is_s_infofile;
-  info.list -> next -> next -> data.type = is_time_infofile;
-
-  append_infofile(infos, "CHECKPOINT", info);
+  print_checkpointinfo("CHECKPOINT", filename, checksum);
 
   return 0;
 }

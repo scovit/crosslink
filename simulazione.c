@@ -1336,6 +1336,7 @@ char *out_filename(const char *outstring, const char *ext) {
   static int cur = 0;
 
   char *filename = filenames[cur++];
+  if (cur > 3) cur = 0;
   size_t lenght = strlen(ext) + strlen(outstring) + strlen(dir) + 1;
 
   if(lenght > MAXFILENAME) {
