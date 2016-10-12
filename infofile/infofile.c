@@ -60,9 +60,10 @@ struct data_infofile get_infofile(struct infofile *info, const char *what,
       curr = curr -> next;
     }
     n = i + n;
+    i = 0;
     curr = info -> content;
   }
-    
+
   while (curr) {
     if (!strcmp(curr -> what, what)) {
       if (i == n)

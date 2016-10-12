@@ -5,12 +5,12 @@
 #include <stdio.h>
 
 enum type_infofile {
-  is_notfound_infofile,
-  is_s_infofile,
-  is_g_infofile,
   is_d_infofile, is_u_infofile, is_llu_infofile,
+  is_g_infofile,
+  is_s_infofile,
   is_time_infofile,
-  is_list_infofile
+  is_list_infofile,
+  is_notfound_infofile
  };
 
 struct data_infofile {
