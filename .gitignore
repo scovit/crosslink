@@ -12,4 +12,6 @@ simu/tools/merr
 simu/tools/pc
 simu/tools/puntadiacency
 simu/tools/rho
-
+infofile/infotest
+build/*.c
+build/*.h

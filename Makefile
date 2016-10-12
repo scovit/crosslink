@@ -15,8 +15,8 @@ MEASUREMENTS=-DGETXLINK
 # "-Ofast" (NO DEBUGGING) AND "-g -O0" (DEBUGGING)
 # "-DFASTEXP" is an experimental optimization
 # -ffast-math -funsafe-math-optimizations
-DEBUG=-Ofast -fno-fast-math
-#DEBUG=-g -O0
+#DEBUG=-Ofast -fno-fast-math
+DEBUG=-g -O0
 
 CXXFLAGS=${DEBUG} -std=c++0x -mavx -Drestrict=__restrict__ -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
 CFLAGS=${DEBUG} -std=gnu99 -mavx -DDSFMT_MEXP=19937 -U_FORTIFY_SOURCE -fno-stack-protector ${INTERACTIONS} ${MEASUREMENTS}
@@ -25,37 +25,25 @@ ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -I/opt/X11/include -L/opt/X11/lib
 	CXXFLAGS += -I/opt/X11/include -L/opt/X11/lib
 endif
-CPUF32=-DHAVE_SSE2=1 -m32 -march=core2 -mtune=core2 -mfpmath=sse
-CPUF64NPC=-DHAVE_POPCNT=0 -DHAVE_SSE2=1 -m64 -march=opteron -mtune=opteron -fprefetch-loop-arrays
 CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=haswell -mtune=haswell -fprefetch-loop-arrays
 CPUFGL=${GPUF64}
 
 GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/polymer.o build/sphere.o build/inputmain.o
 GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 
-# all: nucleoid nucleoid.32 nucleoid.npc nucleoid.gl
-all: nucleoid nucleoid.npc nucleoid.gl
+all: nucleoid nucleoid.gl infofile/infotest
 
-nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o
-	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o -lm -lz
+nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o
+	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o -lm -lz -lcrypto
 
-nucleoid.32: build/simulazione.32.o build/main.32.o build/dSFMT.32.o build/hex.32.o
-	${CC} ${CFLAGS} ${CPUF32} -DNUM_THREADS=1 -o nucleoid.32 build/simulazione.32.o build/main.32.o build/dSFMT.32.o build/hex.32.o -lm -lz
+nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLFILES}
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLLIBS} -lm -lz -lX11 -lcrypto
 
-nucleoid.npc: build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o
-	${CC} ${CFLAGS} ${CPUF64NPC} -DNUM_THREADS=1 -o nucleoid.npc build/simulazione.npc.o build/main.o build/dSFMT.o build/hex.o -lm -lz
-
-nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o ${GLFILES}
-	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o ${GLLIBS} -lm -lz -lX11
+infofile/infotest: infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
+	${CC} ${CFLAGS} ${CPUF64} -o infofile/infotest infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
 
 build/simulazione.o: simulazione.c simulazione.h simprivate.h raytracing.h
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o build/simulazione.o -c simulazione.c
-
-build/simulazione.32.o: simulazione.c simulazione.h simprivate.h raytracing.h
-	${CC} ${CFLAGS} ${CPUF32} -DNUM_THREADS=1 -o build/simulazione.32.o -c simulazione.c
-
-build/simulazione.npc.o: simulazione.c simulazione.h simprivate.h raytracing.h
-	${CC} ${CFLAGS} ${CPUF64NPC} -DNUM_THREADS=1 -o build/simulazione.npc.o -c simulazione.c
 
 build/simulazione.gl.o: simulazione.c simulazione.h simprivate.h raytracing.h
 	${CC} ${CFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/simulazione.gl.o -c simulazione.c
@@ -63,29 +51,50 @@ build/simulazione.gl.o: simulazione.c simulazione.h simprivate.h raytracing.h
 build/main.o: main.c
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o build/main.o -c main.c
 
-build/main.32.o: main.c
-	${CC} ${CFLAGS} ${CPUF32} -DNUM_THREADS=1 -o build/main.32.o -c main.c
-
 build/main.gl.o: main.c
 	${CC} ${CFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/main.gl.o -c main.c
 
 build/dSFMT.o: dSFMT-src-2.2.1/dSFMT.c
 	${CC} ${CFLAGS} ${CPUF64} -O3 -fno-strict-aliasing -DNDEBUG -o build/dSFMT.o -c dSFMT-src-2.2.1/dSFMT.c
 
-build/dSFMT.32.o: dSFMT-src-2.2.1/dSFMT.c
-	${CC} ${CFLAGS} ${CPUF32} -O3 -fno-strict-aliasing -DNDEBUG -o build/dSFMT.32.o -c dSFMT-src-2.2.1/dSFMT.c
-
 build/dSFMT.gl.o: dSFMT-src-2.2.1/dSFMT.c
 	${CC} ${CFLAGS} ${CPUFGL} -O3 -fno-strict-aliasing -DNDEBUG -o build/dSFMT.gl.o -c dSFMT-src-2.2.1/dSFMT.c
 
-build/hex.o: hex.c
+build/hex.o: hex.c hex.h
 	${CC} ${CFLAGS} ${CPUF64} -o build/hex.o -c hex.c
 
-build/hex.32.o: hex.c
-	${CC} ${CFLAGS} ${CPUF32} -o build/hex.32.o -c hex.c
-
-build/hex.gl.o: hex.c
+build/hex.gl.o: hex.c hex.h
 	${CC} ${CFLAGS} ${CPUFGL} -o build/hex.gl.o -c hex.c
+
+build/checkpoint.o: checkpoint.c checkpoint.h
+	${CC} ${CFLAGS} ${CPUF64} -o build/checkpoint.o -c checkpoint.c
+
+build/checkpoint.gl.o: checkpoint.c checkpoint.h
+	${CC} ${CFLAGS} ${CPUFGL} -o build/checkpoint.gl.o -c checkpoint.c
+
+build/infofile.o: infofile/infofile.c infofile/infofile.h infofile/parse.h
+	${CC} ${CFLAGS} ${CPUF64} -o build/infofile.o -c infofile/infofile.c
+
+build/infofile.gl.o: infofile/infofile.c infofile/infofile.h infofile/parse.h
+	${CC} ${CFLAGS} ${CPUFGL} -o build/infofile.gl.o -c infofile/infofile.c
+
+build/parse.tab.gl.o: build/parse.tab.c build/parse.tab.h
+	${CC} ${CFLAGS} ${CPUFGL} -o build/parse.tab.gl.o -c build/parse.tab.c
+
+build/lex.yy.gl.o: build/lex.yy.c
+	${CC} ${CFLAGS} ${CPUFGL} -o build/lex.yy.gl.o -c build/lex.yy.c
+
+build/parse.tab.o: build/parse.tab.c build/parse.tab.h
+	${CC} ${CFLAGS} ${CPUF64} -o build/parse.tab.o -c build/parse.tab.c
+
+build/lex.yy.o: build/lex.yy.c build/parse.tab.h
+	${CC} ${CFLAGS} ${CPUF64} -o build/lex.yy.o -c build/lex.yy.c
+
+build/lex.yy.c: infofile/lex.l
+	flex -obuild/lex.yy.c infofile/lex.l
+
+build/%.tab.c build/%.tab.h: infofile/%.y
+	bison -d -b build/parse infofile/parse.y;
 
 build/glumain.o: 3d/glumain.cxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/glumain.o -c 3d/glumain.cxx
@@ -109,4 +118,4 @@ build/inputmain.o: 3d/inputmain.cxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/inputmain.o -c 3d/inputmain.cxx
 
 clean:
-	rm nucleoid nucleoid.32 nucleoid.npc nucleoid.gl build/*.o
+	rm nucleoid nucleoid.gl infofile/infotest build/*.o build/*.c build/*.h
