@@ -17,9 +17,11 @@
 #include <immintrin.h>
 #include <zlib.h>
 #include "dSFMT-src-2.2.1/dSFMT.h"
+#include "infofile/infofile.h"
 #include "simulazione.h"
 #include "simprivate.h"
 #include "hex.h"
+#include "checkpoint.h"
 #if defined(TOPO)
 #include "raytracing.h"
 #endif
@@ -914,31 +916,6 @@ void print_buffer(FILE *out) {
 }
 
 static __attribute__ ((noinline))
-void print_infos(int pN, char *pcnffile, char *plplfile,
-		 double psigma, double plambda, double pD,
-		 double palfa_uniform, double palfa_localized,
-		 double pbeta_uniform,  double pbeta_localized,
-		 double pconf_sqradius, double pxlink_conf,
-		 unsigned int seed,
-		 unsigned long long int pRELAX_TIME,
-		 unsigned long long int pCORRL_TIME,
-		 int pSTATISTIC, unsigned long long int pDYN_STEPS) {
-
-  time_t tstamp = time(NULL);
-  char *timestr = ctime(&tstamp);
-  *strchr(timestr,'\n') = '\0';
-
-  fprintf(simufiles.inffile, siminfostring,
-	  timestr,
-	  pN, pcnffile, plplfile, psigma, plambda, pD, 
-	  palfa_uniform, palfa_localized,
-	  pbeta_uniform, pbeta_localized,
-	  pconf_sqradius, pxlink_conf, seed,
-	  pRELAX_TIME, pCORRL_TIME, pSTATISTIC, pDYN_STEPS);
-  fflush(simufiles.inffile);
-}
-
-static __attribute__ ((noinline))
 int cmpint(const void *p1, const void *p2) {
   return *(int *)p1 - *(int *)p2;
 }
@@ -1032,9 +1009,10 @@ static void allocate_memory() {
 #endif
   size_t lpl_indexalloc = (N + 4) * sizeof(int);
   size_t lplalloc = ODGRMAX * N * sizeof(int);
+  buffer_size = dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
+    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc;
   if(posix_memalign((void **)&buffer, 32,
-		    dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
-		    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc)) {
+		    buffer_size)) {
     fprintf(stderr, "Error allocating memory\n");
     exit(-8);
   }
@@ -1249,8 +1227,8 @@ void set_configuration_null() {
 static __attribute__ ((noinline))
  unsigned long long int load_configuration(FILE *cnffile, 
 					   char *cnffilepath) {
-  // Attention: input should be gz compressed!!!
-  unsigned long long int filetime = 0ULL;
+  unsigned long long int filetime    = 0ULL;
+
   if (cnffile != NULL) {
     unsigned long long int oldfiletime = 0ULL;
     z_off_t curpos = ftell(cnffile);
@@ -1351,93 +1329,41 @@ void count_contacts() {
 }
 
 static __attribute__ ((noinline))
-unsigned int parse_info(char *filepath) {
-  FILE *tmpfile = fopen(filepath, "r");
-  unsigned int retval;
-  bool got_there = false;
-  char linebuffer[512];
-  while(fgets(linebuffer, sizeof(linebuffer), tmpfile)) {
-    if (!strncmp(linebuffer, "seed=", 5)) {
-      got_there = true;
-      if (sscanf(linebuffer + 5, "%u", &retval) != 1) {
-	fprintf(stderr, "Checkpoint, file format error %s\n", filepath);
-	exit(-3);
-      }
-    }
-  }
-  fclose(tmpfile);
+char *out_filename(const char *outstring, const char *ext) {
+#define MAXFILENAME 255
+  const char dir[] = "out/";
+  static char filenames[4][MAXFILENAME + 1];
+  static int cur = 0;
 
-  if (!got_there) {
-    fprintf(stderr, "Checkpoint, no seed there in %s\n",
-	    filepath);
-    exit(-3);
+  char *filename = filenames[cur++];
+  size_t lenght = strlen(ext) + strlen(outstring) + strlen(dir) + 1;
+
+  if(lenght > MAXFILENAME) {
+    fprintf(stderr, "Filename too long\n");
+    exit(-12);
   }
 
-  return retval;
+  strcpy(filename, dir); strcat(filename, outstring);
+  strcat(filename, ext);
+
+  return filename;
 }
 
 static __attribute__ ((noinline))
-void openfiles(char *outstring, const char *mode,
-	       unsigned int *seed) {
-  const char *dir = "out/";
-  const char *xyzext = ".xyz.dat.gz";
-  const char *accext = ".acc.dat";
-  const char *ctcext = ".ctc.dat";
-  const char *infext = ".info";
-  const char *rndext = ".rndstate";
-  const char *chkext = ".chk";
-  const char *xlkext = ".xlk";
-  int lenght = strlen(xyzext) + strlen(outstring) + strlen(dir) + 1;
-  char filename[lenght];
-  bool mode_is_a = !strcmp(mode, "a");
-
-  if (!mode_is_a)
-    (void)mkdir(dir, 0775);
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, xyzext);
-  simufiles.xyzfile = gzopen(filename, mode);
-
+void openfiles(const char *outstring,
+	       const char *mode) {
+  simufiles.xyzfile = gzopen(out_filename(outstring, ".xyz.dat.gz"), mode);
 #if defined(GETXLINK)
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, xlkext);
-  simufiles.xlkfile = fopen(filename, mode);
+  simufiles.xlkfile = fopen(out_filename(outstring, ".xlk"), mode);
 #endif
+  simufiles.accfile = fopen(out_filename(outstring, ".acc.dat"), mode);
+  simufiles.ctcfile = fopen(out_filename(outstring, ".ctc.dat"), mode);
 
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, accext);
-  simufiles.accfile = fopen(filename, mode);
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, ctcext);
-  simufiles.ctcfile = fopen(filename, mode);
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, infext);
-  if (mode_is_a) {
-    unsigned int temp = parse_info(filename);
-    if (seed)
-      *seed = temp;
+  if (simufiles.xyzfile == NULL || simufiles.xlkfile == NULL ||
+      simufiles.accfile == NULL || simufiles.ctcfile == NULL) {
+    fprintf(stderr, "Could not open files\n");
+    exit(-13);
   }
-  simufiles.inffile = fopen(filename, "w");
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, rndext);
-  if (mode_is_a) {
-    int error = get_saved_dsfmt(filename, &dsfmt);
-    if (error) {
-      fprintf(stderr, "Warning, was unable to open old seed, r=%d\n",
-	      error);
-    } 
-  }
-  simufiles.rndfile = fopen(filename, "w");
-
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, chkext);
-  if (mode_is_a)
-    simufiles.chkfile = fopen(filename, "r+");
-  else
-    simufiles.chkfile = fopen(filename, "w");
 }
 
 __attribute__ ((noinline))
@@ -1445,17 +1371,10 @@ void closefiles() {
   gzclose(simufiles.xyzfile);
   fclose(simufiles.accfile);
   fclose(simufiles.ctcfile);
-  fclose(simufiles.rndfile);
-  fclose(simufiles.chkfile);
 #if defined (GETXLINK)
   fclose(simufiles.xlkfile);
 #endif
-
-  time_t tstamp = time(NULL);
-  char *timestr = ctime(&tstamp);
-  *strchr(timestr,'\n') = '\0';
-  fprintf(simufiles.inffile, "ENDTIME=\"%s\"\n", timestr);
-  fclose(simufiles.inffile);
+  close_infofile(infos);
 }
 
 __attribute__ ((noinline))
@@ -1465,9 +1384,10 @@ void flushfiles() {
   gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
   fflush(simufiles.accfile);
   fflush(simufiles.ctcfile);
-  fflush(simufiles.rndfile);
-  fflush(simufiles.chkfile);
+#if defined (GETXLINK)
   fflush(simufiles.xlkfile);
+#endif
+  flush_infofile(infos);
 }
 
 void *simulazione(void *threadarg) {
@@ -1478,16 +1398,16 @@ void *simulazione(void *threadarg) {
   //
   // Initialization code, set global variables and files
   //
-  char *outstring = ((struct thread_data *) threadarg) -> argv[3];
-  char *cnffilepath = ((struct thread_data *) threadarg) -> argv[4];
-  char *lplfilepath = ((struct thread_data *) threadarg) -> argv[5];
-  char *locfilepath = ((struct thread_data *) threadarg) -> argv[6];
-  set_param_normalized(atoi(((struct thread_data *)threadarg) -> argv[2]),
+  char *outstring = ((struct thread_data *) threadarg) -> argv[2];
+  char *cnffilepath = ((struct thread_data *) threadarg) -> argv[3];
+  char *lplfilepath = ((struct thread_data *) threadarg) -> argv[4];
+  char *locfilepath = ((struct thread_data *) threadarg) -> argv[5];
+  set_param_normalized(atoi(((struct thread_data *)threadarg) -> argv[1]),
+		       atof(((struct thread_data *)threadarg) -> argv[6]),
 		       atof(((struct thread_data *)threadarg) -> argv[7]),
 		       atof(((struct thread_data *)threadarg) -> argv[8]),
 		       atof(((struct thread_data *)threadarg) -> argv[9]),
-		       atof(((struct thread_data *)threadarg) -> argv[10]),
-		       atof(((struct thread_data *)threadarg) -> argv[11]));
+		       atof(((struct thread_data *)threadarg) -> argv[10]));
 
   // initialize seed
   struct timeval t1;
@@ -1496,32 +1416,40 @@ void *simulazione(void *threadarg) {
   seed = t1.tv_usec * t1.tv_sec;
   dsfmt_init_gen_rand(&dsfmt, seed);
 
-  bool isresume = 
-    !strcmp(((struct thread_data *)threadarg) -> argv[1], "resume");
-
   allocate_memory();
 
   // put laplacian online from file or automatically
   load_laplacian(lplfilepath);
 
-  unsigned long long int resume_elapsed;
-  if (!isresume) {
-    if (!strcmp(cnffilepath, "RAND")) {
-      set_configuration_rand();
-    } else if (!strcmp(cnffilepath, "NULL")) {
-      set_configuration_null();
-    } else  {
-      FILE *cnffile = fopen(cnffilepath, "r");
-      load_configuration(cnffile, cnffilepath);
-    }
-    resume_elapsed = 0;
-    openfiles(outstring, "w", NULL);
-  } else {
-    openfiles(outstring, "a", &seed);
-    resume_elapsed = load_configuration(simufiles.chkfile, "Checkpoint");
+  // Set initial xyz configuration
+  if (!strcmp(cnffilepath, "RAND")) {
+    set_configuration_rand();
+  } else if (!strcmp(cnffilepath, "NULL")) {
+    set_configuration_null();
+  } else  {
+    FILE *cnffile = fopen(cnffilepath, "r");
+    load_configuration(cnffile, cnffilepath);
   }
 
-  write_dsfmt_file(&dsfmt, simufiles.rndfile);
+  // Check if info file is already there and parsable
+  // infos contains a file pointer as well as a list
+  // of infos compiled by append or open
+  infos = open_infofile(out_filename(outstring, ".info"));
+  struct list_infofile *checkpoint;
+  if (infos == NULL) {
+    infos = create_infofile(out_filename(outstring, ".info"));
+    openfiles(outstring, "w");
+    checkpoint = NULL;
+  } else {
+    seed = (get_infofile(infos, "SEED", 0)).u;
+    // take the last
+    checkpoint = (get_infofile(infos, "CHECKPOINT", -1)).list;
+    if (!checkpoint) {
+      fprintf(stderr, "Info file found, but no checkpoint was made\n");
+      exit(-4);
+    }
+    openfiles(outstring, "a");
+  }
 
   // put locally interacting beads from or automatically
   load_localized_stuff(locfilepath);
@@ -1567,35 +1495,58 @@ void *simulazione(void *threadarg) {
   mc_time.DYN_STEPS = mc_time.RELAX_TIME
     + mc_time.CORRL_TIME * mc_time.STATISTIC + 1;
 
+  // Print infos only we are not starting from checkpoint,
+  // otherwise check info
+  if (!checkpoint) {
 #if !defined(HARDCORE)
-  float sigma = NAN;
+    float sigma = NAN;
 #endif
 #if !defined(UNIFORM)
-  float alfa_uniform = NAN;
-  double beta_uniform = NAN;
+    float alfa_uniform = NAN;
+    double beta_uniform = NAN;
 #endif
 #if !defined(LOCALIZED)
-  float alfa_localized = NAN;
-  double beta_localized = NAN;
+    float alfa_localized = NAN;
+    double beta_localized = NAN;
 #endif
 #if !defined(CONFINEMENT)
-  float conf_sqradius = NAN;
+    float conf_sqradius = NAN;
 #endif
 #if !defined(XLINK)
-  double xlink_conc = NAN;
+    double xlink_conc = NAN;
 #endif
 
-  print_infos(N, cnffilepath, lplfilepath, sigma, lambda, D, 
-	      alfa_uniform, alfa_localized,
-	      beta_uniform, beta_localized, conf_sqradius,
-	      xlink_conc, seed, mc_time.RELAX_TIME,
-	      mc_time.CORRL_TIME,
-	      mc_time.STATISTIC, mc_time.DYN_STEPS);
+    struct data_infofile d;
+    d.time = time(NULL);         d.type = is_time_infofile; append_infofile(infos, "STARTTIME", d);
+    d.d    = N;                  d.type = is_d_infofile;    append_infofile(infos, "N", d);
+    d.s    = cnffilepath;        d.type = is_s_infofile; append_infofile(infos, "cfgfile", d);
+    d.s    = lplfilepath;        d.type = is_s_infofile; append_infofile(infos, "lplfile", d);
+    d.g    = sigma;              d.type = is_g_infofile; append_infofile(infos, "sigma", d);
+    d.g    = lambda;             d.type = is_g_infofile; append_infofile(infos, "lambda", d);
+    d.g    = D;                  d.type = is_g_infofile; append_infofile(infos, "D", d);
+    d.g    = alfa_uniform;       d.type = is_g_infofile; append_infofile(infos, "alfa_uninform", d);
+    d.g    = alfa_localized;     d.type = is_g_infofile; append_infofile(infos, "alfa_localized", d);
+    d.g    = beta_uniform;       d.type = is_g_infofile; append_infofile(infos, "beta_uniform", d);
+    d.g    = beta_localized;     d.type = is_g_infofile; append_infofile(infos, "beta_localized", d);
+    d.g    = conf_sqradius;      d.type = is_g_infofile; append_infofile(infos, "conf_sqradius", d);
+    d.g    = xlink_conc;         d.type = is_g_infofile; append_infofile(infos, "xlink_conc", d);
+    d.u    = seed;               d.type = is_u_infofile; append_infofile(infos, "SEED", d);
+    d.llu  = mc_time.RELAX_TIME; d.type = is_llu_infofile; append_infofile(infos, "RELAX_TIME", d);
+    d.llu  = mc_time.CORRL_TIME; d.type = is_llu_infofile; append_infofile(infos, "CORRL_TIME", d);
+    d.d    = mc_time.STATISTIC;  d.type = is_d_infofile; append_infofile(infos, "STATISTIC", d);
+    d.llu  = mc_time.DYN_STEPS;  d.type = is_llu_infofile; append_infofile(infos, "DYN_STEPS", d);
+    flush_infofile(infos);
+  } else {
+    if (       (get_infofile(infos, "N", 0)).d                != N             ||
+	strcmp((get_infofile(infos, "cfgfile", 0)).s          ,  cnffilepath)   ||
+	strcmp((get_infofile(infos, "lplfile", 0)).s          ,  lplfilepath)   ||
+	fabs(  (get_infofile(infos, "lambda", 0)).g - lambda) >  0.00001 * lambda ||
+	fabs(  (get_infofile(infos, "D", 0)).g - D)           >  0.00001 * D) {
 
-#if NUM_THREADS > 1
-  pthread_barrier_wait(&startbarr);
-  pthread_barrier_wait(&firstbarr);
-#endif
+      fputs("Checkpoint found, but some parameters does not match\n", stderr);
+      exit(-4);
+    }
+  }
 
 #if defined(GETPERF)
   displ = 0.0;
@@ -1608,10 +1559,26 @@ void *simulazione(void *threadarg) {
   unsigned int accepted = 0;
   unsigned int total = 0;
 
-  mc_time.t = mc_time.DYN_STEPS - resume_elapsed;
+  mc_time.t = mc_time.DYN_STEPS;
 
   unsigned long long int toprint = mc_time.t -
     (mc_time.RELAX_TIME + mc_time.CORRL_TIME);
+
+  // Checkpoint initialization
+  init_checkpoint(out_filename(outstring, ".checkpoint"),
+		  accepted, total, toprint);
+
+  if (checkpoint) {
+    load_checkpoint((checkpoint -> next -> data).s,
+		    &accepted,
+		    &total,
+		    &toprint);
+  }
+
+#if NUM_THREADS > 1
+  pthread_barrier_wait(&startbarr);
+  pthread_barrier_wait(&firstbarr);
+#endif
 
   for ( ; mc_time.t != 0; mc_time.t-- ) {
 #if NUM_THREADS > 1
@@ -1623,8 +1590,7 @@ void *simulazione(void *threadarg) {
     if ( unlikely(mc_time.t == toprint) ) {
       toprint -= mc_time.CORRL_TIME;
 
-      rewind(simufiles.rndfile);
-      write_dsfmt_file(&dsfmt, simufiles.rndfile);
+      prepare_checkpoint(accepted, total, toprint);
 
 #if !defined(CONFINEMENT)
       recenter();
@@ -1666,17 +1632,18 @@ void *simulazione(void *threadarg) {
 	      0,
 #endif
 #ifdef LOCALIZED
-	      contacts_loc);
+	      contacts_loc
 #else
-              0);
+              0
 #endif
+	      );
 #endif
 
 #if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED))
-    // Optimization, just finish
-    // but this is asking for troubles
-    if (lpl_index[N] >= ODGRMAX * N)
-      break;
+      // Optimization, just finish
+      // but this is asking for troubles
+      if (lpl_index[N] >= ODGRMAX * N)
+	break;
 #endif
 
     }
@@ -1691,7 +1658,11 @@ void *simulazione(void *threadarg) {
 
   }
 
-  closefiles();
+  {
+    struct data_infofile d;
+    d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "ENDTIME", d);
+  }
+  flushfiles();
 
   return NULL;
 }

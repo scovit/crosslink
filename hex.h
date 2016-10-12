@@ -1,9 +1,9 @@
 #ifndef HEX_H
 #define HEX_H
 
-#include "dSFMT-src-2.2.1/dSFMT.h"
+#include <stddef.h>
 
-int get_saved_dsfmt(const char*filename, dsfmt_t *dsf);
-void write_dsfmt_file(dsfmt_t *dsf, FILE *towhere);
+void bin2hex(char *dest, const void *source, const size_t n);
+int hex2bin(void *dest, const char *source);
 
 #endif

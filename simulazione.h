@@ -14,10 +14,19 @@ extern "C" {
 #include <stdbool.h>
 #include <zlib.h>
 #endif
+#include "dSFMT-src-2.2.1/dSFMT.h"
+#include "infofile/infofile.h"
+
+  // RNG state
+  dsfmt_t dsfmt;
+
+  // info file
+  struct infofile *infos;
 
   // number of elements
   int N;
   // elements
+  size_t buffer_size;
   __attribute__ ((aligned (32))) void *restrict buffer;
 
   __attribute__ ((aligned (32))) struct {
@@ -67,11 +76,8 @@ extern "C" {
     gzFile xyzfile;
     FILE *accfile;
     FILE *ctcfile;
-    FILE *inffile;
     FILE *lplfile;
     FILE *locfile;
-    FILE *rndfile;
-    FILE *chkfile;
 #if defined(GETXLINK) 
     FILE *xlkfile;
 #endif

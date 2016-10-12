@@ -11,27 +11,24 @@
 #include <errno.h>
 #include <signal.h>
 #include "simulazione.h"
+#include "checkpoint.h"
 #include "hex.h"
 
 
 struct thread_data thread_data_array[NUM_THREADS];
 
 static void usage(int argc, char *argv[]) {
-  printf ("Usage: %s { start | resume } N outstring inconf.gz inlpl inloc "
+  printf ("Usage: %s N outstring inconf.gz inlpl inloc "
 	  "big_sigma beta_uniform beta_localized conf_volume xlink_conc\n"
 	  "\n"
-	  "Suggested parameters: start 192 ciao RAND NULL NULL 0.05 0 0 1.0 1e-2\n"
+	  "Suggested parameters: 192 ciao RAND NULL NULL 0.05 0 0 1.0 1e-2\n"
 	  "\n",
 	  argv[0]);
   exit (-1);
 }
 
-static int error_arguments(int argc, char *argv[]) {
-  return (argc < 2) || !((!strcmp(argv[1], "start") && (argc == 12)) ||
-			 (!strcmp(argv[1], "resume") && (argc == 12)));
-}
-
-void sigusr1_handler(int sig) {
+// Check the status of the thing and flush files
+void sigusr2_handler(int sig) {
   fprintf(stderr,
 	  "TOTAL STEPS: %llu\n"
 	  "STEPS DONE:  %llu\n"
@@ -40,11 +37,16 @@ void sigusr1_handler(int sig) {
   flushfiles();
 }
 
-void sigusr2_handler(int sig) {
-  rewind(simufiles.chkfile);
-  ftruncate(fileno(simufiles.chkfile), 0);
-  print_buffer(simufiles.chkfile);
-  flushfiles();
+//
+// Checkpoint the thing and exit
+//
+void sigusr1_handler(int sig) {
+  make_checkpoint();
+
+  fflush(stderr);
+  fflush(stdout);
+  closefiles();
+  exit(99);
 }
 
 void sigterm_handler(int sig) {
@@ -52,10 +54,19 @@ void sigterm_handler(int sig) {
   fflush(stderr);
   fflush(stdout);
   closefiles();
-  exit(143);
+  exit(144);
 }
 
 static void install_sighandlers() {
+  // Block USR1, unblocked in simulation code
+#if NUM_THREADS > 1
+  // Something smart should be there
+#else
+  sigset_t signal_set;
+  sigemptyset(&signal_set); sigaddset(&signal_set, SIGUSR1);
+  sigprocmask(SIG_BLOCK, &signal_set, NULL);
+#endif
+
   struct sigaction sausr1;
   sausr1.sa_handler = sigusr1_handler;
   sausr1.sa_flags = 0; // or SA_RESTART
@@ -89,7 +100,7 @@ static void install_sighandlers() {
 
 int main (int argc, char **argv) {
 
-  if (error_arguments(argc, argv))
+  if (argc != 11)
     usage(argc, argv);
 
   // install the sigusr signal
@@ -166,6 +177,9 @@ int main (int argc, char **argv) {
   pthread_exit(NULL);
 #endif
 
+  fflush(stderr);
+  fflush(stdout);
+  closefiles();
   return 0;
 
 }

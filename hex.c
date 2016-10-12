@@ -1,10 +1,3 @@
-
-// This is partially copied from Linus Torvalds GIT distribution
-// Not that this is a specifically original piece of code
-// but all the best to him for his very usefull operating
-// system Linux and his equally usefull distributed content
-// managament system Git
-
 #include "hex.h"
 
 static const signed char hexval[256] = {
@@ -42,63 +35,36 @@ static const signed char hexval[256] = {
   -1, -1, -1, -1, -1, -1, -1, -1,		/* f8-ff */
 };
 
-int get_dsfmt_hex(const char *hex, dsfmt_t *dsfmtp)
-{
-  int i;
-  unsigned char *dsf = (unsigned char *)dsfmtp;
-  for (i = 0; i < sizeof(dsfmt_t); i++) {
-    unsigned int val;
-    /*
-     * hex[1]=='\0' is caught when val is checked below,
-     * but if hex[0] is NUL we have to avoid reading
-     * past the end of the string:
-     */
-
-    if (!hex[0])
-      return -1;
-    val = (hexval[hex[0]] << 4) | hexval[hex[1]];
-    if (val & ~0xff)
-      return -1;
-    *dsf++ = val;
-    hex += 2;
-  }
-  return 0;
-}
-
-char *dsfmt_to_hex(const dsfmt_t *dsfmtp)
-{
-  static int bufno;
-  static char hexbuffer[4][2*sizeof(dsfmt_t) + 1];
+// Dest should have 2*n + 1 space
+void bin2hex(char *dest, const void *source, const size_t n) {
   static const char hex[] = "0123456789abcdef";
-  unsigned char *dsf = (unsigned char *)dsfmtp;
-  char *buffer = hexbuffer[3 & ++bufno], *buf = buffer;
-  int i;
+  char *src = (unsigned char *)source;
 
-  for (i = 0; i < sizeof(dsfmt_t); i++) {
-    unsigned int val = *dsf++;
-    *buf++ = hex[val >> 4];
-    *buf++ = hex[val & 0xf];
+  for (int i = 0; i < n; i++) {
+    unsigned char val = *src++;
+    *dest++ = hex[val >> 4];
+    *dest++ = hex[val & 0xf];
   }
-  *buf = '\0';
-
-  return buffer;
+  *dest = '\0';
 }
 
-int get_saved_dsfmt(const char*filename, dsfmt_t *dsf) {
-  FILE *temp = fopen(filename, "r");
-  int retval = !(temp);
-  if (temp) {
-    char buf[2*sizeof(dsfmt_t)+1];
-    fgets(buf, 2*sizeof(dsfmt_t) + 1, temp);
-    retval = get_dsfmt_hex(buf, dsf);
-    fclose(temp);
-  }
-
-  return retval;
+static inline int hex2chr(const char *s)
+{
+  int val = hexval[s[0]];
+  return (val < 0) ? val : (val << 4) | hexval[s[1]];
 }
 
-void write_dsfmt_file(dsfmt_t *dsf, FILE *towhere) {
-  char *buf = dsfmt_to_hex(dsf);
-  fputs(buf, towhere);
-  putc('\n', towhere);
+// Dest should have strlen(source)/2 space
+int hex2bin(void *dest, const char *source) {
+  char *dst = (char *)dest;
+
+  while (*source != '\0') {
+    char val = hex2chr(source);
+    if (val < 0)
+      return -1;
+    *dst++ = val;
+    source += 2;
+  }
+
+  return 0;
 }

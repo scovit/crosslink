@@ -2,8 +2,6 @@
 #ifndef DEF_SIMPRIVATE_H
 #define DEF_SIMPRIVATE_H
 
-static dsfmt_t dsfmt;
-
 #define unlikely(expr) __builtin_expect(!!(expr), 0)
 #define likely(expr) __builtin_expect(!!(expr), 1)
 
@@ -78,26 +76,5 @@ static int *restrict xlinklist;
 // displacement
 static float displ;
 #endif
-
-static const char *siminfostring = 
-  "# infos about the simulation\n"
-  "STARTTIME=\"%s\"\n"
-  "N=%d\n"
-  "cfgfile=\"%s\"\n"
-  "lplfile=\"%s\"\n"
-  "sigma=%g\n"
-  "lambda=%g\n"
-  "D=%g\n"
-  "alfa_uniform=%g\n"
-  "alfa_localized=%g\n"
-  "beta_uniform=%g\n"
-  "beta_localized=%g\n"
-  "conf_sqradius=%g\n"
-  "xlink_conc=%g\n"
-  "seed=%u\n"
-  "RELAX_TIME=%llu\n"
-  "CORRL_TIME=%llu\n"
-  "STATISTIC=%d\n"
-  "DYN_STEPS=%llu\n";
 
 #endif
