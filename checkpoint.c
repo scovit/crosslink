@@ -65,26 +65,6 @@ int prepare_checkpoint(unsigned int accepted,
   return 0;
 }
 
-static
-void print_checkpointinfo(char *word, char *filename, char *checksum) {
-  time_t tstamp = time(NULL);
-
-  struct data_infofile info;
-  info.type = is_list_infofile;
-  info.list                 = malloc(sizeof(struct list_infofile));
-  info.list -> next         = malloc(sizeof(struct list_infofile));
-  info.list -> next -> next = malloc(sizeof(struct list_infofile));
-
-  info.list -> data.s                    = filename;
-  info.list -> next -> data.s            = checksum;
-  info.list -> next -> next -> data.time = tstamp;
-
-  info.list -> data.type = info.list -> next -> data.type = is_s_infofile;
-  info.list -> next -> next -> data.type = is_time_infofile;
-
-  append_infofile(infos, word, info);
-}
-
 // Before you should init_checkpoint
 int load_checkpoint(const unsigned char* hash,
 		    unsigned int *accepted,
@@ -138,7 +118,7 @@ int load_checkpoint(const unsigned char* hash,
   *total = *(unsigned int *)source; source += sizeof(*total);
   *toprint = *(unsigned long long int *)source; source += sizeof(*toprint);
 
-  print_checkpointinfo("LOAD_CP", filename, checksum);
+  struct data_infofile d; d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "RESUME", d);
 
 #if NUM_THREADS > 1
   // Here too
@@ -146,6 +126,26 @@ int load_checkpoint(const unsigned char* hash,
   sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 #endif
   return 0;
+}
+
+static
+void print_checkpointinfo(char *word, char *filename, char *checksum) {
+  time_t tstamp = time(NULL);
+
+  struct data_infofile info;
+  info.type = is_list_infofile;
+  info.list                 = malloc(sizeof(struct list_infofile));
+  info.list -> next         = malloc(sizeof(struct list_infofile));
+  info.list -> next -> next = malloc(sizeof(struct list_infofile));
+
+  info.list -> data.s                    = filename;
+  info.list -> next -> data.s            = checksum;
+  info.list -> next -> next -> data.time = tstamp;
+
+  info.list -> data.type = info.list -> next -> data.type = is_s_infofile;
+  info.list -> next -> next -> data.type = is_time_infofile;
+
+  append_infofile(infos, word, info);
 }
 
 int make_checkpoint() {
