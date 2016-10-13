@@ -42,10 +42,10 @@ nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.g
 infofile/infotest: infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
 	${CC} ${CFLAGS} ${CPUF64} -o infofile/infotest infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
 
-build/simulazione.o: simulazione.c simulazione.h simprivate.h raytracing.h
+build/simulazione.o: simulazione.c simulazione.h simprivate.h raytracing.h hitmap.h
 	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o build/simulazione.o -c simulazione.c
 
-build/simulazione.gl.o: simulazione.c simulazione.h simprivate.h raytracing.h
+build/simulazione.gl.o: simulazione.c simulazione.h simprivate.h raytracing.h hitmap.h
 	${CC} ${CFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/simulazione.gl.o -c simulazione.c
 
 build/main.o: main.c
