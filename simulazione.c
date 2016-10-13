@@ -1348,6 +1348,7 @@ void *simulazione(void *threadarg) {
 
   if (checkpoint) {
     load_checkpoint((checkpoint -> next -> data).s, &toprint);
+    count_contacts();
   }
 
 #if NUM_THREADS > 1
