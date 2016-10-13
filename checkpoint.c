@@ -33,9 +33,7 @@ static char *filename;
 //
 
 // First time you should init_checkpoint
-int prepare_checkpoint(unsigned int accepted,
-		       unsigned int total,
-		       unsigned long long int toprint) {
+int prepare_checkpoint(unsigned long long int toprint) {
   // block SIGUSR1 signal
 #if NUM_THREADS > 1
   // Something smart should be there
@@ -53,9 +51,7 @@ int prepare_checkpoint(unsigned int accepted,
   // Random state
   memcpy(dest, &dsfmt, sizeof(dsfmt_t)); dest += sizeof(dsfmt_t);
   // Local variables
-  *(unsigned int *)dest = accepted; dest += sizeof(accepted);
-  *(unsigned int *)dest = total; dest += sizeof(total);
-  *(unsigned long long int *)dest = toprint; dest += sizeof(toprint);
+  *(unsigned long long int *)dest = toprint;
 
 #if NUM_THREADS > 1
   // Here too
@@ -67,8 +63,6 @@ int prepare_checkpoint(unsigned int accepted,
 
 // Before you should init_checkpoint
 int load_checkpoint(const unsigned char* hash,
-		    unsigned int *accepted,
-		    unsigned int *total,
 		    unsigned long long int *toprint) {
   // block SIGUSR1 signal
 #if NUM_THREADS > 1
@@ -114,9 +108,7 @@ int load_checkpoint(const unsigned char* hash,
   // Random state
   memcpy(&dsfmt, source, sizeof(dsfmt_t)); source += sizeof(dsfmt_t);
   // Local variables
-  *accepted = *(unsigned int *)source; source += sizeof(*accepted);
-  *total = *(unsigned int *)source; source += sizeof(*total);
-  *toprint = *(unsigned long long int *)source; source += sizeof(*toprint);
+  *toprint = *(unsigned long long int *)source;
 
   struct data_infofile d; d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "RESUME", d);
 
@@ -172,8 +164,6 @@ int make_checkpoint() {
 }
 
 int init_checkpoint(const char *fname,
-		    unsigned int accepted,
-		    unsigned int total,
 		    unsigned long long int toprint) {
 
   filename = malloc(sizeof(char) * (strlen(fname) + 1));
@@ -187,7 +177,7 @@ int init_checkpoint(const char *fname,
     // Random state
     sizeof(dsfmt_t) +
     // Local variables
-    sizeof(accepted) + sizeof(total) + sizeof(toprint)
+    sizeof(toprint)
     // 
     ;
   if(posix_memalign((void **)&checkpoint, 32,
@@ -195,7 +185,7 @@ int init_checkpoint(const char *fname,
     fprintf(stderr, "Error allocating memory for checkpointing\n");
     exit(-8);
   }
-  prepare_checkpoint(accepted, total, toprint);
+  prepare_checkpoint(toprint);
   // Activate checkpoint signal
 #if NUM_THREADS > 1
   // Something smart should be there

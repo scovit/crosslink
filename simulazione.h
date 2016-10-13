@@ -5,14 +5,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#if defined(GETXYZ)
 #include <zlib.h>
+#endif
 extern "C" {
 #else
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#if defined(GETXYZ)
 #include <zlib.h>
+#endif
 #endif
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "infofile/infofile.h"
@@ -73,13 +77,17 @@ extern "C" {
 #endif
 
   struct simufiles_t {
-    gzFile xyzfile;
+#if defined(GETPERF)
     FILE *accfile;
+#endif
+#if defined(GETENERGY)
     FILE *ctcfile;
-    FILE *lplfile;
-    FILE *locfile;
+#endif
 #if defined(GETXLINK) 
     FILE *xlkfile;
+#endif
+#if defined(GETXYZ)
+    gzFile xyzfile;
 #endif
   };
   __attribute__ ((aligned (32))) struct simufiles_t simufiles;

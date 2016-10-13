@@ -15,7 +15,9 @@
 #include <math.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
+#if defined(GETXYZ)
 #include <zlib.h>
+#endif
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "infofile/infofile.h"
 #include "simulazione.h"
@@ -640,12 +642,14 @@ static inline void recenter(void) {
   }
 }
 
+#if defined(GETXYZ)
 static inline void print_buffer_gz(gzFile out) {
   unsigned long long int time = mc_time.DYN_STEPS - mc_time.t;
   for (unsigned int i = 0; i < N; i++)
     gzprintf(out, "%llu\t%.10f\t%.10f\t%.10f\n", time,
 	     dots.x[i], dots.y[i], dots.z[i]);
 }
+#endif
 
 void print_buffer(FILE *out) {
   unsigned long long int time = mc_time.DYN_STEPS - mc_time.t;
@@ -808,7 +812,8 @@ void set_laplacian_null() {
 
 static __attribute__ ((noinline))
 void load_laplacian(char *lplfilepath) {
-  if ((simufiles.lplfile = fopen(lplfilepath, "r")) == NULL) {
+  FILE *lplfile = fopen(lplfilepath, "r");
+  if (lplfile == NULL) {
     if (strcmp(lplfilepath, "NULL")) {
       fprintf(stderr, "Warning: file %s not found and not NULL\n",
 	      lplfilepath);
@@ -820,7 +825,7 @@ void load_laplacian(char *lplfilepath) {
     lpl_index[0] = 0;
     for (int i = 0; i < N; i++) {
       int nlinks;
-      if (fscanf(simufiles.lplfile, "%d", &nlinks) != 1) {
+      if (fscanf(lplfile, "%d", &nlinks) != 1) {
 	fprintf(stderr, "File format error %s\n", lplfilepath);
 	exit(-3);
       }
@@ -830,7 +835,7 @@ void load_laplacian(char *lplfilepath) {
 	exit(-4);
       }
       for (int links = nlinks; links > 0; links--) {
-	if (fscanf(simufiles.lplfile, "%d",
+	if (fscanf(lplfile, "%d",
 		   lpl + lpl_index[i] + nlinks - links) != 1) {
 	  fprintf(stderr, "File format error %s\n", lplfilepath);
 	  exit(-3);
@@ -848,7 +853,7 @@ void load_laplacian(char *lplfilepath) {
       qsort(lpl + lpl_index[i], nlinks,
 	    sizeof(int), cmpint);
     }
-    fclose(simufiles.lplfile);
+    fclose(lplfile);
   }
 }
 
@@ -970,8 +975,8 @@ static __attribute__ ((noinline))
 
   if (cnffile != NULL) {
     unsigned long long int oldfiletime = 0ULL;
-    z_off_t curpos = ftell(cnffile);
-    z_off_t startpos = curpos;
+    long curpos = ftell(cnffile);
+    long startpos = curpos;
     char linebuffer[512];
     // here it finds the last iteration
     while(fgets(linebuffer, sizeof(linebuffer), cnffile)) {
@@ -1011,7 +1016,8 @@ void load_localized_stuff(char *locfilepath) {
     locmask[i / 4] = 0;
   locnum = 0;
 
-  if ((simufiles.locfile = fopen(locfilepath, "r")) == NULL) {
+  FILE *locfile = fopen(locfilepath, "r");
+  if (locfile == NULL) {
     // no localized interaction
     if (strcmp(locfilepath, "NULL")) {
       fprintf(stderr, "Warning: file %s not found and not NULL\n",
@@ -1021,14 +1027,14 @@ void load_localized_stuff(char *locfilepath) {
   } else {
     // load localized interaction from file
     unsigned int interagentlink;
-    while(fscanf(simufiles.locfile, "%d", &interagentlink) == 1)
+    while(fscanf(locfile, "%d", &interagentlink) == 1)
       if (interagentlink < N)
 	if (!is_loc_interacting(interagentlink)) {
 	    locmask[interagentlink/4] |= (1 << (interagentlink & 3));
 	    locnum++;
 	  }
 
-    fclose(simufiles.locfile);
+    fclose(locfile);
   } 
 #endif
 }
@@ -1092,15 +1098,34 @@ char *out_filename(const char *outstring, const char *ext) {
 static __attribute__ ((noinline))
 void openfiles(const char *outstring,
 	       const char *mode) {
+#if defined(GETXYZ)
   simufiles.xyzfile = gzopen(out_filename(outstring, ".xyz.dat.gz"), mode);
+#endif
 #if defined(GETXLINK)
   simufiles.xlkfile = fopen(out_filename(outstring, ".xlk"), mode);
 #endif
+#if defined(GETPERF)
   simufiles.accfile = fopen(out_filename(outstring, ".acc.dat"), mode);
+#endif
+#if defined(GETENERGY)
   simufiles.ctcfile = fopen(out_filename(outstring, ".ctc.dat"), mode);
+#endif
 
-  if (simufiles.xyzfile == NULL || simufiles.xlkfile == NULL ||
-      simufiles.accfile == NULL || simufiles.ctcfile == NULL) {
+  if (
+#if defined(GETXYZ)
+      simufiles.xyzfile == NULL ||
+#endif
+#if defined(GETXLINK)
+      simufiles.xlkfile == NULL ||
+#endif
+#if defined(GETENERGY)
+      simufiles.ctcfile == NULL ||
+#endif
+#if defined(GETPERF)
+      simufiles.accfile == NULL ||
+#endif
+      0
+      ) {
     fprintf(stderr, "Could not open files\n");
     exit(-13);
   }
@@ -1108,9 +1133,15 @@ void openfiles(const char *outstring,
 
 __attribute__ ((noinline))
 void closefiles() {
+#if defined(GETXYZ)
   gzclose(simufiles.xyzfile);
+#endif
+#if defined(GETPERF)
   fclose(simufiles.accfile);
+#endif
+#if defined(GETENERGY)
   fclose(simufiles.ctcfile);
+#endif
 #if defined (GETXLINK)
   fclose(simufiles.xlkfile);
 #endif
@@ -1121,9 +1152,15 @@ __attribute__ ((noinline))
 void flushfiles() {
   fflush(stderr);
   fflush(stdout);
+#if defined(GETXYZ)
   gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
+#endif
+#if defined(GETPERF)
   fflush(simufiles.accfile);
+#endif
+#if defined(GETENERGY)
   fflush(simufiles.ctcfile);
+#endif
 #if defined (GETXLINK)
   fflush(simufiles.xlkfile);
 #endif
@@ -1296,8 +1333,10 @@ void *simulazione(void *threadarg) {
   gettimeofday(then, NULL);
 #endif
 
+#if defined(GETPERF)
   unsigned int accepted = 0;
   unsigned int total = 0;
+#endif
 
   mc_time.t = mc_time.DYN_STEPS;
 
@@ -1305,14 +1344,10 @@ void *simulazione(void *threadarg) {
     (mc_time.RELAX_TIME + mc_time.CORRL_TIME);
 
   // Checkpoint initialization
-  init_checkpoint(out_filename(outstring, ".checkpoint"),
-		  accepted, total, toprint);
+  init_checkpoint(out_filename(outstring, ".checkpoint"), toprint);
 
   if (checkpoint) {
-    load_checkpoint((checkpoint -> next -> data).s,
-		    &accepted,
-		    &total,
-		    &toprint);
+    load_checkpoint((checkpoint -> next -> data).s, &toprint);
   }
 
 #if NUM_THREADS > 1
@@ -1329,8 +1364,6 @@ void *simulazione(void *threadarg) {
 
     if ( unlikely(mc_time.t == toprint) ) {
       toprint -= mc_time.CORRL_TIME;
-
-      prepare_checkpoint(accepted, total, toprint);
 
 #if !defined(CONFINEMENT)
       recenter();
@@ -1353,14 +1386,10 @@ void *simulazione(void *threadarg) {
       displ = 0.0;
       struct timeval *temp = now;
       now = then; then = temp;
-#else
-      fprintf(simufiles.accfile, "%llu\t%g\n",
-	      mc_time.DYN_STEPS - mc_time.t,
-	      (float) accepted / total);
-#endif
 
       total = 0;
       accepted = 0;
+#endif
 
 #if defined(GETENERGY)
       fprintf(simufiles.ctcfile, "%llu\t%g\t%d\t%d\n",
@@ -1386,11 +1415,16 @@ void *simulazione(void *threadarg) {
 	break;
 #endif
 
+      prepare_checkpoint(toprint);
     }
 
+#if defined(GETPERF)
     if (move_ele())
       accepted++;
     total++;
+#else
+    move_ele();
+#endif
 
 #if NUM_THREADS > 1
     pthread_spin_unlock (&spinsum);
