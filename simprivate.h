@@ -14,8 +14,7 @@
 
 /* variables */
 float lambda;
-#if (defined(HARDCORE) || defined (UNIFORM) ||	\
-     defined (LOCALIZED) || defined(XLINK))
+#if defined(HARDCORE)
 float sigma;
 #endif
 #if (defined(UNIFORM) || defined(XLINK))
@@ -31,6 +30,7 @@ float conf_sqradius;
 #endif
 #if defined(XLINK)
 double xlink_conc;
+double xlink_rad;
 #endif
 
 /* Comparisons */
@@ -75,6 +75,16 @@ static int *restrict xlinklist;
 #ifdef GETPERF
 // displacement
 static float displ;
+#endif
+
+#define MAXFILENAME 127
+#define FNAMENBUF   4
+static char basename[MAXFILENAME + 1];
+
+static char *cfgfile;
+static char *lplfile;
+#if defined(LOCALIZED)
+static char *locfile;
 #endif
 
 #endif

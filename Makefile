@@ -2,7 +2,7 @@ CC=gcc
 CXX=g++
 #
 # INTERACTIONS CAN BE
-# -DHARDCORE -DCONFINEMENT -DUNIFORM -DLOCALIZED -DTOPO
+# -DHARDCORE -DCONFINEMENT -DUNIFORM -DLOCALIZED -DTOPO -DXLINK
 #
 # EXTRA MEASUREMENTS INTERACTIONS CAN BE
 # -DGETXYZ -DGETENERGY -DGETPERF -DGETXLINK
@@ -34,10 +34,10 @@ GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 all: nucleoid nucleoid.gl infofile/infotest
 
 nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o
-	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o -lm -lz -lcrypto
+	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o -lm -lcrypto
 
 nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLFILES}
-	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLLIBS} -lm -lz -lX11 -lcrypto
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLLIBS} -lm -lX11 -lcrypto
 
 infofile/infotest: infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
 	${CC} ${CFLAGS} ${CPUF64} -o infofile/infotest infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o

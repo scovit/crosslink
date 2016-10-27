@@ -120,7 +120,7 @@ void print_data(FILE *out, const struct data_infofile data) {
     fprintf(out, "s:\"%s\"", data.s);
     break;
   case is_g_infofile:
-    fprintf(out, "g:%g", data.g);
+    fprintf(out, "g:%.13g", data.g);
     break;
   case is_d_infofile:
     fprintf(out, "d:%d", data.d);

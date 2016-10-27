@@ -18,10 +18,9 @@
 struct thread_data thread_data_array[NUM_THREADS];
 
 static void usage(int argc, char *argv[]) {
-  printf ("Usage: %s N outstring inconf.gz inlpl inloc "
-	  "big_sigma beta_uniform beta_localized conf_volume xlink_conc\n"
+  printf ("Usage: %s configfile\n"
 	  "\n"
-	  "Suggested parameters: 192 ciao RAND NULL NULL 0.05 0 0 1.0 1e-2\n"
+	  "Suggested parameters: out/example.info\n"
 	  "\n",
 	  argv[0]);
   exit (-1);
@@ -46,10 +45,12 @@ void sigusr1_handler(int sig) {
   fflush(stderr);
   fflush(stdout);
   closefiles();
-  exit(99);
+  exit(99);     // Restart in slurm (at Pasteur)
 }
 
 void sigterm_handler(int sig) {
+  make_checkpoint();
+
   fputs("Terminated\n", stderr);
   fflush(stderr);
   fflush(stdout);
@@ -69,14 +70,14 @@ static void install_sighandlers() {
 
   struct sigaction sausr1;
   sausr1.sa_handler = sigusr1_handler;
-  sausr1.sa_flags = 0; // or SA_RESTART
+  sausr1.sa_flags = 0;
   sigemptyset(&sausr1.sa_mask);
   if (sigaction(SIGUSR1, &sausr1, NULL) == -1) {
     perror("couldn't set USR1 signal");
   }
   struct sigaction sausr2;
   sausr2.sa_handler = sigusr2_handler;
-  sausr2.sa_flags = 0; // or SA_RESTART
+  sausr2.sa_flags = SA_RESTART;
   sigemptyset(&sausr2.sa_mask);
   if (sigaction(SIGUSR2, &sausr2, NULL) == -1) {
     perror("couldn't set USR2 signal");
@@ -100,7 +101,7 @@ static void install_sighandlers() {
 
 int main (int argc, char **argv) {
 
-  if (argc != 11)
+  if (argc != 2)
     usage(argc, argv);
 
   // install the sigusr signal

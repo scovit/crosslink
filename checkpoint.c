@@ -51,7 +51,22 @@ int prepare_checkpoint(unsigned long long int toprint) {
   // Random state
   memcpy(dest, &dsfmt, sizeof(dsfmt_t)); dest += sizeof(dsfmt_t);
   // Local variables
-  *(unsigned long long int *)dest = toprint;
+  *(unsigned long long int *)dest = toprint; dest += sizeof(unsigned long long int);
+  // File offsets
+#if defined(GETXYZ)
+  *(off_t *)dest = ftello(simufiles.xyzfile); dest += sizeof(off_t);
+#endif
+#if defined(GETXLINK)
+  *(off_t *)dest = ftello(simufiles.xlkfile); dest += sizeof(off_t);
+#endif
+#if defined(GETPERF)
+  *(off_t *)dest = ftello(simufiles.accfile); dest += sizeof(off_t);
+#endif
+#if defined(GETENERGY)
+  *(off_t *)dest = ftello(simufiles.ctcfile);
+#endif
+  //
+
 
 #if NUM_THREADS > 1
   // Here too
@@ -108,7 +123,21 @@ int load_checkpoint(const unsigned char* hash,
   // Random state
   memcpy(&dsfmt, source, sizeof(dsfmt_t)); source += sizeof(dsfmt_t);
   // Local variables
-  *toprint = *(unsigned long long int *)source;
+  *toprint = *(unsigned long long int *)source; source += sizeof(unsigned long long int);
+  // File offsets
+#if defined(GETXYZ)
+  fseeko(simufiles.xyzfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
+#endif
+#if defined(GETXLINK)
+  fseeko(simufiles.xlkfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
+#endif
+#if defined(GETPERF)
+  fseeko(simufiles.accfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
+#endif
+#if defined(GETENERGY)
+  fseeko(simufiles.ctxfile, *(off_t *)source, SEEK_SET);
+#endif
+  //
 
   struct data_infofile d; d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "RESUME", d);
 
@@ -177,9 +206,23 @@ int init_checkpoint(const char *fname,
     // Random state
     sizeof(dsfmt_t) +
     // Local variables
-    sizeof(toprint)
-    // 
-    ;
+    sizeof(toprint) +
+    // File offsets
+#if defined(GETXYZ)
+    sizeof(off_t) +
+#endif
+#if defined(GETXLINK)
+    sizeof(off_t) +
+#endif
+#if defined(GETPERF)
+    sizeof(off_t) +
+#endif
+#if defined(GETENERGY)
+    sizeof(off_t) +
+#endif
+    //
+    0;
+
   if(posix_memalign((void **)&checkpoint, 32,
 		    checkpoint_size)) {
     fprintf(stderr, "Error allocating memory for checkpointing\n");

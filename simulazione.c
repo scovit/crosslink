@@ -15,9 +15,6 @@
 #include <math.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
-#if defined(GETXYZ)
-#include <zlib.h>
-#endif
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "infofile/infofile.h"
 #include "simulazione.h"
@@ -642,15 +639,6 @@ static inline void recenter(void) {
   }
 }
 
-#if defined(GETXYZ)
-static inline void print_buffer_gz(gzFile out) {
-  unsigned long long int time = mc_time.DYN_STEPS - mc_time.t;
-  for (unsigned int i = 0; i < N; i++)
-    gzprintf(out, "%llu\t%.10f\t%.10f\t%.10f\n", time,
-	     dots.x[i], dots.y[i], dots.z[i]);
-}
-#endif
-
 void print_buffer(FILE *out) {
   unsigned long long int time = mc_time.DYN_STEPS - mc_time.t;
   for (unsigned int i = 0; i < N; i++)
@@ -664,42 +652,7 @@ int cmpint(const void *p1, const void *p2) {
 }
 
 static __attribute__ ((noinline))
-void set_param_normalized(int enne, double big_sigma,
-			  double energy_uniform, double energy_localized,
-			  double volume_variable, double xlinker_conc) {
-  N = enne;
-
-  if (N % 16) {
-    fprintf(stderr, "N should be a multiple of %d\n", 16);
-    exit(-1);
-  }
-
-  lambda = sqrt(5.0 / 3.0 / N);
-  double sigmal = cbrt(3.0 * big_sigma / (4.0 * N * M_PI));
-#if (defined(HARDCORE) || defined(UNIFORM) \
-     || defined(LOCALIZED))
-  sigma = sigmal;
-#else
-  float sigma = 0;
-#endif
-#if defined(UNIFORM)
-  alfa_uniform = /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
-  beta_uniform = energy_uniform;
-#endif
-#ifdef LOCALIZED
-#warning Localized interaction range setted by default to uniform ones
-  alfa_localized =  /* 2 * cbrt(0.01 / N); */ /*2*/ 1.44224957 * sigmal;
-  beta_localized = energy_localized;
-#endif
-#ifdef CONFINEMENT
-  conf_sqradius = cbrt(volume_variable) * cbrt(volume_variable);
-#endif
-#ifdef XLINK
-  xlink_conc = xlinker_conc;
-#endif
-
-  D = 0.6 * (lambda);
-
+void set_working_param() {
 #ifdef HARDCORE
   comp_hc = _mm256_set1_ps(sigma*sigma);
 #endif
@@ -714,10 +667,6 @@ void set_param_normalized(int enne, double big_sigma,
   comp_top = _mm256_set1_ps(4.0f*lambda*4.0f*lambda);
 #endif
 #ifdef XLINK
-  double xlink_rad =  cbrt(1./ pow(64, 3)
-			   * (pow(lambda, 3) - pow(sigma, 3))
-			   + pow(sigma, 3));
-
   comp_xl = _mm256_set1_ps(xlink_rad * xlink_rad);
 #endif
 
@@ -811,50 +760,46 @@ void set_laplacian_null() {
 }
 
 static __attribute__ ((noinline))
-void load_laplacian(char *lplfilepath) {
-  FILE *lplfile = fopen(lplfilepath, "r");
-  if (lplfile == NULL) {
-    if (strcmp(lplfilepath, "NULL")) {
-      fprintf(stderr, "Warning: file %s not found and not NULL\n",
-	      lplfilepath);
-      lplfilepath = "NULL";
+void load_laplacian() {
+  FILE *fd = fopen(lplfile, "r");
+
+  if (!fd) {
+    fprintf(stderr, "Error: file %s not found\n", lplfile);
+    exit(-8);
+  }
+
+  lpl_index[0] = 0;
+  for (int i = 0; i < N; i++) {
+    int nlinks;
+    if (fscanf(fd, "%d", &nlinks) != 1) {
+      fprintf(stderr, "File format error %s\n", lplfile);
+      exit(-3);
     }
-    set_laplacian_null();
-  } else {
-    // from file
-    lpl_index[0] = 0;
-    for (int i = 0; i < N; i++) {
-      int nlinks;
-      if (fscanf(lplfile, "%d", &nlinks) != 1) {
-	fprintf(stderr, "File format error %s\n", lplfilepath);
+    if (nlinks > ODGRMAX) {
+      fputs("I need more memory, please modify constant ODGRMAX"
+	    " in simprivate.h\n", stderr);
+      exit(-4);
+    }
+    for (int links = nlinks; links > 0; links--) {
+      if (fscanf(fd, "%d",
+		 lpl + lpl_index[i] + nlinks - links) != 1) {
+	fprintf(stderr, "File format error %s\n", lplfile);
 	exit(-3);
       }
-      if (nlinks > ODGRMAX) {
-	fputs("I need more memory, please modify constant ODGRMAX"
-	      " in simprivate.h\n", stderr);
-	exit(-4);
+      if(lpl[lpl_index[i] + nlinks - links] >= N) {
+	nlinks--;
       }
-      for (int links = nlinks; links > 0; links--) {
-	if (fscanf(lplfile, "%d",
-		   lpl + lpl_index[i] + nlinks - links) != 1) {
-	  fprintf(stderr, "File format error %s\n", lplfilepath);
-	  exit(-3);
-	}
-	if(lpl[lpl_index[i] + nlinks - links] >= N) {
-	  nlinks--;
-	}
-      }
-      lpl_index[i + 1] = lpl_index[i] + nlinks;
-      if (lpl_index[i + 1] > /* lplalloc */ ODGRMAX * N) {
-	fputs("I need more memory, please modify constant ODGRMAX"
-	      " in simprivate.h\n", stderr);
-	exit(-4);
-      }
-      qsort(lpl + lpl_index[i], nlinks,
-	    sizeof(int), cmpint);
     }
-    fclose(lplfile);
+    lpl_index[i + 1] = lpl_index[i] + nlinks;
+    if (lpl_index[i + 1] > /* lplalloc */ ODGRMAX * N) {
+      fputs("I need more memory, please modify constant ODGRMAX"
+	    " in simprivate.h\n", stderr);
+      exit(-4);
+    }
+    qsort(lpl + lpl_index[i], nlinks,
+	  sizeof(int), cmpint);
   }
+  fclose(fd);
 }
 
 
@@ -969,75 +914,88 @@ void set_configuration_null() {
 }
 
 static __attribute__ ((noinline))
- unsigned long long int load_configuration(FILE *cnffile, 
-					   char *cnffilepath) {
-  unsigned long long int filetime    = 0ULL;
+unsigned long long int load_configuration() {
+  FILE *fd;
+  unsigned long long int oldfiletime;
+  unsigned long long int filetime;
+  off_t curpos;
+  off_t startpos;
+  char linebuffer[512];
 
-  if (cnffile != NULL) {
-    unsigned long long int oldfiletime = 0ULL;
-    long curpos = ftell(cnffile);
-    long startpos = curpos;
-    char linebuffer[512];
-    // here it finds the last iteration
-    while(fgets(linebuffer, sizeof(linebuffer), cnffile)) {
-      if (sscanf(linebuffer, "%llu", &filetime) != 1) {
-	fprintf(stderr, "File format error %s\n", cnffilepath);
-	exit(-3);
-      }
-      if (filetime != oldfiletime) {
-	startpos = curpos;
-	oldfiletime = filetime;
-      }
-      curpos = ftell(cnffile);
-    }
-    // it moves there and read the configuration
-    fseek(cnffile, startpos, SEEK_SET);
-    for (unsigned int i = 0; i < N; i++)
-      if(!fgets(linebuffer, sizeof(linebuffer), cnffile) || 
-	 (sscanf(linebuffer, "%llu%g%g%g", &filetime, 
-		 dots.x + i, dots.y + i, dots.z + i) != 4)) {
-	fprintf(stderr, "File format error %s\n", cnffilepath);
-	exit(-3);
-      }
-    fflush(cnffile);
-  } else {
+  fd = fopen(cfgfile, "r");
+  if (!fd) {
     fprintf(stderr, "Error: file %s not found and not NULL "
 	    "or RAND, aborting\n",
-	    cnffilepath);
+	    cfgfile);
     exit(-12);
   }
+
+  oldfiletime = 0ULL;
+  filetime    = 0ULL;
+  curpos      = 0;
+  startpos    = 0;
+
+  // here it finds the last iteration
+  while(fgets(linebuffer, sizeof(linebuffer), fd)) {
+    if (sscanf(linebuffer, "%llu", &filetime) != 1) {
+      fprintf(stderr, "File format error %s\n", cfgfile);
+      exit(-3);
+    }
+    if (filetime != oldfiletime) {
+      startpos = curpos;
+      oldfiletime = filetime;
+    }
+    curpos = ftello(fd);
+  }
+
+  // it moves there and read the configuration
+  fseeko(fd, startpos, SEEK_SET);
+  for (int i = 0; i < N; i++)
+    if(!fgets(linebuffer, sizeof(linebuffer), fd) || 
+       (sscanf(linebuffer, "%llu%g%g%g", &filetime, 
+	       dots.x + i, dots.y + i, dots.z + i) != 4)) {
+      fprintf(stderr, "File format error %s\n", cfgfile);
+      exit(-3);
+    }
+
   return filetime;
 }
 
-static __attribute__ ((noinline))
-void load_localized_stuff(char *locfilepath) {
 #if defined(LOCALIZED)
-  for (unsigned int i = 0; i < N; i += 4)
+static __attribute__ ((noinline))
+void set_localized_null() {
+  for (int i = 0; i < N; i += 4)
+    locmask[i / 4] = 0;
+  locnum = 0;
+}
+
+static __attribute__ ((noinline))
+void load_localized() {
+  FILE *fd;
+  unsigned int interagentlink;
+
+  for (int i = 0; i < N; i += 4)
     locmask[i / 4] = 0;
   locnum = 0;
 
-  FILE *locfile = fopen(locfilepath, "r");
-  if (locfile == NULL) {
-    // no localized interaction
-    if (strcmp(locfilepath, "NULL")) {
-      fprintf(stderr, "Warning: file %s not found and not NULL\n",
-	      locfilepath);
-      locfilepath = "NULL";
-    }
-  } else {
-    // load localized interaction from file
-    unsigned int interagentlink;
-    while(fscanf(locfile, "%d", &interagentlink) == 1)
-      if (interagentlink < N)
-	if (!is_loc_interacting(interagentlink)) {
-	    locmask[interagentlink/4] |= (1 << (interagentlink & 3));
-	    locnum++;
-	  }
+  fd = fopen(locfile, "r");
+  if (!fd) {
+    fprintf(stderr, "Error: file %s not found and not NULL\n",
+	    locfile);
+    exit(-12);
+  }
 
-    fclose(locfile);
-  } 
-#endif
+  // load localized interaction from file
+  while(fscanf(fd, "%d", &interagentlink) == 1)
+    if (interagentlink < N)
+      if (!is_loc_interacting(interagentlink)) {
+	locmask[interagentlink/4] |= (1 << (interagentlink & 3));
+	locnum++;
+      }
+
+  fclose(fd);
 }
+#endif
 
 static __attribute__ ((noinline))
 void count_contacts() {
@@ -1074,41 +1032,37 @@ void count_contacts() {
 }
 
 static __attribute__ ((noinline))
-char *out_filename(const char *outstring, const char *ext) {
-#define MAXFILENAME 255
-  const char dir[] = "out/";
-  static char filenames[4][MAXFILENAME + 1];
+char *out_filename(const char *ext) {
+  static char filenames[FNAMENBUF][MAXFILENAME + 1];
   static int cur = 0;
 
   char *filename = filenames[cur++];
-  if (cur > 3) cur = 0;
-  size_t lenght = strlen(ext) + strlen(outstring) + strlen(dir) + 1;
+  if (cur >= FNAMENBUF) cur = 0;
+  size_t lenght = strlen(basename) + strlen(ext) + 1;
 
   if(lenght > MAXFILENAME) {
     fprintf(stderr, "Filename too long\n");
     exit(-12);
   }
 
-  strcpy(filename, dir); strcat(filename, outstring);
-  strcat(filename, ext);
+  strcpy(filename, basename); strcat(filename, ext);
 
   return filename;
 }
 
 static __attribute__ ((noinline))
-void openfiles(const char *outstring,
-	       const char *mode) {
+void openfiles() {
 #if defined(GETXYZ)
-  simufiles.xyzfile = gzopen(out_filename(outstring, ".xyz.dat.gz"), mode);
+  simufiles.xyzfile = fopen(out_filename(".xyz"), "w");
 #endif
 #if defined(GETXLINK)
-  simufiles.xlkfile = fopen(out_filename(outstring, ".xlk"), mode);
+  simufiles.xlkfile = fopen(out_filename(".xlk"), "w");
 #endif
 #if defined(GETPERF)
-  simufiles.accfile = fopen(out_filename(outstring, ".acc.dat"), mode);
+  simufiles.accfile = fopen(out_filename(".acc.dat"), "w");
 #endif
 #if defined(GETENERGY)
-  simufiles.ctcfile = fopen(out_filename(outstring, ".ctc.dat"), mode);
+  simufiles.ctcfile = fopen(out_filename(".ctc.dat"), "w");
 #endif
 
   if (
@@ -1134,7 +1088,7 @@ void openfiles(const char *outstring,
 __attribute__ ((noinline))
 void closefiles() {
 #if defined(GETXYZ)
-  gzclose(simufiles.xyzfile);
+  fclose(simufiles.xyzfile);
 #endif
 #if defined(GETPERF)
   fclose(simufiles.accfile);
@@ -1153,7 +1107,7 @@ void flushfiles() {
   fflush(stderr);
   fflush(stdout);
 #if defined(GETXYZ)
-  gzflush(simufiles.xyzfile, Z_SYNC_FLUSH);
+  fflush(simufiles.xyzfile);
 #endif
 #if defined(GETPERF)
   fflush(simufiles.accfile);
@@ -1167,163 +1121,220 @@ void flushfiles() {
   flush_infofile(infos);
 }
 
+static __attribute__ ((noinline))
+void read_fundamental_param() {
+  struct data_infofile d;
+
+  // N
+  d = get_infofile(infos, "N", 0); if (is_d_infofile != d.type) goto fail; N = d.d;
+  if (N % 16) {
+    fprintf(stderr, "N should be a multiple of %d\n", 16);
+    exit(-1);
+  }
+
+  // lambda
+  // D
+  lambda = sqrt(5.0 / 3.0 / N);
+  D = 0.6 * (lambda);
+
+  // cfgfile lplfile
+  d = get_infofile(infos, "cfgfile", 0); if (is_s_infofile != d.type) goto fail; cfgfile = d.s;
+  d = get_infofile(infos, "lplfile", 0); if (is_s_infofile != d.type) goto fail; lplfile = d.s;
+#if defined(LOCALIZED)
+  // locfile
+  d = get_infofile(infos, "locfile", 0); if (is_s_infofile != d.type) goto fail; locfile = d.s;
+#endif
+
+#if defined(HARDCORE)
+  // sigma
+  d = get_infofile(infos, "bigsigma", 0);
+  if (is_g_infofile == d.type)
+    sigma = cbrt(3.0 * d.g / (4.0 * N * M_PI));
+  else {
+    d = get_infofile(infos, "sigma", 0); if (is_g_infofile != d.type) goto fail; sigma = d.g;
+  }
+#endif
+
+#if defined(UNIFORM)
+  // alfa_uniform beta_uniform
+  d = get_infofile(infos, "bigsigma", 0);
+  if (is_g_infofile == d.type)
+    alfa_uniform = 1.44224957 * cbrt(3.0 * d.g / (4.0 * N * M_PI));
+  else {
+    d = get_infofile(infos, "alfa_uniform", 0); if (is_g_infofile != d.type) goto fail; alfa_uniform = d.g;
+  }
+  d = get_infofile(infos, "beta_uniform", 0); if (is_g_infofile != d.type) goto fail; beta_uniform = d.g;
+#endif
+
+#if defined(LOCALIZED)
+  // alfa_localized beta_localized
+  d = get_infofile(infos, "bigsigma", 0);
+  if (is_g_infofile == d.type)
+    alfa_localized = 1.44224957 * cbrt(3.0 * d.g / (4.0 * N * M_PI));
+  else {
+    d = get_infofile(infos, "alfa_localized", 0); if (is_g_infofile != d.type) goto fail; alfa_localized = d.g;
+  }
+  d = get_infofile(infos, "beta_localized", 0); if (is_g_infofile != d.type) goto fail; beta_localized = d.g;
+#endif
+
+#if defined(CONFINEMENT)
+  // conf_sqradius
+  d = get_infofile(infos, "conf_volume", 0);
+  if (is_g_infofile == d.type)
+    conf_sqradius = cbrt(d.g) * cbrt(d.g);
+  else {
+    d = get_infofile(infos, "conf_sqradius", 0); if (is_g_infofile != d.type) goto fail; conf_sqradius = d.g;
+  }
+#endif
+
+#if defined(XLINK)
+  // xlink_conc xlink_radius ODGRMAX
+  d = get_infofile(infos, "xlink_conc", 0); if (is_g_infofile != d.type) goto fail; xlink_conc = d.g;
+  d = get_infofile(infos, "xlink_rad", 0);
+  if (is_g_infofile == d.type) {
+    xlink_rad = d.g;
+  } else {
+#if !defined(HARDCORE)
+    float sigma = 0;
+#endif
+    xlink_rad =  cbrt(1./ pow(64, 3)
+		      * (pow(lambda, 3) - pow(sigma, 3))
+		      + pow(sigma, 3));
+    d.g = xlink_rad; d.type = is_g_infofile; append_infofile(infos, "xlink_rad", d);
+  }
+  d = get_infofile(infos, "ODGRMAX", 0); if (is_d_infofile != d.type) goto fail; ODGRMAX = d.d;
+#else
+  // ODGRMAX
+  d = get_infofile(infos, "ODGRMAX", 0);
+  if (is_d_infofile == d.type)
+    ODGRMAX = d.d;
+  else {
+    ODGRMAX = 3;
+    d.d = ODGRMAX; d.type = is_d_infofile; append_infofile(infos, "ODGRMAX", d);
+  }
+#endif
+
+  set_working_param();
+
+  return;
+
+ fail:
+  fprintf(stderr, "Fundamental parameter missing in infofile\n");
+  exit(-10);
+}
+
+static __attribute__ ((noinline))
+void initialize_seed() {
+  struct data_infofile d;
+  unsigned int seed;
+  d = get_infofile(infos, "SEED", 0);
+
+  if (is_u_infofile != d.type) {
+    struct timeval t1;
+    gettimeofday(&t1, NULL);
+    seed = t1.tv_usec * t1.tv_sec;
+    d.u = seed; d.type = is_u_infofile; append_infofile(infos, "SEED", d);
+    flush_infofile(infos);
+  } else
+    seed = d.u;
+
+  dsfmt_init_gen_rand(&dsfmt, seed);
+}
+
+static __attribute__ ((noinline))
+void set_times() {
+  struct data_infofile d;
+
+  // TODO: we want mathematical expressions in conf file! (to put the smart defaults)
+  d = get_infofile(infos, "CORRL_TIME", 0);
+  if (is_llu_infofile == d.type)
+    mc_time.CORRL_TIME = d.llu;
+  else {
+    mc_time.CORRL_TIME = 2*458ULL * N * N;
+    d.llu = mc_time.CORRL_TIME; d.type = is_llu_infofile; append_infofile(infos, "CORRL_TIME", d);
+  }
+
+  d = get_infofile(infos, "RELAX_TIME", 0);
+  if (is_llu_infofile == d.type)
+    mc_time.RELAX_TIME = d.llu;
+  else {
+    mc_time.RELAX_TIME = 30ULL * mc_time.CORRL_TIME;
+    d.llu = mc_time.RELAX_TIME; d.type = is_llu_infofile; append_infofile(infos, "RELAX_TIME", d);
+  }
+
+  d = get_infofile(infos, "STATISTIC", 0);
+  if (is_d_infofile == d.type)
+    mc_time.STATISTIC = d.d;
+  else {
+    mc_time.STATISTIC = (unsigned long long)(4. * 1./xlink_conc);
+    d.d = mc_time.STATISTIC;  d.type = is_d_infofile; append_infofile(infos, "STATISTIC", d);
+  }
+
+  mc_time.DYN_STEPS = mc_time.RELAX_TIME
+    + mc_time.CORRL_TIME * mc_time.STATISTIC + 1;
+}
+
 void *simulazione(void *threadarg) {
 
   // This sets all denormal numbers to zero - DAZ and FTZ flags
   //  _mm_setcsr( _mm_getcsr() | 0x8040 );
 
   //
-  // Initialization code, set global variables and files
+  // Initialization code
+  // parse the only argument
   //
-  char *outstring = ((struct thread_data *) threadarg) -> argv[2];
-  char *cnffilepath = ((struct thread_data *) threadarg) -> argv[3];
-  char *lplfilepath = ((struct thread_data *) threadarg) -> argv[4];
-  char *locfilepath = ((struct thread_data *) threadarg) -> argv[5];
-  set_param_normalized(atoi(((struct thread_data *)threadarg) -> argv[1]),
-		       atof(((struct thread_data *)threadarg) -> argv[6]),
-		       atof(((struct thread_data *)threadarg) -> argv[7]),
-		       atof(((struct thread_data *)threadarg) -> argv[8]),
-		       atof(((struct thread_data *)threadarg) -> argv[9]),
-		       atof(((struct thread_data *)threadarg) -> argv[10]));
+  char *infofile = ((struct thread_data *) threadarg) -> argv[1];
 
-  // initialize seed
-  struct timeval t1;
-  gettimeofday(&t1, NULL);
-  unsigned int seed;
-  seed = t1.tv_usec * t1.tv_sec;
-  dsfmt_init_gen_rand(&dsfmt, seed);
-
-  allocate_memory();
-
-  // put laplacian online from file or automatically
-  load_laplacian(lplfilepath);
-
-  // Set initial xyz configuration
-  if (!strcmp(cnffilepath, "RAND")) {
-    set_configuration_rand();
-  } else if (!strcmp(cnffilepath, "NULL")) {
-    set_configuration_null();
-  } else  {
-    FILE *cnffile = fopen(cnffilepath, "r");
-    load_configuration(cnffile, cnffilepath);
+  if(strlen(infofile) > MAXFILENAME - 10) { // Space for different extension
+    fprintf(stderr, "Filename too long\n");
+    exit(-12);
+  }
+  {
+    char *punto = rindex(infofile, '.');
+    if(punto) // Remove extension
+      strncpy(basename, infofile, punto - infofile);
+    else
+      strcpy(basename, infofile);
   }
 
   // Check if info file is already there and parsable
   // infos contains a file pointer as well as a list
   // of infos compiled by append or open
-  infos = open_infofile(out_filename(outstring, ".info"));
-  struct list_infofile *checkpoint;
+  infos = open_infofile(infofile);
   if (infos == NULL) {
-    infos = create_infofile(out_filename(outstring, ".info"));
-    openfiles(outstring, "w");
-    checkpoint = NULL;
-  } else {
-    seed = (get_infofile(infos, "SEED", 0)).u;
-    // take the last
-    checkpoint = (get_infofile(infos, "CHECKPOINT", -1)).list;
-    if (!checkpoint) {
-      fprintf(stderr, "Info file found, but no checkpoint was made\n");
-      exit(-4);
-    }
-    openfiles(outstring, "a");
+    fprintf(stderr, "File %s not found\n", infofile);
+    exit(-3);
   }
 
+  read_fundamental_param();
+
+  initialize_seed();
+
+  allocate_memory();
+
+  // put laplacian online from file or automatically
+  if (!strcmp(lplfile, "NULL"))
+    set_laplacian_null();
+  else
+    load_laplacian();
+
+  // Set initial xyz configuration
+  if (!strcmp(cfgfile, "RAND"))
+    set_configuration_rand();
+  else if (!strcmp(cfgfile, "NULL"))
+    set_configuration_null();
+  else
+    load_configuration();
+
+#if defined(LOCALIZED)
   // put locally interacting beads from or automatically
-  load_localized_stuff(locfilepath);
-
-  // count the contacts in order to put variables online
-  count_contacts();
-
-  //
-  // Simulation code, here starts the simulation
-  //
-
-  /* Prova */
-  /**/
-  mc_time.CORRL_TIME = 2*458ULL * N * N / 10;
-  mc_time.RELAX_TIME = mc_time.CORRL_TIME / 2; // 200ULL
-  mc_time.STATISTIC  = 256;
-  /**/
-
-  /* Simulations (for the Cacciuto stuff) */
-  /*
-  const unsigned long long CORRL_TIME = 
-    2*458ULL * N * N;
-  const unsigned long long RELAX_TIME = 200ULL * CORRL_TIME;
-  const int STATISTIC = 32*4800;
-  */
-
-  /* Autocorrelations */
-  /*
-  const unsigned long long RELAX_TIME = 0;
-  const unsigned long long CORRL_TIME = 200*N;
-  const int STATISTIC = 40000;
-  */
-
-  /* Performances */
-  /*
-  const unsigned long long RELAX_TIME = 
-    0;
-  const unsigned long long CORRL_TIME =
-    300000*N;
-  const int STATISTIC = 1;
-  */
-
-  mc_time.DYN_STEPS = mc_time.RELAX_TIME
-    + mc_time.CORRL_TIME * mc_time.STATISTIC + 1;
-
-  // Print infos only we are not starting from checkpoint,
-  // otherwise check info
-  if (!checkpoint) {
-#if !defined(HARDCORE)
-    float sigma = NAN;
-#endif
-#if !defined(UNIFORM)
-    float alfa_uniform = NAN;
-    double beta_uniform = NAN;
-#endif
-#if !defined(LOCALIZED)
-    float alfa_localized = NAN;
-    double beta_localized = NAN;
-#endif
-#if !defined(CONFINEMENT)
-    float conf_sqradius = NAN;
-#endif
-#if !defined(XLINK)
-    double xlink_conc = NAN;
+  if (!strcmp(locfile, "NULL"))
+    set_localized_null();
+  else
+    load_localized();
 #endif
 
-    struct data_infofile d;
-    d.time = time(NULL);         d.type = is_time_infofile; append_infofile(infos, "STARTTIME", d);
-    d.d    = N;                  d.type = is_d_infofile;    append_infofile(infos, "N", d);
-    d.s    = cnffilepath;        d.type = is_s_infofile; append_infofile(infos, "cfgfile", d);
-    d.s    = lplfilepath;        d.type = is_s_infofile; append_infofile(infos, "lplfile", d);
-    d.g    = sigma;              d.type = is_g_infofile; append_infofile(infos, "sigma", d);
-    d.g    = lambda;             d.type = is_g_infofile; append_infofile(infos, "lambda", d);
-    d.g    = D;                  d.type = is_g_infofile; append_infofile(infos, "D", d);
-    d.g    = alfa_uniform;       d.type = is_g_infofile; append_infofile(infos, "alfa_uninform", d);
-    d.g    = alfa_localized;     d.type = is_g_infofile; append_infofile(infos, "alfa_localized", d);
-    d.g    = beta_uniform;       d.type = is_g_infofile; append_infofile(infos, "beta_uniform", d);
-    d.g    = beta_localized;     d.type = is_g_infofile; append_infofile(infos, "beta_localized", d);
-    d.g    = conf_sqradius;      d.type = is_g_infofile; append_infofile(infos, "conf_sqradius", d);
-    d.g    = xlink_conc;         d.type = is_g_infofile; append_infofile(infos, "xlink_conc", d);
-    d.u    = seed;               d.type = is_u_infofile; append_infofile(infos, "SEED", d);
-    d.llu  = mc_time.RELAX_TIME; d.type = is_llu_infofile; append_infofile(infos, "RELAX_TIME", d);
-    d.llu  = mc_time.CORRL_TIME; d.type = is_llu_infofile; append_infofile(infos, "CORRL_TIME", d);
-    d.d    = mc_time.STATISTIC;  d.type = is_d_infofile; append_infofile(infos, "STATISTIC", d);
-    d.llu  = mc_time.DYN_STEPS;  d.type = is_llu_infofile; append_infofile(infos, "DYN_STEPS", d);
-    flush_infofile(infos);
-  } else {
-    if (       (get_infofile(infos, "N", 0)).d                != N             ||
-	strcmp((get_infofile(infos, "cfgfile", 0)).s          ,  cnffilepath)   ||
-	strcmp((get_infofile(infos, "lplfile", 0)).s          ,  lplfilepath)   ||
-	fabs(  (get_infofile(infos, "lambda", 0)).g - lambda) >  0.00001 * lambda ||
-	fabs(  (get_infofile(infos, "D", 0)).g - D)           >  0.00001 * D) {
-
-      fputs("Checkpoint found, but some parameters does not match\n", stderr);
-      exit(-4);
-    }
-  }
+  set_times();
 
 #if defined(GETPERF)
   displ = 0.0;
@@ -1343,13 +1354,24 @@ void *simulazione(void *threadarg) {
   unsigned long long int toprint = mc_time.t -
     (mc_time.RELAX_TIME + mc_time.CORRL_TIME);
 
-  // Checkpoint initialization
-  init_checkpoint(out_filename(outstring, ".checkpoint"), toprint);
+  openfiles();
 
-  if (checkpoint) {
-    load_checkpoint((checkpoint -> next -> data).s, &toprint);
-    count_contacts();
+  // Checkpoint initialization
+  init_checkpoint(out_filename(".checkpoint"), toprint);
+  // Is a checkpoint already there?
+  {
+    struct data_infofile d;
+  
+    d = get_infofile(infos, "CHECKPOINT", -1);
+    if (is_list_infofile == d.type)
+      load_checkpoint((d.list -> next -> data).s, &toprint); // Yes
+    else {
+      // No
+      d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "STARTTIME", d);
+    }
   }
+
+  count_contacts();
 
 #if NUM_THREADS > 1
   pthread_barrier_wait(&startbarr);
@@ -1371,7 +1393,7 @@ void *simulazione(void *threadarg) {
 #endif
 
 #if defined(GETXYZ)
-      print_buffer_gz(simufiles.xyzfile);
+      print_buffer(simufiles.xyzfile);
 #endif
 
 #if defined(GETPERF)

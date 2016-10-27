@@ -5,18 +5,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
-#if defined(GETXYZ)
-#include <zlib.h>
-#endif
 extern "C" {
 #else
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#if defined(GETXYZ)
-#include <zlib.h>
-#endif
 #endif
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "infofile/infofile.h"
@@ -40,7 +34,7 @@ extern "C" {
   } dots;
 
   // link allocation out degree
-#define ODGRMAX 6
+  int ODGRMAX;
 
   __attribute__ ((aligned (32))) int *restrict lpl;
   __attribute__ ((aligned (32))) int *restrict lpl_index;
@@ -87,7 +81,7 @@ extern "C" {
     FILE *xlkfile;
 #endif
 #if defined(GETXYZ)
-    gzFile xyzfile;
+    FILE *xyzfile;
 #endif
   };
   __attribute__ ((aligned (32))) struct simufiles_t simufiles;
