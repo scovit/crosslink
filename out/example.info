@@ -1,0 +1,5 @@
+N          = d:2048
+cfgfile    = s:"RAND"
+lplfile    = s:"NULL"
+xlink_conc = g:0.01
+ODGRMAX    = d:3
