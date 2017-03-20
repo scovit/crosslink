@@ -31,7 +31,7 @@ float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 namespace renderer {
 
   std::vector<buffered_geom *> objects;
-  std::vector<buffer_object *> buffers;
+  std::vector<Ibuffer_object *> buffers;
 
   const GLfloat fzNear = 1.0f;
   const GLfloat fzFar = 8.0f;
@@ -78,7 +78,7 @@ namespace renderer {
     }
   }
 
-  void update_laplacian(buffer_object *dest, 
+  void update_laplacian(buffer_object<GLshort> *dest, 
 			int *laplacian, int *laplacian_index) {
     dest -> size = 0;
     for (int i = 0; i < N; i++) {
@@ -89,13 +89,13 @@ namespace renderer {
 	}
 
 	if (i != c) {
-	  ((GLshort *)dest -> buffer)[dest -> size * 2] = c;
-	  ((GLshort *)dest -> buffer)[dest -> size * 2 + 1] = i;
+	  dest -> buffer[dest -> size * 2] = c;
+	  dest -> buffer[dest -> size * 2 + 1] = i;
 	  dest -> size += 1;
 	}
       }
     }
-    dest -> size *= 2 * sizeof(GLshort);
+    dest -> size *= 2;
   }
 
   void reshape (windower *w, GLsizei x, GLsizei y) {
@@ -216,27 +216,27 @@ extern "C" void *glumain(void *threadarg) {
   //
 
   // The polymer, need to be update every time
-  renderer::buffer_object *polydata;
-  polydata = new renderer::buffer_object(sizeof(GLfloat) * 3 * N,
-					 GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  renderer::buffer_object<GLfloat> *polydata;
+  polydata = new renderer::buffer_object<GLfloat>(3 * N,
+						  GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   polydata -> prepare_data = [polydata]() -> void {
-    renderer::transpose_data((float *)polydata -> buffer);
+    renderer::transpose_data(polydata -> buffer);
   }; polydata -> upload();
   renderer::buffers.push_back(polydata);
 
   // The laplacian
-  renderer::buffer_object *indexdata;
-  indexdata = new renderer::buffer_object(2 * sizeof(GLshort) * ODGRMAX * N,
-					  GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::buffer_object<GLshort> *indexdata;
+  indexdata = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
+						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
   renderer::update_laplacian(indexdata, lpl, lpl_index);
   indexdata -> upload();
 
   // The index which just draws everything in term of points
-  renderer::buffer_object *alldata;
-  alldata = new renderer::buffer_object(sizeof(GLshort) * N,
-					GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::buffer_object<GLshort> *alldata;
+  alldata = new renderer::buffer_object<GLshort>(N,
+						 GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
   for (int i = 0; i < N; i++)
-    ((GLshort *)alldata -> buffer)[i] = i;
+    alldata -> buffer[i] = i;
   alldata -> upload();
 
   //
@@ -268,9 +268,9 @@ extern "C" void *glumain(void *threadarg) {
 
 #ifdef XLINK
   // The crosslink laplacian
-  renderer::buffer_object *crxdata;
-  crxdata = new renderer::buffer_object(2 * sizeof(GLshort) * ODGRMAX * N,
-					  GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  renderer::buffer_object<GLshort> *crxdata;
+  crxdata = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
+						 GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   crxdata -> prepare_data = [crxdata]() -> void {
     renderer::update_laplacian(crxdata, crx, crx_index);
   }; crxdata -> upload();
@@ -284,25 +284,23 @@ extern "C" void *glumain(void *threadarg) {
 #endif
 
 #ifdef LOCALIZED
-  renderer::buffer_object *Interacting;
-  renderer::buffer_object *NonInteracting;
-  Interacting    = new renderer::buffer_object(sizeof(GLshort) * locnum,
-					       GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-  NonInteracting = new renderer::buffer_object(sizeof(GLshort) * (N - locnum),
-					       GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::buffer_object<GLshort> *Interacting;
+  renderer::buffer_object<GLshort> *NonInteracting;
+  Interacting    = new renderer::buffer_object<GLshort>(locnum,
+							GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  NonInteracting = new renderer::buffer_object<GLshort>(N - locnum,
+							GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 
   Interacting -> size = 0;
   NonInteracting -> size = 0;
   for (int i = 0; i < N; i ++)
     if (is_loc_interacting(i)) {
-      ((GLshort *)Interacting -> buffer)[Interacting -> size] = i;
+      Interacting -> buffer[Interacting -> size] = i;
       Interacting -> size++;
     } else {
-      ((GLshort *)NonInteracting -> buffer)[NonInteracting -> size] = i;
+      NonInteracting -> buffer[NonInteracting -> size] = i;
       NonInteracting -> size++;
     }
-  Interacting -> size *= sizeof(GLshort);
-  NonInteracting -> size *= sizeof(GLshort);
   Interacting -> upload(); NonInteracting -> upload();
 
   renderer::sphere *Sph;

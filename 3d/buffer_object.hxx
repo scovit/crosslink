@@ -8,15 +8,22 @@
 #include <GL/glx.h>
 
 namespace renderer {
-  class buffer_object {
+
+  class Ibuffer_object {
+  public:
+    virtual void upload() = 0;
+    virtual void glBind() = 0;
+  };
+
+  template<typename T> class buffer_object : public Ibuffer_object {
   private:
 
     GLuint BufferObject;
 
   public:
 
-    GLsizeiptr size;
-    void *restrict buffer;
+    GLsizei size;
+    T *restrict buffer;
     std::function<void()> prepare_data;
 
     GLenum target;
@@ -27,7 +34,7 @@ namespace renderer {
 	prepare_data();
 
       glBindBuffer(target, BufferObject);
-      glBufferData(target, size,
+      glBufferData(target, size * sizeof(T),
 		   buffer, usage);
       glBindBuffer(target, 0);
 
@@ -37,11 +44,11 @@ namespace renderer {
       glBindBuffer(target, BufferObject);
     }
 
-    buffer_object(GLsizeiptr n, GLenum targe, GLenum usag) {
+    buffer_object(GLsizei n, GLenum targe, GLenum usag) {
       size = n;
       prepare_data = nullptr;
 
-      int err = (posix_memalign((void **)&buffer, 16, size));
+      int err = (posix_memalign((void **)&buffer, 16, size * sizeof(T)));
       if(err) {
 	fprintf(stderr, "Error allocating memory\n");
 	exit(-1);

@@ -30,7 +30,7 @@ namespace renderer {
     }
 
     sphere(GLfloat *pMatrix, GLfloat *oVector, GLfloat *psize,
-	   buffer_object *buff, buffer_object *ind,
+	   buffer_object<GLfloat> *buff, buffer_object<GLshort> *ind,
 	   GLfloat r, GLfloat g, GLfloat b, GLfloat a) : 
       buffered_geom(pMatrix, oVector, buff, ind) {
       ptrpointsize = psize;

@@ -16,8 +16,8 @@ namespace renderer {
     GLfloat *pMatrix_uniform;
 
     GLuint vaoObject;
-    buffer_object *buffer;
-    buffer_object *index;
+    buffer_object<GLfloat> *buffer;
+    buffer_object<GLshort> *index;
 
   public:
     virtual void draw() = 0;
@@ -31,7 +31,7 @@ namespace renderer {
     };
 
     buffered_geom(GLfloat *pMatrix, GLfloat *oVector,
-		  buffer_object *bobj, buffer_object *iobj) {
+		  buffer_object<GLfloat> *bobj, buffer_object<GLshort> *iobj) {
       buffer = bobj;
       index  = iobj;
 

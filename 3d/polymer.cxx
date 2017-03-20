@@ -46,7 +46,7 @@ namespace renderer {
     glGetFloatv(GL_LINE_WIDTH, &linew);
     glLineWidth(2.0f);
 
-    glDrawElements(GL_LINES, index -> size / sizeof(GLshort),
+    glDrawElements(GL_LINES, index -> size,
 		   GL_UNSIGNED_SHORT, 0);
 
     glLineWidth(linew);

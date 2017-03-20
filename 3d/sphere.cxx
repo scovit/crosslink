@@ -47,7 +47,7 @@ namespace renderer {
     glUseProgram(theProgram);
     glBindVertexArray(vaoObject);
 
-    glDrawElements(GL_POINTS, index -> size / sizeof(GLshort),
+    glDrawElements(GL_POINTS, index -> size,
 		   GL_UNSIGNED_SHORT, 0);
 
     glBindVertexArray(0);

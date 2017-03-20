@@ -18,7 +18,7 @@ namespace renderer {
     void draw();
 
     polymer(GLfloat *pMatrix, GLfloat *oVector,
-	    buffer_object *buff, buffer_object *ind,
+	    buffer_object<GLfloat> *buff, buffer_object<GLshort> *ind,
 	    GLfloat r, GLfloat g, GLfloat b, GLfloat a) : 
       buffered_geom(pMatrix, oVector, buff, ind) {
       color[0] = r; color[1] = g; color[2] = b; color[3] = a;
