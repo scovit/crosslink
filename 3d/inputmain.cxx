@@ -6,6 +6,7 @@
 #endif
 
 #include <string>
+#include <vector>
 #include <cstdio>
 #include <time.h>
 #include <zlib.h>
@@ -74,7 +75,7 @@ extern "C" void flushfiles();
 extern "C" void populate_lookup_tables();
 #endif
 
-const std::vector<inputvari_t> inputvari = {
+const std::vector <inputvari_t> inputvari = {
   {"help",
     [] (const std::string cosa) {
       std::cout << "\nYou can type the following commands,\n"
@@ -272,7 +273,7 @@ extern "C" void *inputmain(void *threadarg) {
 				   isspace),
 		    comando.end());
 
-      std::vector<std::string> subcommands;
+      std::vector <std::string> subcommands;
       boost::split(subcommands, comando, boost::is_any_of(";"));
 
       for (int j = 0; j < subcommands.size(); j++)

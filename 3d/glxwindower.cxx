@@ -84,8 +84,6 @@ namespace renderer {
 	exit(1);
       }
  
-    printf( "Getting matching framebuffer configs\n" );
-
     // Get a matching FB config
     static int visual_attribs[] =
       {
@@ -113,10 +111,10 @@ namespace renderer {
 	printf( "Failed to retrieve a framebuffer config\n" );
 	exit(1);
       }
-    printf( "Found %d matching FB configs.\n", fbcount );
+    // printf( "Found %d matching FB configs.\n", fbcount );
  
     // Pick the FB config/visual with the most samples per pixel
-    printf( "Getting XVisualInfos\n" );
+    // Getting XVisualInfos
     int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;
  
     int i;
@@ -131,9 +129,9 @@ namespace renderer {
 	    glXGetFBConfigAttrib( display, fbc[i], GLX_SAMPLES       ,
 				  &samples  );
 	    
-	    printf( "Matching fbconfig %d, visual ID 0x%2lx:"
-		    "SAMPLE_BUFFERS = %d, SAMPLES = %d\n", 
-		    i, vi -> visualid, samp_buf, samples );
+	    //	    printf( "Matching fbconfig %d, visual ID 0x%2lx:"
+	    //	    "SAMPLE_BUFFERS = %d, SAMPLES = %d\n", 
+	    //	    i, vi -> visualid, samp_buf, samples );
  
 	    if ( best_fbc < 0 || samp_buf && samples > best_num_samp )
 	      best_fbc = i, best_num_samp = samples;
@@ -150,9 +148,9 @@ namespace renderer {
  
     // Get a visual
     XVisualInfo *vi = glXGetVisualFromFBConfig( display, bestFbc );
-    printf( "Chosen visual ID = 0x%lx\n", vi->visualid );
+    //    printf( "Chosen visual ID = 0x%lx\n", vi->visualid );
  
-    printf( "Creating colormap\n" );
+    //    printf( "Creating colormap\n" );
     XSetWindowAttributes swa;
     swa.colormap = cmap = XCreateColormap( display,
 					   RootWindow( display, vi->screen ), 
@@ -162,7 +160,7 @@ namespace renderer {
     swa.event_mask        = StructureNotifyMask;
     // | KeyPressMask | ButtonPressMask;
  
-    printf( "Creating window\n" );
+    //    printf( "Creating window\n" );
     win = XCreateWindow( display, RootWindow( display, vi->screen ), 
 			 100, 100, w, h, 0, vi->depth, InputOutput, 
 			 vi->visual, 
@@ -178,7 +176,7 @@ namespace renderer {
  
     XStoreName( display, win, "Accia, simulation" );
 
-    printf( "Mapping window\n" );
+    //    printf( "Mapping window\n" );
     XMapWindow( display, win );
  
     // Set Xinput events
@@ -252,20 +250,17 @@ namespace renderer {
 	    None
 	  };
  
-	printf( "Creating context\n" );
+	//	printf( "Creating context\n" );
 	ctx = glXCreateContextAttribsARB( display, bestFbc, 0,
 					  True, context_attribs );
  
 	// Sync to ensure any errors generated are processed.
 	XSync( display, False );
-	if ( !ctxErrorOccurred && ctx )
-	  printf( "Created GL 2.1 context\n" );
-	else
-	  {
-	    printf( "Failed to create GL 2.1 context"
-		    " ... dieing\n" );
-	    exit(-1);
-	  }
+	if ( ctxErrorOccurred || !ctx ) {
+	  printf( "Failed to create GL 2.1 context"
+		  " ... dieing\n" );
+	  exit(-1);
+	}
       }
  
     // Sync to ensure any errors generated are processed.
@@ -285,12 +280,8 @@ namespace renderer {
       {
 	printf( "Indirect GLX rendering context obtained\n" );
       }
-    else
-      {
-	printf( "Direct GLX rendering context obtained\n" );
-      }
  
-    printf( "Making context current\n" );
+    //    printf( "Making context current\n" );
     glXMakeCurrent( display, win, ctx );
 
     is_created = true;

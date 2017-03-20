@@ -7,38 +7,39 @@
 namespace renderer {
   class sphere : public buffered_geom {
   private:
-
-    GLuint vertexBufferObject;
-    GLuint vaoObject;
-
     GLuint colorUniform;
     GLuint lightdirUniform;
     GLuint pointsizeUniform;
 
     GLfloat pointsize;
+    GLfloat *ptrpointsize;
     GLfloat color[4];
 
-    void InitializeData();
     void InitializeProgram();
   public:
-    // Those 3 parent class
+
     void draw();
 
-    void setPointsize(float Pointsize);
-    float getPointsize() {
-      return pointsize;
-    };
+    void update_global_uniforms() {
+      buffered_geom::update_global_uniforms();
 
-    sphere(GLfloat *pMatrix, GLfloat *oVector, int n, int psize,
+      pointsize = *ptrpointsize;
+      glUseProgram(theProgram);
+      glUniform1f(pointsizeUniform, pointsize);
+      glUseProgram(0);
+    }
+
+    sphere(GLfloat *pMatrix, GLfloat *oVector, GLfloat *psize,
+	   buffer_object *buff, buffer_object *ind,
 	   GLfloat r, GLfloat g, GLfloat b, GLfloat a) : 
-      buffered_geom(pMatrix, oVector, n) {
-      pointsize = psize;
+      buffered_geom(pMatrix, oVector, buff, ind) {
+      ptrpointsize = psize;
+      pointsize = *ptrpointsize;
       color[0] = r; color[1] = g; color[2] = b; color[3] = a;
-      InitializeData();
+
       InitializeProgram();
     };
 
-    ~sphere();
   };
 }
 

@@ -9,6 +9,7 @@
 #include <ctime>
 #include <functional>
 #include <xmmintrin.h>
+#include <immintrin.h>
 #define GL_GLEXT_PROTOTYPES
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -18,8 +19,10 @@
 #include "gl-subs.hxx"
 #include "windower.hxx"
 #include "glxwindower.hxx"
+#include "buffer_object.hxx"
 #include "polymer.hxx"
 #include "sphere.hxx"
+#include <vector>
 
 float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 
@@ -27,18 +30,13 @@ float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 
 namespace renderer {
 
-  polymer *Poly;
-#ifdef XLINK
-  polymer *Xlink;
-#endif
-#ifdef LOCALIZED
-  sphere  *Sph;
-  sphere  *SphUni;
-#endif
+  std::vector<buffered_geom *> objects;
+  std::vector<buffer_object *> buffers;
 
   const GLfloat fzNear = 1.0f;
   const GLfloat fzFar = 8.0f;
-  const GLfloat fFrustumScale = 1.0f;
+  const GLfloat fFrustumScale = 1.5f;
+  GLfloat pointsizes = 10.f;
 
   GLfloat perspectiveMatrix[16] = {
     fFrustumScale, 0,             0,                                  0,
@@ -47,62 +45,65 @@ namespace renderer {
     0,             0,             -(fzFar + fzNear)/(fzFar - fzNear), 3.0f
   };
 
-  GLfloat offsetVector[3] = {
-    0.0f,          0.0f,          -4.5f
+  GLfloat offsetVectors[4][3] = {
+    { -1.0f,          1.0f,          -4.5f },
+    {  1.0f,          1.0f,          -4.5f },
+    { -1.0f,         -1.0f,          -4.5f },
+    {  1.0f,         -1.0f,          -4.5f },
   };
 
-  void transpose_data(GLfloat *bufdest) {
-    for (int i = 0; i < N; i += 4) {
-      __m128 x = _mm_load_ps(dots.x + i);
-      __m128 y = _mm_load_ps(dots.y + i);
-      __m128 z = _mm_load_ps(dots.z + i);
+  static inline void transpose_data(float *bufdest) {
+    for (int i = 0; i < N; i += 8) {
+      __m256 x = _mm256_load_ps(dots.x + i);
+      __m256 y = _mm256_load_ps(dots.y + i);
+      __m256 z = _mm256_load_ps(dots.z + i);
 
-      __m128 x0x2y0y2 = _mm_shuffle_ps(x,y, _MM_SHUFFLE(2,0,2,0));
-      __m128 y1y3z1z3 = _mm_shuffle_ps(y,z, _MM_SHUFFLE(3,1,3,1));
-      __m128 z0z2x1x3 = _mm_shuffle_ps(z,x, _MM_SHUFFLE(3,1,2,0));
+      float  *p = bufdest + 3*i; // output pointer
+      __m128 *m = (__m128*) p;
 
-      __m128 rx0y0z0x1= _mm_shuffle_ps(x0x2y0y2,z0z2x1x3,
-				       _MM_SHUFFLE(2,0,2,0)); 
-      __m128 ry1z1x2y2= _mm_shuffle_ps(y1y3z1z3,x0x2y0y2,
-				       _MM_SHUFFLE(3,1,2,0)); 
-      __m128 rz2x3y3z3= _mm_shuffle_ps(z0z2x1x3,y1y3z1z3,
-				       _MM_SHUFFLE(3,1,3,1)); 
+      __m256 rxy = _mm256_shuffle_ps(x,y, _MM_SHUFFLE(2,0,2,0)); 
+      __m256 ryz = _mm256_shuffle_ps(y,z, _MM_SHUFFLE(3,1,3,1)); 
+      __m256 rzx = _mm256_shuffle_ps(z,x, _MM_SHUFFLE(3,1,2,0)); 
 
-      _mm_stream_ps(bufdest + 3*i + 0, rx0y0z0x1 );
-      _mm_stream_ps(bufdest + 3*i + 4, ry1z1x2y2 );
-      _mm_stream_ps(bufdest + 3*i + 8, rz2x3y3z3 );
+      __m256 r03 = _mm256_shuffle_ps(rxy, rzx, _MM_SHUFFLE(2,0,2,0));  
+      __m256 r14 = _mm256_shuffle_ps(ryz, rxy, _MM_SHUFFLE(3,1,2,0)); 
+      __m256 r25 = _mm256_shuffle_ps(rzx, ryz, _MM_SHUFFLE(3,1,3,1));  
+      
+      m[0] = _mm256_castps256_ps128( r03 );
+      m[1] = _mm256_castps256_ps128( r14 );
+      m[2] = _mm256_castps256_ps128( r25 );
+      m[3] = _mm256_extractf128_ps( r03 ,1);
+      m[4] = _mm256_extractf128_ps( r14 ,1);
+      m[5] = _mm256_extractf128_ps( r25 ,1);
     }
   }
 
-#ifdef LOCALIZED
-  void interaction_data(GLfloat *bufdestI, GLfloat *bufdestNI) {
-    int k1 = 0;
-    int k2 = 0;
-    for (int i = 0; i < N; i ++)
-      if (is_loc_interacting(i)) {
-	bufdestI[k1++] = dots.x[i];
-	bufdestI[k1++] = dots.y[i];
-	bufdestI[k1++] = dots.z[i];
-      } else {
-	bufdestNI[k2++] = dots.x[i];
-	bufdestNI[k2++] = dots.y[i];
-	bufdestNI[k2++] = dots.z[i];
+  void update_laplacian(buffer_object *dest, 
+			int *laplacian, int *laplacian_index) {
+    dest -> size = 0;
+    for (int i = 0; i < N; i++) {
+      for (int q = laplacian_index[i]; q < laplacian_index[i+1]; q++) {
+	int c = laplacian[q];
+	if(c > i) {    // avoid to compare link two times
+	  break;
+	}
+
+	if (i != c) {
+	  ((GLshort *)dest -> buffer)[dest -> size * 2] = c;
+	  ((GLshort *)dest -> buffer)[dest -> size * 2 + 1] = i;
+	  dest -> size += 1;
+	}
       }
+    }
+    dest -> size *= 2 * sizeof(GLshort);
   }
-#endif
 
   void reshape (windower *w, GLsizei x, GLsizei y) {
     perspectiveMatrix[0] = fFrustumScale * (y / (float)x);
     perspectiveMatrix[5] = fFrustumScale;
 
-    Poly -> update_global_uniforms();
-#ifdef XLINK
-    Xlink -> update_global_uniforms();
-#endif
-#ifdef LOCALIZED
-    Sph -> update_global_uniforms();
-    SphUni -> update_global_uniforms();
-#endif
+    for(auto i : objects)
+      i -> update_global_uniforms();
 
     glViewport(0, 0, (GLsizei) x, (GLsizei) y);
 
@@ -126,17 +127,11 @@ namespace renderer {
 	break;
       case 4:
 	perspectiveMatrix[15] /= zoomspeed;
-#ifdef LOCALIZED
-	Sph -> setPointsize(Sph -> getPointsize() * zoomspeed);
-	SphUni -> setPointsize(SphUni -> getPointsize() * zoomspeed);
-#endif
+	pointsizes *= zoomspeed;
 	break;
       case 5:
 	perspectiveMatrix[15] *= zoomspeed;
-#ifdef LOCALIZED
-	Sph -> setPointsize(Sph -> getPointsize() / zoomspeed);
-	SphUni -> setPointsize(SphUni -> getPointsize() / zoomspeed);
-#endif
+	pointsizes /= zoomspeed;
 	break;
       default:
 	break;
@@ -149,8 +144,10 @@ namespace renderer {
 	double deltay = y - pressedy;
 	int wx, wy;
 	w -> getWindowsize(&wx, &wy);
-	offsetVector[0] += 5.0 * deltax/wx;
-	offsetVector[1] -= 5.0 * deltay/wy;
+	for (int i = 0; i < sizeof(offsetVectors) / sizeof(offsetVectors[0]); i++){
+	  offsetVectors[i][0] += 5.0 * deltax/wx;
+	  offsetVectors[i][1] -= 5.0 * deltay/wy;
+	}
 	break;
       }
       default:
@@ -159,14 +156,9 @@ namespace renderer {
 
     }
 
-    Poly -> update_global_uniforms();
-#ifdef XLINK
-    Xlink -> update_global_uniforms();
-#endif
-#ifdef LOCALIZED
-    Sph -> update_global_uniforms();
-    SphUni -> update_global_uniforms();
-#endif
+    for (auto j : objects)
+      j -> update_global_uniforms();
+
   }
 
   void display() {
@@ -175,14 +167,9 @@ namespace renderer {
     // update the data for the drawings
     pthread_spin_lock (&spinsum);
 
-    transpose_data(Poly -> buffer);
-#ifdef XLINK
-    transpose_data(Xlink -> buffer);
-    Xlink -> update_laplacian(crx, crx_index);
-#endif
-#ifdef LOCALIZED
-    interaction_data(Sph -> buffer, SphUni -> buffer);
-#endif
+    for (auto i : buffers)
+      i -> upload();
+
     if (firsttime) {
       firsttime = 0;
       pthread_barrier_wait(&firstbarr);
@@ -195,15 +182,8 @@ namespace renderer {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // draw the polymer
-
-    Poly -> draw();
-#ifdef XLINK
-    Xlink -> draw();
-#endif
-#ifdef LOCALIZED
-    Sph -> draw();
-    SphUni -> draw();
-#endif
+    for(auto i : objects)
+      i -> draw();
 
     glFlush();
 
@@ -231,29 +211,118 @@ extern "C" void *glumain(void *threadarg) {
   glEnable(GL_POINT_SPRITE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  renderer::Poly = new renderer::polymer(renderer::perspectiveMatrix,
-					 renderer::offsetVector, 
-					 N, lpl, lpl_index, ODGRMAX,
-					 0.0f, 0.0f, 1.0f, 1.0f);
+  //
+  // The graphic buffers
+  //
+
+  // The polymer, need to be update every time
+  renderer::buffer_object *polydata;
+  polydata = new renderer::buffer_object(sizeof(GLfloat) * 3 * N,
+					 GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  polydata -> prepare_data = [polydata]() -> void {
+    renderer::transpose_data((float *)polydata -> buffer);
+  }; polydata -> upload();
+  renderer::buffers.push_back(polydata);
+
+  // The laplacian
+  renderer::buffer_object *indexdata;
+  indexdata = new renderer::buffer_object(2 * sizeof(GLshort) * ODGRMAX * N,
+					  GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::update_laplacian(indexdata, lpl, lpl_index);
+  indexdata -> upload();
+
+  // The index which just draws everything in term of points
+  renderer::buffer_object *alldata;
+  alldata = new renderer::buffer_object(sizeof(GLshort) * N,
+					GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  for (int i = 0; i < N; i++)
+    ((GLshort *)alldata -> buffer)[i] = i;
+  alldata -> upload();
+
+  //
+  // The drawing programs
+  //
+
+  renderer::polymer *Poly;
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       renderer::offsetVectors[0], 
+			       polydata, indexdata,
+			       0.0f, 0.0f, 1.0f, 1.0f);
+  renderer::objects.push_back(Poly);
+
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  			       renderer::offsetVectors[1], 
+  			       polydata, indexdata,
+  			       0.0f, 1.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Poly);
+
+  renderer::sphere *Sphall;
+  Sphall = new renderer::sphere(renderer::perspectiveMatrix,
+				renderer::offsetVectors[2],
+				// CACCIUTO
+				&renderer::pointsizes,
+				// 24,
+				polydata, alldata,
+				1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Sphall);
+
 #ifdef XLINK
-  renderer::Xlink = new renderer::polymer(renderer::perspectiveMatrix,
-					  renderer::offsetVector, 
-					  N, crx, crx_index, ODGRMAX,
-					  1.0f, 0.0f, 0.0f, 1.0f);
+  // The crosslink laplacian
+  renderer::buffer_object *crxdata;
+  crxdata = new renderer::buffer_object(2 * sizeof(GLshort) * ODGRMAX * N,
+					  GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  crxdata -> prepare_data = [crxdata]() -> void {
+    renderer::update_laplacian(crxdata, crx, crx_index);
+  }; crxdata -> upload();
+  renderer::buffers.push_back(crxdata);
+
+  renderer::polymer *Xlink = new renderer::polymer(renderer::perspectiveMatrix,
+  						   renderer::offsetVectors[0], 
+  						   polydata, crxdata,
+  						   1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Xlink);
 #endif
+
 #ifdef LOCALIZED
-  renderer::Sph = new renderer::sphere(renderer::perspectiveMatrix,
-				       renderer::offsetVector, locnum,
-				       // CACCIUTO
-				       10,
-                                       // 24,
-				       1.0f, 0.0f, 0.0f, 1.0f);
-  renderer::SphUni = new renderer::sphere(renderer::perspectiveMatrix,
-					  renderer::offsetVector, N - locnum,
-					  // CACCIUTO
-					  10,
-                                          // 24,
-					  0.0f, 1.0f, 1.0f, 0.3f);
+  renderer::buffer_object *Interacting;
+  renderer::buffer_object *NonInteracting;
+  Interacting    = new renderer::buffer_object(sizeof(GLshort) * locnum,
+					       GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  NonInteracting = new renderer::buffer_object(sizeof(GLshort) * (N - locnum),
+					       GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+  Interacting -> size = 0;
+  NonInteracting -> size = 0;
+  for (int i = 0; i < N; i ++)
+    if (is_loc_interacting(i)) {
+      ((GLshort *)Interacting -> buffer)[Interacting -> size] = i;
+      Interacting -> size++;
+    } else {
+      ((GLshort *)NonInteracting -> buffer)[NonInteracting -> size] = i;
+      NonInteracting -> size++;
+    }
+  Interacting -> size *= sizeof(GLshort);
+  NonInteracting -> size *= sizeof(GLshort);
+  Interacting -> upload(); NonInteracting -> upload();
+
+  renderer::sphere *Sph;
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     renderer::offsetVectors[0],
+			     // CACCIUTO
+			     &renderer::pointsizes,
+			     // 24,
+			     polydata, Interacting,
+			     1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::sphere *SphUni;
+  SphUni = new renderer::sphere(renderer::perspectiveMatrix,
+				renderer::offsetVectors[0],
+				// CACCIUTO
+				&renderer::pointsizes,
+				// 24,
+				polydata, NonInteracting,
+				0.0f, 1.0f, 1.0f, 0.3f);
+  renderer::objects.push_back(Sph);
+  renderer::objects.push_back(SphUni);
 #endif
 
   struct timespec tim, tim2;

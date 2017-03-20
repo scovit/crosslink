@@ -38,7 +38,7 @@ static const signed char hexval[256] = {
 // Dest should have 2*n + 1 space
 void bin2hex(char *dest, const void *source, const size_t n) {
   static const char hex[] = "0123456789abcdef";
-  char *src = (unsigned char *)source;
+  unsigned char *src = (unsigned char *)source;
 
   for (int i = 0; i < n; i++) {
     unsigned char val = *src++;

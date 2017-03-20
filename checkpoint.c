@@ -77,7 +77,7 @@ int prepare_checkpoint(unsigned long long int toprint) {
 }
 
 // Before you should init_checkpoint
-int load_checkpoint(const unsigned char* hash,
+int load_checkpoint(const char* hash,
 		    unsigned long long int *toprint) {
   // block SIGUSR1 signal
 #if NUM_THREADS > 1
@@ -239,4 +239,6 @@ int init_checkpoint(const char *fname,
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
   }
 #endif
+
+  return 0;
 }

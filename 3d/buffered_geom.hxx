@@ -2,21 +2,26 @@
 #ifndef BUFFERED_GEOM_HPP
 #define BUFFERED_GEOM_HPP
 
+#include <functional>
+#include "buffer_object.hxx"
+
 namespace renderer {
   class buffered_geom {
   protected:
-    int L;
-
     GLuint theProgram;
+
     GLuint offsetUniform;
     GLfloat *oVector_uniform;
     GLuint perspectiveMatrixUnif;
     GLfloat *pMatrix_uniform;
-  public:
-    GLfloat *restrict buffer;
 
+    GLuint vaoObject;
+    buffer_object *buffer;
+    buffer_object *index;
+
+  public:
     virtual void draw() = 0;
-    void update_global_uniforms() {
+    virtual void update_global_uniforms() {
       if (theProgram) {
 	glUseProgram(theProgram);
 	glUniformMatrix4fv(perspectiveMatrixUnif, 1, GL_FALSE, pMatrix_uniform);
@@ -25,12 +30,26 @@ namespace renderer {
       }
     };
 
-    buffered_geom(GLfloat *pMatrix, GLfloat *oVector, int n) {
-      L = n;
+    buffered_geom(GLfloat *pMatrix, GLfloat *oVector,
+		  buffer_object *bobj, buffer_object *iobj) {
+      buffer = bobj;
+      index  = iobj;
+
       pMatrix_uniform = pMatrix;
       oVector_uniform = oVector;
       theProgram = 0;
-      buffer = nullptr;
+
+      glGenVertexArrays(1, &vaoObject);
+      glBindVertexArray(vaoObject);
+
+      buffer -> glBind();
+
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+      index -> glBind();
+
+      glBindVertexArray(0);
     }
 
   };

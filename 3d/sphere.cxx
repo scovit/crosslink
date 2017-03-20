@@ -9,28 +9,6 @@
 
 namespace renderer {
 
-  void sphere::InitializeData() {
-
-    int err = (posix_memalign((void **)&buffer, 16,
-			      sizeof(GLfloat) * 3 * L));
-
-    if(err) {
-      fprintf(stderr, "Error allocating memory\n");
-      exit(-1);
-    }
-  }
-
-  sphere::~sphere() {
-    free(buffer);
-  }
-
-  void sphere::setPointsize(float size) {
-    pointsize = size;
-    glUseProgram(theProgram);
-    glUniform1f(pointsizeUniform, pointsize);
-    glUseProgram(0);
-  }
-
   void sphere::InitializeProgram() {
     std::vector<std::string> inputList = { "position" };
 
@@ -59,42 +37,18 @@ namespace renderer {
     glUseProgram(0);
 
     update_global_uniforms();
-
-    //Create vao and vbo stuff
-    glGenVertexArrays(1, &vaoObject);
-    glGenBuffers (1, &vertexBufferObject);
-
-    glBindVertexArray(vaoObject);
-    glBindBuffer (GL_ARRAY_BUFFER, vertexBufferObject);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, 0);
-    glBindVertexArray(0);
-
   }
 
   void sphere::draw() {
     bool psize = glIsEnabled(GL_VERTEX_PROGRAM_POINT_SIZE);
     if (!psize)
       glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    /*
-    GLfloat psize;
-    glGetFloatv(GL_POINT_SIZE, &psize);
-    glPointSize(16);
-    */
 
     glUseProgram(theProgram);
     glBindVertexArray(vaoObject);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER,
-    		 3 * L * sizeof(float),
-    		 buffer, GL_DYNAMIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,  sizeof(GLfloat)*3, 0);
-
-    glDrawArrays(GL_POINTS, 0, L);
+    glDrawElements(GL_POINTS, index -> size / sizeof(GLshort),
+		   GL_UNSIGNED_SHORT, 0);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -103,15 +57,6 @@ namespace renderer {
     if (!psize)
       glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-//    GLenum err;
-//    while ((err = glGetError()) != GL_NO_ERROR) {
-//	fprintf(stderr, "%s: %d\n", "OpenGL error drawing sphere", err);
-//    }
-
-
-    /*
-    glPointSize(psize);
-    */
   }
   
 }
