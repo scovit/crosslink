@@ -35,8 +35,8 @@ namespace renderer {
 
   const GLfloat fzNear = 1.0f;
   const GLfloat fzFar = 8.0f;
-  const GLfloat fFrustumScale = 1.5f;
-  GLfloat pointsizes = 10.f;
+  const GLfloat fFrustumScale = 2.5f;
+  GLfloat pointsizes[3] = { 10.f, 30.f, 50.f, };
 
   GLfloat perspectiveMatrix[16] = {
     fFrustumScale, 0,             0,                                  0,
@@ -46,18 +46,19 @@ namespace renderer {
   };
 
   GLfloat offsetVectors[4][3] = {
-    { -1.0f,          1.0f,          -4.5f },
-    {  1.0f,          1.0f,          -4.5f },
-    { -1.0f,         -1.0f,          -4.5f },
-    {  1.0f,         -1.0f,          -4.5f },
+    { -0.5f,       0.5f,          -4.5f },
+    {  0.5f,       0.5f,          -4.5f },
+    { -0.5f,      -0.5f,          -4.5f },
+    {  0.5f,      -0.5f,          -4.5f },
   };
 
-  static inline void transpose_data(float *bufdest) {
+  static inline void transpose_data(float *restrict bufdest) {
     for (int i = 0; i < N; i += 8) {
       __m256 x = _mm256_load_ps(dots.x + i);
       __m256 y = _mm256_load_ps(dots.y + i);
       __m256 z = _mm256_load_ps(dots.z + i);
 
+      // Transpose
       float  *p = bufdest + 3*i; // output pointer
       __m128 *m = (__m128*) p;
 
@@ -78,24 +79,54 @@ namespace renderer {
     }
   }
 
-  void update_laplacian(buffer_object<GLshort> *dest, 
-			int *laplacian, int *laplacian_index) {
+  template<int Z> static inline void resum(float *restrict src, float *restrict dest, int nelem) {
+    for (int i = 0; i < nelem; i += Z) {
+      dest[3 * (i / Z)] = 0;
+      dest[3 * (i / Z) + 1] = 0;
+      dest[3 * (i / Z) + 2] = 0;
+      for (int j = 0; j < Z; j++) {
+	dest[3 * (i / Z) + 0] += src[3 * (i + j) + 0];
+ 	dest[3 * (i / Z) + 1] += src[3 * (i + j) + 1];
+	dest[3 * (i / Z) + 2] += src[3 * (i + j) + 2];
+      }
+      dest[3 * (i / Z)] /= Z;
+      dest[3 * (i / Z) + 1] /= Z;
+      dest[3 * (i / Z) + 2] /= Z;
+    }
+  }
+
+
+  template<int Z, int thr> static inline void update_laplacian(buffer_object<GLshort> *dest, 
+							       int *laplacian,
+							       int *laplacian_index) {
+    int search_index;
     dest -> size = 0;
+
+    auto found = [&search_index, dest](int a, int b) -> bool {
+      for (int j = search_index; j < dest -> size; j += 2) {
+	if (dest -> buffer[j]     == a &&
+	    dest -> buffer[j + 1] == b)
+	  return true;
+      }
+      return false;
+    };
+
     for (int i = 0; i < N; i++) {
+      if (i % Z == 0)
+	search_index = dest -> size;
+
       for (int q = laplacian_index[i]; q < laplacian_index[i+1]; q++) {
 	int c = laplacian[q];
-	if(c > i) {    // avoid to compare link two times
-	  break;
-	}
 
-	if (i != c) {
-	  dest -> buffer[dest -> size * 2] = c;
-	  dest -> buffer[dest -> size * 2 + 1] = i;
-	  dest -> size += 1;
+	if ( (i / Z < c / Z) &&
+	     (c - i > thr)   &&
+	    !found(c/Z, i/Z)) {
+	  dest -> buffer[dest -> size] = c / Z;
+	  dest -> buffer[dest -> size + 1] = i / Z;
+	  dest -> size += 2;
 	}
       }
     }
-    dest -> size *= 2;
   }
 
   void reshape (windower *w, GLsizei x, GLsizei y) {
@@ -127,11 +158,15 @@ namespace renderer {
 	break;
       case 4:
 	perspectiveMatrix[15] /= zoomspeed;
-	pointsizes *= zoomspeed;
+	pointsizes[0] *= zoomspeed;
+	pointsizes[1] *= zoomspeed;
+	pointsizes[2] *= zoomspeed;
 	break;
       case 5:
 	perspectiveMatrix[15] *= zoomspeed;
-	pointsizes /= zoomspeed;
+	pointsizes[0] /= zoomspeed;
+	pointsizes[1] /= zoomspeed;
+	pointsizes[2] /= zoomspeed;
 	break;
       default:
 	break;
@@ -206,7 +241,7 @@ extern "C" void *glumain(void *threadarg) {
 
   // Implement zoom with the mouse
 
-  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glEnable(GL_POINT_SPRITE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -215,75 +250,173 @@ extern "C" void *glumain(void *threadarg) {
   // The graphic buffers
   //
 
+  const int resum1 = 8;
+  const int resum2 = 16;
+
   // The polymer, need to be update every time
-  renderer::buffer_object<GLfloat> *polydata;
-  polydata = new renderer::buffer_object<GLfloat>(3 * N,
-						  GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  polydata -> prepare_data = [polydata]() -> void {
-    renderer::transpose_data(polydata -> buffer);
-  }; polydata -> upload();
-  renderer::buffers.push_back(polydata);
+  renderer::buffer_object<GLfloat> *polydata[3];
+  polydata[0] = new renderer::buffer_object<GLfloat>(3 * N,
+						     GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  polydata[1] = new renderer::buffer_object<GLfloat>(3 * N / resum1,
+						     GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  polydata[2] = new renderer::buffer_object<GLfloat>(3 * N / resum1 / resum2,
+						     GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+
+  polydata[0] -> prepare_data = [polydata]() -> void {
+    renderer::transpose_data(polydata[0] -> buffer);
+    renderer::resum<resum1>(polydata[0] -> buffer, polydata[1] -> buffer, N);
+    renderer::resum<resum2>(polydata[1] -> buffer, polydata[2] -> buffer, N / resum1);
+  }; polydata[0] -> upload(); polydata[1] -> upload(); polydata[2] -> upload();
+  renderer::buffers.push_back(polydata[0]);
+  renderer::buffers.push_back(polydata[1]);
+  renderer::buffers.push_back(polydata[2]);
 
   // The laplacian
-  renderer::buffer_object<GLshort> *indexdata;
-  indexdata = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
+  renderer::buffer_object<GLshort> *indexdata[3];
+  indexdata[0] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
 						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-  renderer::update_laplacian(indexdata, lpl, lpl_index);
-  indexdata -> upload();
+  indexdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1,
+						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  indexdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1 / resum2,
+						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::update_laplacian<1, 0>               (indexdata[0], lpl, lpl_index);
+  renderer::update_laplacian<resum1, 0>          (indexdata[1], lpl, lpl_index);
+  renderer::update_laplacian<resum1 * resum2, 0> (indexdata[2], lpl, lpl_index);
+  indexdata[0] -> upload(); indexdata[1] -> upload(); indexdata[2] -> upload();
+
+#ifdef XLINK
+  // The crosslink laplacian
+  renderer::buffer_object<GLshort> *crxdata[3];
+  crxdata[0] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  crxdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  crxdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1 / resum2,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+  crxdata[0] -> prepare_data = [crxdata]() -> void {
+    renderer::update_laplacian<1, 0>                                 (crxdata[0], crx, crx_index);
+    renderer::update_laplacian<resum1, resum1/2>                     (crxdata[1], crx, crx_index);
+    renderer::update_laplacian<resum1 * resum2, resum1 * resum2 / 2> (crxdata[2], crx, crx_index);
+  }; crxdata[0] -> upload(); crxdata[1] -> upload(); crxdata[2] -> upload();
+  renderer::buffers.push_back(crxdata[0]);
+  renderer::buffers.push_back(crxdata[1]);
+  renderer::buffers.push_back(crxdata[2]);
+#endif
 
   // The index which just draws everything in term of points
-  renderer::buffer_object<GLshort> *alldata;
-  alldata = new renderer::buffer_object<GLshort>(N,
-						 GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  renderer::buffer_object<GLshort> *alldata[3];
+  alldata[0] = new renderer::buffer_object<GLshort>(N,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  alldata[1] = new renderer::buffer_object<GLshort>(N / resum1,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  alldata[2] = new renderer::buffer_object<GLshort>(N / resum1 / resum2,
+						    GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+
   for (int i = 0; i < N; i++)
-    alldata -> buffer[i] = i;
-  alldata -> upload();
+    alldata[0] -> buffer[i] = i;
+  for (int i = 0; i < N; i += resum1)
+    alldata[1] -> buffer[i / resum1]  = i / resum1;
+  for (int i = 0; i < N; i += resum1 * resum2)
+    alldata[2] -> buffer[i / resum1 / resum2] = i / resum1 / resum2;
+  alldata[0] -> upload(); alldata[1] -> upload(); alldata[2] -> upload();
 
   //
   // The drawing programs
   //
-
   renderer::polymer *Poly;
+  renderer::sphere *Sph;
+  GLfloat *offset;
+
+  ////// Square A
+  offset = renderer::offsetVectors[0];
+
   Poly = new renderer::polymer(renderer::perspectiveMatrix,
-			       renderer::offsetVectors[0], 
-			       polydata, indexdata,
+			       offset,
+			       polydata[0], indexdata[0],
 			       0.0f, 0.0f, 1.0f, 1.0f);
   renderer::objects.push_back(Poly);
-
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
-  			       renderer::offsetVectors[1], 
-  			       polydata, indexdata,
-  			       0.0f, 1.0f, 0.0f, 1.0f);
-  renderer::objects.push_back(Poly);
-
-  renderer::sphere *Sphall;
-  Sphall = new renderer::sphere(renderer::perspectiveMatrix,
-				renderer::offsetVectors[2],
-				// CACCIUTO
-				&renderer::pointsizes,
-				// 24,
-				polydata, alldata,
-				1.0f, 0.0f, 0.0f, 1.0f);
-  renderer::objects.push_back(Sphall);
-
 #ifdef XLINK
-  // The crosslink laplacian
-  renderer::buffer_object<GLshort> *crxdata;
-  crxdata = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
-						 GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  crxdata -> prepare_data = [crxdata]() -> void {
-    renderer::update_laplacian(crxdata, crx, crx_index);
-  }; crxdata -> upload();
-  renderer::buffers.push_back(crxdata);
-
-  renderer::polymer *Xlink = new renderer::polymer(renderer::perspectiveMatrix,
-  						   renderer::offsetVectors[0], 
-  						   polydata, crxdata,
-  						   1.0f, 0.0f, 0.0f, 1.0f);
-  renderer::objects.push_back(Xlink);
+  // The crosslink lines
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset, 
+			       polydata[0], crxdata[0],
+			       1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Poly);
 #endif
 
+  ////// Square B
+  offset = renderer::offsetVectors[1];
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[0],
+			     polydata[0], alldata[0],
+			     1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Sph);
+#ifdef XLINK
+  // The crosslink lines
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset, 
+			       polydata[0], crxdata[0],
+			       1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Poly);
+#endif
+
+  ////// Square C
+  offset = renderer::offsetVectors[2];
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[0],
+			     polydata[0], alldata[0],
+			     0.5f, 0.8f, 0.8f, .8f);
+  renderer::objects.push_back(Sph);
+
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset,
+			       polydata[1], indexdata[1],
+			       .1f, .1f, .1f, 1.0f);
+  renderer::objects.push_back(Poly);
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[1],
+			     polydata[1], alldata[1],
+			     1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Sph);
+
+  ////// Square D
+  offset = renderer::offsetVectors[3];
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[0],
+			     polydata[0], alldata[0],
+			     0.5f, 0.8f, 0.8f, .8f);
+  renderer::objects.push_back(Sph);
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[1],
+			     polydata[1], alldata[1],
+			     0.5f, 0.8f, 0.8f, .5f);
+  renderer::objects.push_back(Sph);
+
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset,
+			       polydata[2], indexdata[2],
+			       .1f, .1f, .1f, 1.0f);
+  renderer::objects.push_back(Poly);
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, &renderer::pointsizes[2],
+			     polydata[2], alldata[2],
+			     1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Sph);
+
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset,
+			       polydata[2], crxdata[2],
+			       1.0f, 0.0f, 0.0f, 1.0f);
+  renderer::objects.push_back(Poly);
+
 #ifdef LOCALIZED
+  // This works only on the full polydata ([0]), can be fixed
   renderer::buffer_object<GLshort> *Interacting;
   renderer::buffer_object<GLshort> *NonInteracting;
   Interacting    = new renderer::buffer_object<GLshort>(locnum,
@@ -303,23 +436,23 @@ extern "C" void *glumain(void *threadarg) {
     }
   Interacting -> upload(); NonInteracting -> upload();
 
-  renderer::sphere *Sph;
-  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+  renderer::sphere *SphLoc;
+  SphLoc = new renderer::sphere(renderer::perspectiveMatrix,
 			     renderer::offsetVectors[0],
 			     // CACCIUTO
-			     &renderer::pointsizes,
+			     &renderer::pointsizes[0],
 			     // 24,
-			     polydata, Interacting,
+			     polydata[0], Interacting,
 			     1.0f, 0.0f, 0.0f, 1.0f);
   renderer::sphere *SphUni;
   SphUni = new renderer::sphere(renderer::perspectiveMatrix,
 				renderer::offsetVectors[0],
 				// CACCIUTO
-				&renderer::pointsizes,
+				&renderer::pointsizes[0],
 				// 24,
-				polydata, NonInteracting,
+				polydata[0], NonInteracting,
 				0.0f, 1.0f, 1.0f, 0.3f);
-  renderer::objects.push_back(Sph);
+  renderer::objects.push_back(SphLoc);
   renderer::objects.push_back(SphUni);
 #endif
 
@@ -332,7 +465,7 @@ extern "C" void *glumain(void *threadarg) {
 
     Window -> swap();
     
-    tim.tv_sec = 1L;
+    tim.tv_sec = 0L;
     tim.tv_nsec = 100000000L;
     nanosleep(&tim , &tim2);
   }

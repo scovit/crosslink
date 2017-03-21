@@ -48,7 +48,7 @@ namespace renderer {
       size = n;
       prepare_data = nullptr;
 
-      int err = (posix_memalign((void **)&buffer, 16, size * sizeof(T)));
+      int err = (posix_memalign((void **)&buffer, 32, size * sizeof(T)));
       if(err) {
 	fprintf(stderr, "Error allocating memory\n");
 	exit(-1);
