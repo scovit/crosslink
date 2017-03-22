@@ -46,7 +46,7 @@ namespace renderer {
   };
 
   GLfloat offsetVectors[4][3] = {
-    { -0.5f,       0.5f,          -4.5f },
+    { -0.7f,       0.7f,          -4.5f },
     {  0.5f,       0.5f,          -4.5f },
     { -0.5f,      -0.5f,          -4.5f },
     {  0.5f,      -0.5f,          -4.5f },
@@ -332,6 +332,14 @@ extern "C" void *glumain(void *threadarg) {
   ////// Square A
   offset = renderer::offsetVectors[0];
 
+#ifdef XLINK
+  renderer::matrix *HiC; // crxHiC
+  HiC = new renderer::matrix(renderer::perspectiveMatrix,
+			     offset, crxHiC,
+			     new renderer::matrix_params(0.0f, 0.0f, 1.0f, 1.0f,
+							 10.0f, N));
+  renderer::objects.push_back(HiC);
+#endif
   ////// Square B
   offset = renderer::offsetVectors[1];
 

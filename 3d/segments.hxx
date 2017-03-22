@@ -38,9 +38,9 @@ namespace renderer {
     void update_global_uniforms();
 
     segments(GLfloat *pMatrix, GLfloat *oVector,
-	    buffer_object<GLfloat> *buff, buffer_object<GLshort> *ind,
+	    buffer_object<GLfloat> *buffer, buffer_object<GLshort> *index,
 	    segments_params *params) : 
-      buffered_geom(pMatrix, oVector, buff, ind),
+      buffered_geom(pMatrix, oVector, buffer, index),
       params(params)
     {
       InitializeProgram();

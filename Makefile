@@ -28,7 +28,7 @@ endif
 CPUF64=-DHAVE_POPCNT=1 -DHAVE_SSE2=1 -m64 -march=haswell -mtune=haswell -fprefetch-loop-arrays
 CPUFGL=${GPUF64}
 
-GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/segments.o build/sphere.o build/inputmain.o
+GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/segments.o build/sphere.o build/matrix.o build/inputmain.o
 GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 
 all: nucleoid nucleoid.gl infofile/infotest
@@ -96,7 +96,7 @@ build/lex.yy.c: infofile/lex.l
 build/%.tab.c build/%.tab.h: infofile/%.y
 	bison -d -b build/parse infofile/parse.y;
 
-build/glumain.o: 3d/glumain.cxx 3d/segments.hxx 3d/sphere.hxx
+build/glumain.o: 3d/glumain.cxx 3d/segments.hxx 3d/sphere.hxx 3d/matrix.hxx 3d/geometry.hxx 3d/buffered_geom.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/glumain.o -c 3d/glumain.cxx
 
 build/gl-subs.o: 3d/gl-subs.cxx 3d/gl-subs.hxx
@@ -105,14 +105,14 @@ build/gl-subs.o: 3d/gl-subs.cxx 3d/gl-subs.hxx
 build/glxwindower.o: 3d/glxwindower.cxx 3d/glxwindower.hxx 3d/windower.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/glxwindower.o -c 3d/glxwindower.cxx
 
-build/segments.o: 3d/segments.cxx 3d/segments.hxx 3d/buffered_geom.hxx
+build/segments.o: 3d/segments.cxx 3d/segments.hxx 3d/buffered_geom.hxx 3d/geometry.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/segments.o -c 3d/segments.cxx
 
-build/xlinker.o: 3d/xlinker.cxx 3d/xlinker.hxx 3d/buffered_geom.hxx
-	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/xlinker.o -c 3d/xlinker.cxx
-
-build/sphere.o: 3d/sphere.cxx 3d/sphere.hxx 3d/buffered_geom.hxx
+build/sphere.o: 3d/sphere.cxx 3d/sphere.hxx 3d/buffered_geom.hxx 3d/geometry.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/sphere.o -c 3d/sphere.cxx
+
+build/matrix.o: 3d/matrix.cxx 3d/matrix.hxx 3d/geometry.hxx
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/matrix.o -c 3d/matrix.cxx
 
 build/inputmain.o: 3d/inputmain.cxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/inputmain.o -c 3d/inputmain.cxx
