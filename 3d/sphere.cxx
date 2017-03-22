@@ -9,6 +9,20 @@
 
 namespace renderer {
 
+  void sphere::update_global_uniforms() {
+    buffered_geom::update_global_uniforms();
+
+    if (params) {
+      glUseProgram(theProgram);
+      glUniform4f(colorUniform, params -> color[0], params -> color[1],
+		  params -> color[2], params -> color[3]);
+      glUniform3f(lightdirUniform, 0.0f, 0.0f, 1.0f);
+      glUniform1f(pointsizeUniform, params -> pointsize);
+      glUseProgram(0);
+    }
+  }
+
+
   void sphere::InitializeProgram() {
     std::vector<std::string> inputList = { "position" };
 
@@ -31,9 +45,6 @@ namespace renderer {
     lightdirUniform = glGetUniformLocation(theProgram, "lightDir");
     pointsizeUniform = glGetUniformLocation(theProgram, "pointsize");
 
-    glUniform4f(colorUniform, color[0], color[1], color[2], color[3]);
-    glUniform3f(lightdirUniform, 0.0f, 0.0f, 1.0f);
-    glUniform1f(pointsizeUniform, pointsize);
     glUseProgram(0);
 
     update_global_uniforms();

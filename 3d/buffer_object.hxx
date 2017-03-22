@@ -44,17 +44,17 @@ namespace renderer {
       glBindBuffer(target, BufferObject);
     }
 
-    buffer_object(GLsizei n, GLenum targe, GLenum usag) {
-      size = n;
-      prepare_data = nullptr;
-
+    buffer_object(GLsizei n, GLenum targe, GLenum usag) :
+      size(n),
+      prepare_data(nullptr),
+      target(targe),
+      usage(usag)
+    {
       int err = (posix_memalign((void **)&buffer, 32, size * sizeof(T)));
       if(err) {
 	fprintf(stderr, "Error allocating memory\n");
 	exit(-1);
       }
-      target = targe;
-      usage  = usag;
 
       glGenBuffers(1, &BufferObject);
     }

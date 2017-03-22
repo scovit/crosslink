@@ -26,17 +26,16 @@
 
 float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 
-#define ARRAY_COUNT( array ) (sizeof( array ) / (sizeof( array[0] ) * (sizeof( array ) != sizeof(void*) || sizeof( array[0] ) <= sizeof(void*))))
-
 namespace renderer {
 
-  std::vector<buffered_geom *> objects;
+  std::vector<buffered_geom *>  objects;
   std::vector<Ibuffer_object *> buffers;
+  std::vector<sphere_params *>  parsphere;
+
 
   const GLfloat fzNear = 1.0f;
   const GLfloat fzFar = 8.0f;
   const GLfloat fFrustumScale = 2.5f;
-  GLfloat pointsizes[3] = { 10.f, 30.f, 50.f, };
 
   GLfloat perspectiveMatrix[16] = {
     fFrustumScale, 0,             0,                                  0,
@@ -102,12 +101,10 @@ namespace renderer {
     int search_index;
     dest -> size = 0;
 
-    auto found = [&search_index, dest](int a, int b) -> bool {
-      for (int j = search_index; j < dest -> size; j += 2) {
-	if (dest -> buffer[j]     == a &&
-	    dest -> buffer[j + 1] == b)
+    auto found = [&search_index, dest](int a) -> bool {
+      for (int j = search_index; j < dest -> size; j += 2)
+	if (dest -> buffer[j] == a)
 	  return true;
-      }
       return false;
     };
 
@@ -120,10 +117,9 @@ namespace renderer {
 
 	if ( (i / Z < c / Z) &&
 	     (c - i > thr)   &&
-	    !found(c/Z, i/Z)) {
-	  dest -> buffer[dest -> size] = c / Z;
-	  dest -> buffer[dest -> size + 1] = i / Z;
-	  dest -> size += 2;
+	    !found(c/Z)) {
+	  dest -> buffer[dest -> size++] = c / Z;
+	  dest -> buffer[dest -> size++] = i / Z;
 	}
       }
     }
@@ -158,15 +154,13 @@ namespace renderer {
 	break;
       case 4:
 	perspectiveMatrix[15] /= zoomspeed;
-	pointsizes[0] *= zoomspeed;
-	pointsizes[1] *= zoomspeed;
-	pointsizes[2] *= zoomspeed;
+	for(auto sph : parsphere)
+	  sph -> pointsize *= zoomspeed;
 	break;
       case 5:
 	perspectiveMatrix[15] *= zoomspeed;
-	pointsizes[0] /= zoomspeed;
-	pointsizes[1] /= zoomspeed;
-	pointsizes[2] /= zoomspeed;
+	for(auto sph : parsphere)
+	  sph -> pointsize /= zoomspeed;
 	break;
       default:
 	break;
@@ -328,36 +322,42 @@ extern "C" void *glumain(void *threadarg) {
   GLfloat *offset;
 
   ////// Square A
-  offset = renderer::offsetVectors[0];
+//   offset = renderer::offsetVectors[0];
 
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
-			       offset,
-			       polydata[0], indexdata[0],
-			       0.0f, 0.0f, 1.0f, 1.0f);
-  renderer::objects.push_back(Poly);
-#ifdef XLINK
-  // The crosslink lines
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
-			       offset, 
-			       polydata[0], crxdata[0],
-			       1.0f, 0.0f, 0.0f, 1.0f);
-  renderer::objects.push_back(Poly);
-#endif
+//   Poly = new renderer::polymer(renderer::perspectiveMatrix,
+// 			       offset,
+// 			       polydata[0], indexdata[0],
+// 			       0.0f, 0.0f, 1.0f, 1.0f);
+//   renderer::objects.push_back(Poly);
+// #ifdef XLINK
+//   // The crosslink lines
+//   Poly = new renderer::polymer(renderer::perspectiveMatrix,
+// 			       offset, 
+// 			       polydata[0], crxdata[0],
+// 			       1.0f, 0.0f, 0.0f, 1.0f);
+//   renderer::objects.push_back(Poly);
+// #endif
 
   ////// Square B
   offset = renderer::offsetVectors[1];
 
-  Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[0],
-			     polydata[0], alldata[0],
-			     1.0f, 0.0f, 0.0f, 1.0f);
-  renderer::objects.push_back(Sph);
-#ifdef XLINK
-  // The crosslink lines
   Poly = new renderer::polymer(renderer::perspectiveMatrix,
-			       offset, 
-			       polydata[0], crxdata[0],
-			       1.0f, 0.0f, 0.0f, 1.0f);
+			       offset, polydata[0], indexdata[0],
+			       new renderer::polymer_params(.7f, .7f, .7f, 1.0f,
+							    1.0, 1, 0xFFFF));
+  renderer::objects.push_back(Poly);
+
+  Sph = new renderer::sphere(renderer::perspectiveMatrix,
+			     offset, polydata[0], alldata[0],
+			     new renderer::sphere_params(1.0f, 0.0f, 0.0f, 1.0f,
+							 10.f));
+  renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
+#ifdef XLINK
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset, polydata[0], crxdata[0],
+			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+							    1.5, 1, 0xFFFF));
   renderer::objects.push_back(Poly);
 #endif
 
@@ -365,55 +365,72 @@ extern "C" void *glumain(void *threadarg) {
   offset = renderer::offsetVectors[2];
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[0],
-			     polydata[0], alldata[0],
-			     0.5f, 0.8f, 0.8f, .8f);
+			     offset, polydata[0], alldata[0],
+			     new renderer::sphere_params(0.5f, 0.8f, 0.8f, .8f,
+							 10.f));
   renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
 
   Poly = new renderer::polymer(renderer::perspectiveMatrix,
-			       offset,
-			       polydata[1], indexdata[1],
-			       .1f, .1f, .1f, 1.0f);
+			       offset, polydata[1], indexdata[1],
+			       new renderer::polymer_params(.1f, .1f, .1f, 1.0f,
+							    2.0, 2, 0xFCFF));
   renderer::objects.push_back(Poly);
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[1],
-			     polydata[1], alldata[1],
-			     1.0f, 0.0f, 0.0f, 1.0f);
+			     offset, polydata[1], alldata[1],
+			     new renderer::sphere_params(1.0f, 0.0f, 0.0f, 1.0f,
+							 30.f));
   renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
+
+#ifdef XLINK
+  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+			       offset, polydata[1], crxdata[1],
+			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+							    2.0, 2, 0xFFFF));
+  renderer::objects.push_back(Poly);
+#endif
 
   ////// Square D
   offset = renderer::offsetVectors[3];
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[0],
-			     polydata[0], alldata[0],
-			     0.5f, 0.8f, 0.8f, .8f);
+			     offset, polydata[0], alldata[0],
+			     new renderer::sphere_params(0.5f, 0.8f, 0.8f, .8f,
+							 10.f));
   renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[1],
-			     polydata[1], alldata[1],
-			     0.5f, 0.8f, 0.8f, .5f);
+			     offset, polydata[1], alldata[1],
+			     new renderer::sphere_params(0.5f, 0.8f, 0.8f, .8f,
+							 30.f));
   renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
 
   Poly = new renderer::polymer(renderer::perspectiveMatrix,
 			       offset,
 			       polydata[2], indexdata[2],
-			       .1f, .1f, .1f, 1.0f);
+			       new renderer::polymer_params(.1f, .1f, .1f, 1.0f,
+							    3.0, 2, 0xC0FF));
   renderer::objects.push_back(Poly);
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
-			     offset, &renderer::pointsizes[2],
-			     polydata[2], alldata[2],
-			     1.0f, 0.0f, 0.0f, 1.0f);
+			     offset, polydata[2], alldata[2],
+			     new renderer::sphere_params(1.0f, 0.f, 0.f, 1.0f,
+							 50.f));
   renderer::objects.push_back(Sph);
+  renderer::parsphere.push_back(Sph -> params);
 
+#ifdef XLINK
   Poly = new renderer::polymer(renderer::perspectiveMatrix,
 			       offset,
 			       polydata[2], crxdata[2],
-			       1.0f, 0.0f, 0.0f, 1.0f);
+			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+							    3.0, 2, 0xFFFF));
   renderer::objects.push_back(Poly);
+#endif
 
 #ifdef LOCALIZED
   // This works only on the full polydata ([0]), can be fixed
@@ -438,22 +455,18 @@ extern "C" void *glumain(void *threadarg) {
 
   renderer::sphere *SphLoc;
   SphLoc = new renderer::sphere(renderer::perspectiveMatrix,
-			     renderer::offsetVectors[0],
-			     // CACCIUTO
-			     &renderer::pointsizes[0],
-			     // 24,
-			     polydata[0], Interacting,
-			     1.0f, 0.0f, 0.0f, 1.0f);
+				renderer::offsetVectors[0], polydata[0], Interacting,
+				new renderer::sphere_params(1.0f, 0.0f, 0.0f, 1.0f,
+							    10.f));
   renderer::sphere *SphUni;
   SphUni = new renderer::sphere(renderer::perspectiveMatrix,
-				renderer::offsetVectors[0],
-				// CACCIUTO
-				&renderer::pointsizes[0],
-				// 24,
-				polydata[0], NonInteracting,
-				0.0f, 1.0f, 1.0f, 0.3f);
+				renderer::offsetVectors[0], polydata[0], NonInteracting,
+				new renderer::sphere_params(0.0f, 1.0f, 1.0f, .3f,
+							    10.f));
   renderer::objects.push_back(SphLoc);
   renderer::objects.push_back(SphUni);
+  renderer::parsphere.push_back(SphLoc -> params);
+  renderer::parsphere.push_back(SphUni -> params);
 #endif
 
   struct timespec tim, tim2;

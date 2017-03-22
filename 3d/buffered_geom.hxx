@@ -31,14 +31,13 @@ namespace renderer {
     };
 
     buffered_geom(GLfloat *pMatrix, GLfloat *oVector,
-		  buffer_object<GLfloat> *bobj, buffer_object<GLshort> *iobj) {
-      buffer = bobj;
-      index  = iobj;
-
-      pMatrix_uniform = pMatrix;
-      oVector_uniform = oVector;
-      theProgram = 0;
-
+		  buffer_object<GLfloat> *bobj, buffer_object<GLshort> *iobj) :
+      buffer(bobj),
+      index(iobj),
+      pMatrix_uniform(pMatrix),
+      oVector_uniform(oVector),
+      theProgram(0)
+    {
       glGenVertexArrays(1, &vaoObject);
       glBindVertexArray(vaoObject);
 

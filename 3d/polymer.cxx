@@ -10,6 +10,17 @@
 
 namespace renderer {
 
+  void polymer::update_global_uniforms() {
+    buffered_geom::update_global_uniforms();
+
+    if (params) {
+      glUseProgram(theProgram);
+      glUniform4f(colorUniform, params -> color[0], params -> color[1],
+		  params -> color[2], params -> color[3]);
+      glUseProgram(0);
+    }
+  }
+
   void polymer::InitializeProgram() {
 
     std::vector<std::string> inputList = { "position" };
@@ -25,26 +36,27 @@ namespace renderer {
     glUseProgram(theProgram);
 
     colorUniform = glGetUniformLocation(theProgram, "Color");
-
     offsetUniform = glGetUniformLocation(theProgram, "offset");
-
     perspectiveMatrixUnif = glGetUniformLocation(theProgram,
 						 "perspectiveMatrix");
-
-    glUniform4f(colorUniform, color[0], color[1], color[2], color[3]);
     glUseProgram(0);
 
     update_global_uniforms();
   }
 
   void polymer::draw() {
+    bool stipples = glIsEnabled(GL_LINE_STIPPLE);
+    if (!stipples)
+      glEnable(GL_LINE_STIPPLE);
 
     glUseProgram(theProgram);
     glBindVertexArray(vaoObject);
 
     float linew;
     glGetFloatv(GL_LINE_WIDTH, &linew);
-    glLineWidth(2.0f);
+    glLineWidth(params -> width);
+    glLineStipple(params -> stipple_factor,
+		  params -> stipple_pattern);
 
     glDrawElements(GL_LINES, index -> size,
 		   GL_UNSIGNED_SHORT, 0);
@@ -55,5 +67,7 @@ namespace renderer {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
 
+    if (!stipples)
+      glDisable(GL_LINE_STIPPLE);
   }
 }

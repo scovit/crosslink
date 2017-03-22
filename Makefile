@@ -96,7 +96,7 @@ build/lex.yy.c: infofile/lex.l
 build/%.tab.c build/%.tab.h: infofile/%.y
 	bison -d -b build/parse infofile/parse.y;
 
-build/glumain.o: 3d/glumain.cxx
+build/glumain.o: 3d/glumain.cxx 3d/polymer.hxx 3d/sphere.hxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/glumain.o -c 3d/glumain.cxx
 
 build/gl-subs.o: 3d/gl-subs.cxx 3d/gl-subs.hxx
