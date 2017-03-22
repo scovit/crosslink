@@ -6,11 +6,11 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include "gl-subs.hxx"
-#include "polymer.hxx"
+#include "segments.hxx"
 
 namespace renderer {
 
-  void polymer::update_global_uniforms() {
+  void segments::update_global_uniforms() {
     buffered_geom::update_global_uniforms();
 
     if (params) {
@@ -21,7 +21,7 @@ namespace renderer {
     }
   }
 
-  void polymer::InitializeProgram() {
+  void segments::InitializeProgram() {
 
     std::vector<std::string> inputList = { "position" };
 
@@ -44,7 +44,7 @@ namespace renderer {
     update_global_uniforms();
   }
 
-  void polymer::draw() {
+  void segments::draw() {
     bool stipples = glIsEnabled(GL_LINE_STIPPLE);
     if (!stipples)
       glEnable(GL_LINE_STIPPLE);

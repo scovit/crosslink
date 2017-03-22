@@ -44,11 +44,11 @@ namespace renderer {
       glBindBuffer(target, BufferObject);
     }
 
-    buffer_object(GLsizei n, GLenum targe, GLenum usag) :
-      size(n),
+    buffer_object(GLsizei size, GLenum target, GLenum usage) :
+      size(size),
       prepare_data(nullptr),
-      target(targe),
-      usage(usag)
+      target(target),
+      usage(usage)
     {
       int err = (posix_memalign((void **)&buffer, 32, size * sizeof(T)));
       if(err) {
@@ -58,6 +58,27 @@ namespace renderer {
 
       glGenBuffers(1, &BufferObject);
     }
+
+    buffer_object(buffer_object<T> *shared, GLenum target, GLenum usage) :
+      size(shared -> size),
+      prepare_data(nullptr),
+      target(target),
+      usage(usage),
+      buffer(shared -> buffer)
+    {
+      glGenBuffers(1, &BufferObject);
+    }
+
+    buffer_object(T *buffer, GLsizei size, GLenum target, GLenum usage) :
+      size(size),
+      prepare_data(nullptr),
+      target(target),
+      usage(usage),
+      buffer(buffer)
+    {
+      glGenBuffers(1, &BufferObject);
+    }
+
   };
 }
 #endif

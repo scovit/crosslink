@@ -20,8 +20,9 @@
 #include "windower.hxx"
 #include "glxwindower.hxx"
 #include "buffer_object.hxx"
-#include "polymer.hxx"
+#include "segments.hxx"
 #include "sphere.hxx"
+#include "matrix.hxx"
 #include <vector>
 
 float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
@@ -268,11 +269,11 @@ extern "C" void *glumain(void *threadarg) {
   // The laplacian
   renderer::buffer_object<GLshort> *indexdata[3];
   indexdata[0] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
-						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+						      GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
   indexdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1,
-						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+						      GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
   indexdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1 / resum2,
-						   GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+						      GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
   renderer::update_laplacian<1, 0>               (indexdata[0], lpl, lpl_index);
   renderer::update_laplacian<resum1, 0>          (indexdata[1], lpl, lpl_index);
   renderer::update_laplacian<resum1 * resum2, 0> (indexdata[2], lpl, lpl_index);
@@ -281,20 +282,27 @@ extern "C" void *glumain(void *threadarg) {
 #ifdef XLINK
   // The crosslink laplacian
   renderer::buffer_object<GLshort> *crxdata[3];
+  renderer::buffer_object<GLshort> *crxHiC;
   crxdata[0] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   crxdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
   crxdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1 / resum2,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  crxdata[0] -> prepare_data = [crxdata]() -> void {
+
+  // The buffer for the HiC matrix
+  crxHiC = new renderer::buffer_object<GLshort>(crxdata[0], GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
+
+  crxdata[0] -> prepare_data = [crxdata, crxHiC]() -> void {
     renderer::update_laplacian<1, 0>                                 (crxdata[0], crx, crx_index);
     renderer::update_laplacian<resum1, resum1/2>                     (crxdata[1], crx, crx_index);
     renderer::update_laplacian<resum1 * resum2, resum1 * resum2 / 2> (crxdata[2], crx, crx_index);
-  }; crxdata[0] -> upload(); crxdata[1] -> upload(); crxdata[2] -> upload();
+    crxHiC -> size = crxdata[0] -> size;
+  }; crxdata[0] -> upload(); crxdata[1] -> upload(); crxdata[2] -> upload(); crxHiC -> upload();
   renderer::buffers.push_back(crxdata[0]);
   renderer::buffers.push_back(crxdata[1]);
   renderer::buffers.push_back(crxdata[2]);
+  renderer::buffers.push_back(crxHiC);
 #endif
 
   // The index which just draws everything in term of points
@@ -317,33 +325,19 @@ extern "C" void *glumain(void *threadarg) {
   //
   // The drawing programs
   //
-  renderer::polymer *Poly;
+  renderer::segments *Poly;
   renderer::sphere *Sph;
   GLfloat *offset;
 
   ////// Square A
-//   offset = renderer::offsetVectors[0];
-
-//   Poly = new renderer::polymer(renderer::perspectiveMatrix,
-// 			       offset,
-// 			       polydata[0], indexdata[0],
-// 			       0.0f, 0.0f, 1.0f, 1.0f);
-//   renderer::objects.push_back(Poly);
-// #ifdef XLINK
-//   // The crosslink lines
-//   Poly = new renderer::polymer(renderer::perspectiveMatrix,
-// 			       offset, 
-// 			       polydata[0], crxdata[0],
-// 			       1.0f, 0.0f, 0.0f, 1.0f);
-//   renderer::objects.push_back(Poly);
-// #endif
+  offset = renderer::offsetVectors[0];
 
   ////// Square B
   offset = renderer::offsetVectors[1];
 
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset, polydata[0], indexdata[0],
-			       new renderer::polymer_params(.7f, .7f, .7f, 1.0f,
+			       new renderer::segments_params(.7f, .7f, .7f, 1.0f,
 							    1.0, 1, 0xFFFF));
   renderer::objects.push_back(Poly);
 
@@ -354,9 +348,9 @@ extern "C" void *glumain(void *threadarg) {
   renderer::objects.push_back(Sph);
   renderer::parsphere.push_back(Sph -> params);
 #ifdef XLINK
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset, polydata[0], crxdata[0],
-			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+			       new renderer::segments_params(0.0f, 0.0f, 1.0f, 1.0f,
 							    1.5, 1, 0xFFFF));
   renderer::objects.push_back(Poly);
 #endif
@@ -371,9 +365,9 @@ extern "C" void *glumain(void *threadarg) {
   renderer::objects.push_back(Sph);
   renderer::parsphere.push_back(Sph -> params);
 
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset, polydata[1], indexdata[1],
-			       new renderer::polymer_params(.1f, .1f, .1f, 1.0f,
+			       new renderer::segments_params(.1f, .1f, .1f, 1.0f,
 							    2.0, 2, 0xFCFF));
   renderer::objects.push_back(Poly);
 
@@ -385,9 +379,9 @@ extern "C" void *glumain(void *threadarg) {
   renderer::parsphere.push_back(Sph -> params);
 
 #ifdef XLINK
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset, polydata[1], crxdata[1],
-			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+			       new renderer::segments_params(0.0f, 0.0f, 1.0f, 1.0f,
 							    2.0, 2, 0xFFFF));
   renderer::objects.push_back(Poly);
 #endif
@@ -409,10 +403,10 @@ extern "C" void *glumain(void *threadarg) {
   renderer::objects.push_back(Sph);
   renderer::parsphere.push_back(Sph -> params);
 
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset,
 			       polydata[2], indexdata[2],
-			       new renderer::polymer_params(.1f, .1f, .1f, 1.0f,
+			       new renderer::segments_params(.1f, .1f, .1f, 1.0f,
 							    3.0, 2, 0xC0FF));
   renderer::objects.push_back(Poly);
 
@@ -424,10 +418,10 @@ extern "C" void *glumain(void *threadarg) {
   renderer::parsphere.push_back(Sph -> params);
 
 #ifdef XLINK
-  Poly = new renderer::polymer(renderer::perspectiveMatrix,
+  Poly = new renderer::segments(renderer::perspectiveMatrix,
 			       offset,
 			       polydata[2], crxdata[2],
-			       new renderer::polymer_params(0.0f, 0.0f, 1.0f, 1.0f,
+			       new renderer::segments_params(0.0f, 0.0f, 1.0f, 1.0f,
 							    3.0, 2, 0xFFFF));
   renderer::objects.push_back(Poly);
 #endif

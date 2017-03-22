@@ -1,19 +1,19 @@
 
-#ifndef POLYMER_HPP
-#define POLYMER_HPP
+#ifndef SEGMENTS_HPP
+#define SEGMENTS_HPP
 
 #include "buffered_geom.hxx"
 #include "buffer_object.hxx"
 
 namespace renderer {
 
-  struct polymer_params {
+  struct segments_params {
     GLfloat color[4];
     GLfloat width;
     GLint stipple_factor;
     GLushort stipple_pattern;
 
-    polymer_params(GLfloat r, GLfloat g, GLfloat b, GLfloat a,
+    segments_params(GLfloat r, GLfloat g, GLfloat b, GLfloat a,
 		   GLfloat width,
 		   GLint stipple_factor,
 		   GLushort stipple_pattern) :
@@ -24,22 +24,22 @@ namespace renderer {
     { };
   };
 
-  class polymer : public buffered_geom {
+  class segments : public buffered_geom {
   private:
     GLuint colorUniform;
 
     void InitializeProgram();
   public:
 
-    polymer_params *params;
+    segments_params *params;
 
     void draw();
 
     void update_global_uniforms();
 
-    polymer(GLfloat *pMatrix, GLfloat *oVector,
+    segments(GLfloat *pMatrix, GLfloat *oVector,
 	    buffer_object<GLfloat> *buff, buffer_object<GLshort> *ind,
-	    polymer_params *params) : 
+	    segments_params *params) : 
       buffered_geom(pMatrix, oVector, buff, ind),
       params(params)
     {
