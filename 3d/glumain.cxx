@@ -195,7 +195,7 @@ namespace renderer {
     static int firsttime = 1;
 
     // update the data for the drawings
-    pthread_spin_lock (&spinsum);
+    //    pthread_spin_lock (&spinsum);
 
     for (auto i : buffers)
       i -> upload();
@@ -205,7 +205,7 @@ namespace renderer {
       pthread_barrier_wait(&firstbarr);
     };
     
-    pthread_spin_unlock (&spinsum);
+    //    pthread_spin_unlock (&spinsum);
 
     // clear the buffer
     glClearColor(BackGround[0], BackGround[1], BackGround[2], BackGround[3]);
@@ -285,18 +285,18 @@ extern "C" void *glumain(void *threadarg) {
   renderer::buffer_object<GLshort> *crxHiC;
   crxdata[0] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  crxdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1,
+  crxdata[1] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
-  crxdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N / resum1 / resum2,
+  crxdata[2] = new renderer::buffer_object<GLshort>(2 * ODGRMAX * N,
 						    GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
   // The buffer for the HiC matrix
   crxHiC = new renderer::buffer_object<GLshort>(crxdata[0], GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW);
 
-  crxdata[0] -> prepare_data = [crxdata, crxHiC]() -> void {
-    renderer::update_laplacian<1, 0>                                 (crxdata[0], crx, crx_index);
-    renderer::update_laplacian<resum1, resum1/2>                     (crxdata[1], crx, crx_index);
-    renderer::update_laplacian<resum1 * resum2, resum1 * resum2 / 2> (crxdata[2], crx, crx_index);
+  crxdata[0] -> prepare_data = [crxdata, crxHiC ]() -> void {
+    renderer::update_laplacian<1, 0>                                   (crxdata[0], crx, crx_index);
+    renderer::update_laplacian<resum1, resum1 / 2>                     (crxdata[1], crx, crx_index);
+    renderer::update_laplacian<resum1 * resum2, resum1 * resum2 / 2>   (crxdata[2], crx, crx_index);
     crxHiC -> size = crxdata[0] -> size;
   }; crxdata[0] -> upload(); crxdata[1] -> upload(); crxdata[2] -> upload(); crxHiC -> upload();
   renderer::buffers.push_back(crxdata[0]);
@@ -333,7 +333,7 @@ extern "C" void *glumain(void *threadarg) {
   offset = renderer::offsetVectors[0];
 
 #ifdef XLINK
-  renderer::matrix *HiC; // crxHiC
+  renderer::matrix *HiC;
   HiC = new renderer::matrix(renderer::perspectiveMatrix,
 			     offset, crxHiC,
 			     new renderer::matrix_params(0.0f, 0.0f, 1.0f, 1.0f,
