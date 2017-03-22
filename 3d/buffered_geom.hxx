@@ -4,16 +4,11 @@
 
 #include <functional>
 #include "buffer_object.hxx"
+#include "geometry.hxx"
 
 namespace renderer {
-  class buffered_geom {
+  class buffered_geom : public geometry {
   protected:
-    GLuint theProgram;
-
-    GLuint offsetUniform;
-    GLfloat *oVector_uniform;
-    GLuint perspectiveMatrixUnif;
-    GLfloat *pMatrix_uniform;
 
     GLuint vaoObject;
     buffer_object<GLfloat> *buffer;
@@ -22,21 +17,14 @@ namespace renderer {
   public:
     virtual void draw() = 0;
     virtual void update_global_uniforms() {
-      if (theProgram) {
-	glUseProgram(theProgram);
-	glUniformMatrix4fv(perspectiveMatrixUnif, 1, GL_FALSE, pMatrix_uniform);
-	glUniform3fv(offsetUniform, 1, oVector_uniform);
-	glUseProgram(0);
-      }
+      geometry::update_global_uniforms();
     };
 
     buffered_geom(GLfloat *pMatrix, GLfloat *oVector,
-		  buffer_object<GLfloat> *bobj, buffer_object<GLshort> *iobj) :
-      buffer(bobj),
-      index(iobj),
-      pMatrix_uniform(pMatrix),
-      oVector_uniform(oVector),
-      theProgram(0)
+		  buffer_object<GLfloat> *buffer, buffer_object<GLshort> *index) :
+      geometry(pMatrix, oVector),
+      buffer(buffer),
+      index(index)
     {
       glGenVertexArrays(1, &vaoObject);
       glBindVertexArray(vaoObject);

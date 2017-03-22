@@ -29,7 +29,7 @@ float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
 
 namespace renderer {
 
-  std::vector<buffered_geom *>  objects;
+  std::vector<geometry *>  objects;
   std::vector<Ibuffer_object *> buffers;
   std::vector<sphere_params *>  parsphere;
 
