@@ -24,7 +24,7 @@ extern "C" {
   // number of elements
   int N;
   // elements
-  size_t buffer_size;
+  size_t state_size;
   __attribute__ ((aligned (32))) void *restrict buffer;
 
   __attribute__ ((aligned (32))) struct {

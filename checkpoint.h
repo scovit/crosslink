@@ -8,7 +8,7 @@ int prepare_checkpoint(unsigned long long int toprint);\
 
 int make_checkpoint();
 
-int load_checkpoint(const char* hash,
+int load_checkpoint(const unsigned char* hash,
 		    unsigned long long int *toprint);
 
 int init_checkpoint(const char *fname,

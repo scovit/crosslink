@@ -67,9 +67,15 @@ static int *restrict topolist;
 #endif
 
 #ifdef XLINK
-// list of possible topological barrier break
-static int xlinklistlength;
-static int *restrict xlinklist;
+// list
+static int *restrict xllothe;
+static int *restrict xlldown;
+// list stack
+static int *restrict xllsupbottom;
+// time ellapsed
+static unsigned long long int *restrict ellapsedtime;
+// probability lookup table
+static double *restrict xllprob;
 #endif
 
 #ifdef GETPERF

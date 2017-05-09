@@ -45,7 +45,7 @@ int prepare_checkpoint(unsigned long long int toprint) {
 
   void *dest = checkpoint;
   // Buffer
-  memcpy(dest, buffer, buffer_size); dest += buffer_size;
+  memcpy(dest, buffer, state_size); dest += state_size;
   // Global state
   memcpy(dest, &mc_time, sizeof(mc_time)); dest += sizeof(mc_time);
   // Random state
@@ -77,7 +77,7 @@ int prepare_checkpoint(unsigned long long int toprint) {
 }
 
 // Before you should init_checkpoint
-int load_checkpoint(const char* hash,
+int load_checkpoint(const unsigned char* hash,
 		    unsigned long long int *toprint) {
   // block SIGUSR1 signal
 #if NUM_THREADS > 1
@@ -117,7 +117,7 @@ int load_checkpoint(const char* hash,
   // Parse it
   void *source = checkpoint;
   // Buffer
-  memcpy(buffer, source, buffer_size); source += buffer_size;
+  memcpy(buffer, source, state_size); source += state_size;
   // Global state
   memcpy(&mc_time, source, sizeof(mc_time)); source += sizeof(mc_time);
   // Random state
@@ -204,7 +204,7 @@ int init_checkpoint(const char *fname,
 
   checkpoint_size =
     // Buffer
-    buffer_size + 
+    state_size + 
     // Global state
     sizeof(struct mc_time_t) +
     // Random state
@@ -243,6 +243,4 @@ int init_checkpoint(const char *fname,
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
   }
 #endif
-
-  return 0;
 }

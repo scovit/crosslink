@@ -5,12 +5,14 @@
  #endif
 #endif
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <string.h>
+#include <unistd.h>
 #include <time.h>
 #include <math.h>
 #include <xmmintrin.h>
@@ -48,10 +50,77 @@ __m256 avx_square_dist(const __m256 npx, const __m256 npy, const __m256 npz,
   return sum;
 }
 
-
 static inline uint8_t msk_popcount_8(const uint8_t x) {
   return __builtin_popcount(x);
 }
+
+static inline int append_hit_list(int *restrict list,
+				  int pointer, int i, uint8_t mask) {
+  // Logic
+  /* list[pointer]     = i + hittable[8 * mask]; */
+  /* list[pointer + 1] = i + hittable[8 * mask + 1]; */
+  /* list[pointer + 2] = i + hittable[8 * mask + 2]; */
+  /* list[pointer + 3] = i + hittable[8 * mask + 3]; */
+  /* list[pointer + 4] = i + hittable[8 * mask + 4]; */
+  /* list[pointer + 5] = i + hittable[8 * mask + 5]; */
+  /* list[pointer + 6] = i + hittable[8 * mask + 6]; */
+  /* list[pointer + 7] = i + hittable[8 * mask + 7]; */
+
+  // SSE version (reduces code size)
+  __m128i add = _mm_set1_epi32(i);
+  __m128i low = _mm_cvtepu8_epi32(_mm_loadu_si128((__m128i *)(hittable + 8 * mask)));
+  _mm_storeu_si128((void *)(list + pointer), _mm_add_epi32(low, add));
+  __m128i high = _mm_cvtepu8_epi32(_mm_loadu_si128((__m128i *)(hittable + 8 * mask + 4)));
+  _mm_storeu_si128((void *)(list + pointer + 4), _mm_add_epi32(high, add));
+
+  // AVX2 version (even more)
+  /* __m256i add  = _mm256_set1_epi32(i); */
+  /* __m256i data = _mm256_cvtepu8_epi32( _mm_loadu_si128((__m128i *)(hittable + 8 * mask))); */
+  /* _mm256_storeu_si256((void *)(list + pointer), _mm256_add_epi32(data, add)); */
+
+  return msk_popcount_8(mask);
+
+  // note: hittable[8 * mask] could be calculated on the fly directly on the
+  // AVX mask output, maybe. Check pext instruction for an AVX2 version
+
+}
+
+#if defined(XLINK)
+static inline int get_xl_cluster(int m,
+				 int *restrict xllothe,
+				 int xllpointer) {
+  __m256 opx = _mm256_broadcast_ss(dots.x + m);
+  __m256 opy = _mm256_broadcast_ss(dots.y + m);
+  __m256 opz = _mm256_broadcast_ss(dots.z + m);
+
+  int retval = 0;
+
+  unsigned int highm = m & (~7);     // and clear them
+  uint8_t lowm = m & 7;              // take the lower bits
+  
+  uint8_t bmhighm =  0xFF ^ (1 << lowm);
+
+  for (int i = 0; i < N; i += 8) {
+    uint8_t bitmask = (i != highm ? 0xFF : bmhighm);
+
+    __m256 x = _mm256_load_ps(dots.x + i);
+    __m256 y = _mm256_load_ps(dots.y + i);
+    __m256 z = _mm256_load_ps(dots.z + i);
+
+    __m256 distances_old = avx_square_dist(opx, opy, opz, x, y, z);
+
+    uint8_t xlold = _mm256_movemask_ps(
+	    _mm256_cmp_ps(distances_old, comp_xl, _CMP_LT_OS)
+				       ) & bitmask;
+
+    if (unlikely(xlold))
+      retval += append_hit_list(xllothe + xllpointer, retval, i, xlold);
+
+  }
+
+  return retval;
+};
+#endif
 
 /* count the number of contacts or reject in case of overlap 
    should check the stickyball bitmap and return 0 if is not interactive
@@ -66,6 +135,12 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
 			    , int *restrict locali_old
 			    , int *restrict locali_new
 #endif
+#if defined(XLINK)
+			    , int *restrict xllup
+			    , int *xlluplen
+			    , int *xllothelen
+			    , int *xlldownlen
+#endif
 			    ) {
 
 #if (!defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && \
@@ -76,7 +151,6 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
   unsigned int highm = m & (~7);     // and clear them
   uint8_t lowm = m & 7;              // take the lower bits
   
-  unsigned int n = N;
   uint8_t bmhighm =  0xFF ^ (1 << lowm);
 
 #if defined(UNIFORM)
@@ -91,18 +165,17 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
 #if defined(TOPO)
   topolistlength = 0;
 #endif
-#if defined(XLINK)
-  xlinklistlength = 0;
-#endif
 
   __m256 npx = _mm256_broadcast_ss(np);
   __m256 npy = _mm256_broadcast_ss(np + 1);
   __m256 npz = _mm256_broadcast_ss(np + 2);
+#if defined(UNIFORM) || defined(LOCALIZED) || defined(XLINK)
   __m256 opx = _mm256_broadcast_ss(dots.x + m);
   __m256 opy = _mm256_broadcast_ss(dots.y + m);
   __m256 opz = _mm256_broadcast_ss(dots.z + m);
+#endif
 
-  for (int i = 0; i < n; i += 8) {
+  for (int i = 0; i < N; i += 8) {
     uint8_t bitmask = (i != highm ? 0xFF : bmhighm);
 
     __m256 x = _mm256_load_ps(dots.x + i);
@@ -118,8 +191,11 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
       return false;
 #endif
 
+#if defined(UNIFORM) || defined(LOCALIZED) || defined(XLINK)
+    __m256 distances_old = avx_square_dist(opx, opy, opz, x, y, z);
+#endif
+
 #if defined(UNIFORM) || defined(LOCALIZED)
-    __m256 distances_old = sse_square_dist(opx, opy, opz, x, y, z);
     uint8_t stickyball;
 #endif
 #if defined(UNIFORM)
@@ -136,45 +212,34 @@ static bool prob_pot_hc_sse(const float *restrict np, const unsigned int m
       *locali_new += msk_popcount_8(stickyball & bitmask & locmask[i / 4]);
     }
 #endif
+
 #if defined(XLINK)
-    uint8_t xlinkhit = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_xl, _CMP_LT_OS)) &
-      bitmask;
-    if (unlikely(xlinkhit)) {
-      // This generates shitty code because we are cvtepi8 to epi32
-      // in the AVX current standard (supported by my cluster)
-      // this cannot be done by intrinsics, not even cvtepi16 to epi32
-      // (which is in AVX2)
-      // future versions of AVX (2+) will allow for a rewrite using
-      // a couple of intrinsics, altough at that point we will work
-      // on groups of 16 links and so the hittable
-      // might get too big for a good cacheing and pheraps,
-      // will need to be retought
-      xlinklist[xlinklistlength] = i + hittable[8 * xlinkhit];
-      xlinklist[xlinklistlength + 1] = i + hittable[8 * xlinkhit + 1];
-      xlinklist[xlinklistlength + 2] = i + hittable[8 * xlinkhit + 2];
-      xlinklist[xlinklistlength + 3] = i + hittable[8 * xlinkhit + 3];
-      xlinklist[xlinklistlength + 4] = i + hittable[8 * xlinkhit + 4];
-      xlinklist[xlinklistlength + 5] = i + hittable[8 * xlinkhit + 5];
-      xlinklist[xlinklistlength + 6] = i + hittable[8 * xlinkhit + 6];
-      xlinklist[xlinklistlength + 7] = i + hittable[8 * xlinkhit + 7];
-      xlinklistlength += msk_popcount_8(xlinkhit);
-    }
+    uint8_t xlnew = _mm256_movemask_ps(
+              _mm256_cmp_ps(distances_new, comp_xl, _CMP_LT_OS)
+		    );
+    uint8_t xlold = _mm256_movemask_ps(
+              _mm256_cmp_ps(distances_old, comp_xl, _CMP_LT_OS)
+		    );
+
+    uint8_t xlup   = xlnew & (~xlold);
+    if (unlikely(xlup))
+      *xlluplen += append_hit_list(xllup, *xlluplen, i, xlup);
+
+    xlold &= bitmask;
+    uint8_t xldown = xlold & (~xlnew);
+    if (unlikely(xldown))
+      *xlldownlen += append_hit_list(xlldown, *xlldownlen, i, xldown);
+
+    uint8_t xlothe = xlold & xlnew;
+    if (unlikely(xlothe))
+      *xllothelen += append_hit_list(xllothe, *xllothelen, i, xlothe);
 #endif
 
 #if defined(TOPO)
     uint8_t topohit = _mm256_movemask_ps(_mm256_cmp_ps(distances_new,comp_top, _CMP_LE_OS)) &
       bitmask;
-    if (unlikely(topohit)) {
-      topolist[topolistlength] = i + hittable[8 * topohit];
-      topolist[topolistlength + 1] = i + hittable[8 * topohit + 1];
-      topolist[topolistlength + 2] = i + hittable[8 * topohit + 2];
-      topolist[topolistlength + 3] = i + hittable[8 * topohit + 3];
-      topolist[topolistlength + 4] = i + hittable[8 * topohit + 4];
-      topolist[topolistlength + 5] = i + hittable[8 * topohit + 5];
-      topolist[topolistlength + 6] = i + hittable[8 * topohit + 6];
-      topolist[topolistlength + 7] = i + hittable[8 * topohit + 7];
-      topolistlength += msk_popcount_8(topohit);
-    }
+    if (unlikely(topohit))
+      topolistlength += append_hit_list(topolist, topolistlength, i, topohit);
 #endif
 
   }
@@ -188,53 +253,6 @@ static inline float squareDist(const float a0, const float a1, const float a2,
   return ((a0 - b0) * (a0 - b0) +
 	  (a1 - b1) * (a1 - b1) +
 	  (a2 - b2) * (a2 - b2));
-}
-
-
-// Volume escluso
-static int prob_pot_hc(float *restrict np, unsigned int m) {
-
-#if !defined(HARDCORE) && !defined(UNIFORM) && !defined(TOPO) && !defined(XLINK)
-  return 0; // Se ghost
-#endif
-
-  unsigned int sticky = 0;
-
-#if defined(TOPO)
-  topolistlength = 0;
-#endif
-#if defined(XLINK)
-  xlinklistlength = 0;
-#endif
-
-  for ( int i = 0; i < N; i ++)
-    if (i != m) {
-      float distance = squareDist(np[0], np[1], np[2], 
-				  dots.x[i], dots.y[i], dots.z[i]);
-#if defined(HARDCORE)
-      if (distance < comp_hc[0] * comp_hc[0]) {
-	return -1;
-      }
-#endif
-#if defined(UNIFORM)
-      if (distance < comp_sb[0] * comp_sb[0])
-	sticky++;
-#endif
-#if defined(XLINK)
-      if (distance < comp_xl[0] * comp_xl[0]) {
-	xlinklist[xlinklistlength] = i;
-	xlinklistlength++;
-      }
-#endif
-#if defined(TOPO)
-      if (distance < comp_top[0] * comp_top[0]) {
-	topolist[topolistlength] = i;
-	topolistlength++;
-      }
-#endif
-    }
-
-  return sticky;
 }
 
 #if defined(TOPO)
@@ -389,7 +407,25 @@ static void push_in_laplacian(int pos, int value) {
   crx[crx_index[pos + 1]] = value;
   for (int q = pos + 1; q <= N; q++)
     crx_index[q]++;
+
+  // static const double sec      = 0.00000291727643124534153139303105238677938482; // 52nm fiber
+  static const double sec      = 0.00004187003735954159004875449042606454184376; // Bystricky
+  static unsigned long long int lasttime = 0;
+  if ((crx_index[N] - 1) % 2 == 0) {
+    if ((crx_index[N] - 1) % 20 == 0) {
+      printf("%g (mins), %d/%d (crxs), %g (crxs/mins)\n", (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME)*sec/60,
+             crx_index[N]/2, (ODGRMAX - 2) * N / 2,
+             10. * 60. / sec / (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME - lasttime));
+      lasttime =  mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME;
+    } else
+      printf("%g (mins), %d/%d (crxs)\n", (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME)*sec / 60,
+             crx_index[N]/ 2 , (ODGRMAX - 2) * N / 2);
+  }
 #endif
+}
+
+static inline bool can_crosslink(int i) {
+  return (lpl_index[i + 1] - lpl_index[i] < ODGRMAX);
 }
 
 static inline bool connected_laplacian(int i, int j) {
@@ -402,57 +438,57 @@ static inline bool connected_laplacian(int i, int j) {
 }
 
 
-#if defined(FASTEXP)
-#define EXPLOOKUPSIZE 256
-#define EXPLOOKUPFIRST 64
-
-#if defined(UNIFORM)
-__attribute__ ((aligned (32))) double uniform_exp_lookup[EXPLOOKUPSIZE];
-#endif
-#if defined(LOCALIZED)
-__attribute__ ((aligned (32))) double localized_exp_lookup[EXPLOOKUPSIZE];
-#endif
-
 __attribute__ ((noinline))
 void populate_lookup_tables() {
-  for (int i = 0; i < EXPLOOKUPSIZE; i++) {
-#if defined(UNIFORM)
-    uniform_exp_lookup[i] =
-      __builtin_exp(beta_uniform * (EXPLOOKUPFIRST - i));
+
+#ifdef XLINK
+  double piccolo = 1. - xlink_conc;
+
+  xllprob[0] = 1.;
+  for(int i = 1; i < 16384; i++)
+    xllprob[i] = xllprob[i - 1] * piccolo;
 #endif
-#if defined(LOCALIZED)
-    localized_exp_lookup[i] =
-      __builtin_exp(beta_localized * (EXPLOOKUPFIRST - i));
+
+}
+
+static inline void crosslink_with_xllprob(int x, int y) {
+  //  if (unlikely(ellapsedtime[x] != ellapsedtime[y])) {
+  //    fputs("Algorithm is bugged!\n", stderr);
+  //    exit(-23);
+  //  };
+
+  // calculate the probability
+  unsigned long long int deltat =
+    mc_time.DYN_STEPS - mc_time.t - ellapsedtime[x];
+
+  double prob;
+  if (likely(deltat < 16384)) {
+    prob = xllprob[deltat];
+  } else {
+    prob = xllprob[16384 - 1];
+    for (int i = 16384; i <= deltat; i++) {
+      prob *= 1. - xlink_conc;
+    }
+  }
+
+
+  if (dsfmt_genrand_open_open(&dsfmt) >= prob) {
+    // Arrived here, let's connect it
+    push_in_laplacian(x, y);
+    push_in_laplacian(y, x);
+#if defined(GETXLINK)
+    fprintf(simufiles.xlkfile, "%llu\t%d\t%d\n",
+	    mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME,
+	    x, y);
 #endif
   }
 }
-
-#if defined(UNIFORM)
-static inline double fastexp_uniform(int arg) {
-  arg = EXPLOOKUPFIRST - arg;
-  if (arg < EXPLOOKUPSIZE && (arg > 0))
-    return uniform_exp_lookup[arg];
-  else
-    return __builtin_exp(beta_uniform * (EXPLOOKUPFIRST - arg));
-}
-#endif
-
-#if defined(LOCALIZED)
-static inline double fastexp_localized(int arg) {
-  arg = EXPLOOKUPFIRST - arg;
-  if (arg < EXPLOOKUPSIZE && (arg > 0))
-    return localized_exp_lookup[arg];
-  else
-    return __builtin_exp(beta_localized * (EXPLOOKUPFIRST - arg));
-}
-#endif
-#endif
-
+  
 static int move_ele() {
   float n_pos[3];
 
   // Prendo un punto a caso per vedere se lo posso muovere
-  unsigned int buf_p = dsfmt_genrand_uint32(&dsfmt) % N;
+  int buf_p = dsfmt_genrand_uint32(&dsfmt) % N;
 
   displace_sphere(n_pos, dots.x[buf_p], dots.y[buf_p], dots.z[buf_p]);
 
@@ -468,7 +504,7 @@ static int move_ele() {
 
 #if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED) \
      && !defined(HARDCORE) && !defined(TOPO))
-  if (lpl_index[buf_p + 1] - lpl_index[buf_p] == ODGRMAX
+  if (!can_crosslink(buf_p)
       || mc_time.DYN_STEPS - mc_time.t <= mc_time.RELAX_TIME)
     goto accept; // Optimization don't calculate anything
                  // but this is asking for troubles
@@ -482,6 +518,12 @@ static int move_ele() {
   int oldc_loc;
   int newc_loc;
 #endif
+#if defined(XLINK)
+  int xlluplen = 0;
+  int xllothelen = 0;
+  int xlldownlen = 0;
+  int *restrict xllup = xllsupbottom + 2;
+#endif
 
   bool test = prob_pot_hc_sse(n_pos, buf_p
 #if defined(UNIFORM)
@@ -492,6 +534,12 @@ static int move_ele() {
 			      , &oldc_loc
 			      , &newc_loc
 #endif
+#if defined(XLINK)
+			      , xllup
+			      , &xlluplen
+			      , &xllothelen
+			      , &xlldownlen
+#endif
 			      );
 
   // Does it overlap with something?
@@ -500,25 +548,11 @@ static int move_ele() {
    return 0;
 #endif
 
-  /* if ( dsfmt_genrand_uint32(&dsfmt) % 100 != 0 ) */
-  /*   return 0; */
-
-  /* if (buf_p  > 100 || buf_p < 50 ) { */
-  /*   float deltay = n_pos[1] - dots.y[buf_p]; */
-  /*   if (deltay > D/1.2) */
-  /*     return 0; */
-  /* } else */
-  /*   return 0; */
-
   // Metropolis test
   // three different codepath for optimisation
 #if defined(UNIFORM) && !defined(LOCALIZED)
   if (newc_uni < oldc_uni) {
-#if defined(FASTEXP)
-    double a = fastexp_uniform(newc_uni - oldc_uni);
-#else
     double a = __builtin_exp(beta_uniform * (newc_uni - oldc_uni));
-#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -526,11 +560,7 @@ static int move_ele() {
 #endif
 #if defined(LOCALIZED) && !defined(UNIFORM)
   if (newc_loc < oldc_loc) {
-#if defined(FASTEXP)
-    double a = fastexp_localized(newc_loc - oldc_loc);
-#else
     double a = __builtin_exp(beta_localized * (newc_loc - oldc_loc));
-#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -541,12 +571,7 @@ static int move_ele() {
     beta_uniform * (newc_uni - oldc_uni) +
     beta_localized * (newc_loc - oldc_loc);
   if (c < 0.) {
-#if defined(FASTEXP)
-    double a = fastexp_localized(newc_loc - oldc_loc) *
-      fastexp_uniform(newc_uni - oldc_uni);
-#else
     double a = __builtin_exp(c);
-#endif
     double r = dsfmt_genrand_open_open(&dsfmt);
     if (r >= a)
       return 0;
@@ -561,34 +586,90 @@ static int move_ele() {
   }
 #endif
 
+  // Finally, seems like we are going to move, do we Xlink also?
+#if defined(XLINK)
+  unsigned long long int currtime = mc_time.DYN_STEPS - mc_time.t;
+  if (currtime > mc_time.RELAX_TIME
+      && can_crosslink(buf_p)) {
+
+    // When things get farther
+    for (int i = 0; unlikely(i < xlldownlen); i++)
+      if (can_crosslink(xlldown[i])
+	  && !connected_laplacian(buf_p, xlldown[i])) {
+	crosslink_with_xllprob(buf_p, xlldown[i]);
+      }
+
+    // When things get closer
+    if (unlikely(xlluplen)) {
+      xllup -= 2;
+
+      int xllremains = 2;            // to the ones to expand
+      int xllpointer = 2 + xlluplen; // to the ones to be crosslinked
+
+      int nconso     = 0;            // current base from which to expand
+      int visited    = 1;            // number of bases
+
+      // A1
+      xllup[0] = xlluplen;
+
+      // A2
+      xllup[1] = xllothelen;
+
+      if (unlikely(xllothelen)) {
+	for (int p = xllpointer; xllpointer < p + xllothelen; xllpointer++) {
+	  int o = xllothe[xllpointer - p];
+	  xllup[xllpointer] = o;
+
+	  if (can_crosslink(o) && !connected_laplacian(buf_p, o))
+	    crosslink_with_xllprob(o, buf_p);
+	}
+
+	visited++;
+      }
+
+      // cannot crosslink with buf_p anymore
+      ellapsedtime[buf_p] = currtime;
+
+      { // need to address the xllups still
+	for (int j = 0; j < visited; j++) {
+	  int k;
+	  while ((k = xllup[nconso++]) == 0);
+
+	  for (k += xllremains; xllremains < k; xllremains++) {
+	    int l = xllup[xllremains];
+	    if (can_crosslink(l)
+		&& ellapsedtime[l] != currtime) {
+	      // A3..
+	      int m = get_xl_cluster(l, xllup, xllpointer);
+
+	      xllup[xllremains] = m;
+	      if (unlikely(m)) visited++;
+
+	      for (m += xllpointer; xllpointer < m; xllpointer++) {
+		int o = xllup[xllpointer];
+		if (can_crosslink(o)
+		    && ellapsedtime[o] != currtime
+		    && !connected_laplacian(o, l))
+		  crosslink_with_xllprob(o, l);
+	      }
+
+	      ellapsedtime[l] = currtime;
+
+	    } else {
+	      xllup[xllremains] = 0;
+	    }
+	  }
+	}
+      }
+    }
+  }
+#endif
+
 #if defined(UNIFORM)
   contacts += newc_uni - oldc_uni;
 #endif
 #if defined(LOCALIZED)
   contacts_loc += newc_loc - oldc_loc;
-#endif
-
-#if defined(XLINK)
-  if (mc_time.DYN_STEPS - mc_time.t > mc_time.RELAX_TIME
-      && lpl_index[buf_p + 1] - lpl_index[buf_p] < ODGRMAX) {
-    for (int i = 0; i < xlinklistlength; i++) {
-      if (lpl_index[xlinklist[i] + 1] - lpl_index[xlinklist[i]] < ODGRMAX
-	  && !connected_laplacian(buf_p, xlinklist[i])
-	  // Monte-carlo
-	  && dsfmt_genrand_open_open(&dsfmt) < xlink_conc) {
-
-	// Arrived here, let's connect it
-	push_in_laplacian(buf_p, xlinklist[i]);
-	push_in_laplacian(xlinklist[i], buf_p);
-#if defined(GETXLINK)
-	fprintf(simufiles.xlkfile, "%llu\t%u\t%u\n",
-		mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME,
-		buf_p, xlinklist[i]);
-#endif
-
-      }
-    }
-  }
 #endif
 
  accept:
@@ -621,7 +702,7 @@ static inline double energy() {
 
 }
 
-static inline void recenter(void) {
+static void recenter(void) {
   float xm, ym, zm;
   xm = 0; ym = 0; zm = 0;
 
@@ -669,23 +750,22 @@ void set_working_param() {
 #ifdef XLINK
   comp_xl = _mm256_set1_ps(xlink_rad * xlink_rad);
 #endif
-
-#ifdef FASTEXP
-  populate_lookup_tables();
-#endif
 }
 
 static void allocate_memory() {
-  size_t dotsalloc = (3 * N * sizeof(float));
+  size_t align = 32;
+
+  // State memory
+  size_t dotsalloc = 3 * N * sizeof(float);
+#if defined(XLINK)
+  size_t ellapsedtimealloc = N * sizeof(unsigned long long int);
+#else
+  size_t ellapsedtimealloc = (size_t)0;
+#endif
 #if defined(LOCALIZED)
   size_t locmaskalloc = N / 4 * sizeof(uint8_t);
 #else
   size_t locmaskalloc = (size_t)0;
-#endif
-#if defined(XLINK)
-  size_t xlinklistalloc = N * sizeof(int);
-#else
-  size_t xlinklistalloc = (size_t)0;
 #endif
 #if ((NUM_THREADS > 1) && defined(XLINK))
   size_t crx_indexalloc = (N + 4) * sizeof(int);
@@ -694,44 +774,81 @@ static void allocate_memory() {
   size_t crx_indexalloc = (size_t)0;
   size_t crxalloc       = (size_t)0;
 #endif
+  size_t lpl_indexalloc = (N + 4) * sizeof(int);
+  size_t lplalloc = ODGRMAX * N * sizeof(int);
+  state_size = dotsalloc + ellapsedtimealloc + locmaskalloc +
+    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc;
+  if (state_size % align)
+    state_size = ((state_size + align) / align) * align;
+
+  // Working memory
+#if defined(XLINK)
+  size_t xllsupalloc     = (N + 1) * N * sizeof(int);
+  size_t xllothealloc    = N * sizeof(int);
+  size_t xlldownalloc    = N * sizeof(int);
+  size_t xllproballoc    = 16384 * sizeof(double);
+#else
+  size_t xllsupalloc        = (size_t)0;
+  size_t xllothealloc       = (size_t)0;
+  size_t xlldownalloc       = (size_t)0;
+  size_t xllproballoc       = (size_t)0;
+#endif
 #if defined(TOPO)
   size_t topolistalloc = N * sizeof(int);
 #else
   size_t topolistalloc = (size_t)0;
 #endif
-  size_t lpl_indexalloc = (N + 4) * sizeof(int);
-  size_t lplalloc = ODGRMAX * N * sizeof(int);
-  buffer_size = dotsalloc + locmaskalloc + xlinklistalloc + topolistalloc +
-    lpl_indexalloc + lplalloc + crx_indexalloc + crxalloc;
-  if(posix_memalign((void **)&buffer, 32,
-		    buffer_size)) {
+  size_t work_size = xllsupalloc + xlldownalloc + xllothealloc
+    + xllproballoc + topolistalloc;
+  
+  size_t buffer_size = state_size + work_size;
+  if (posix_memalign((void **)&buffer, align, buffer_size)) {
     fprintf(stderr, "Error allocating memory\n");
     exit(-8);
   }
+
+  // State memory
   dots.x = (float *restrict)buffer;
   dots.y = (float *restrict)buffer + N;
   dots.z = (float *restrict)buffer + N + N;
-#if defined(LOCALIZED)
-  locmask = (uint8_t *restrict)((uint8_t *)buffer + dotsalloc);
-#endif
 #if defined(XLINK)
-  xlinklist = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc);
+  ellapsedtime = (unsigned long long int *restrict)((uint8_t *)buffer
+						    + dotsalloc);
+#endif
+#if defined(LOCALIZED)
+  locmask = (uint8_t *restrict)((uint8_t *)buffer + dotsalloc
+				+ ellapsedtimealloc);
+#endif
+  lpl_index = (int *restrict)((uint8_t *)buffer + dotsalloc
+			      + ellapsedtimealloc+ locmaskalloc);
+  lpl = (int *restrict)((uint8_t *)buffer + dotsalloc
+			+ ellapsedtimealloc + locmaskalloc
+			+ lpl_indexalloc);
+#if ((NUM_THREADS > 1) && defined(XLINK))
+  crx_index = (int *restrict)((uint8_t *)buffer + dotsalloc
+			      + ellapsedtimealloc + locmaskalloc
+			      + lpl_indexalloc + lplalloc);
+  crx = (int *restrict)((uint8_t *)buffer + dotsalloc
+			+ ellapsedtimealloc + locmaskalloc
+			+ lpl_indexalloc + lplalloc
+			+ crx_indexalloc);
+#endif
+
+  // Working memory
+#if defined(XLINK)
+  xllothe          = (int *restrict)((uint8_t *)buffer + state_size);
+  xlldown          = (int *restrict)((uint8_t *)buffer + state_size
+				   + xllothealloc);
+  xllprob          = (double *restrict)((uint8_t *)buffer + state_size
+				      + xllothealloc + xlldownalloc);
+  xllsupbottom     = (int *restrict)((uint8_t *)buffer + state_size
+				     + xllothealloc + xlldownalloc
+				     + xllproballoc);
 #endif
 #if defined(TOPO)
-  topolist = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			     + xlinklistalloc);
-#endif
-  lpl_index = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			      + xlinklistalloc + topolistalloc);
-  lpl = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			+ xlinklistalloc + topolistalloc + lpl_indexalloc);
-#if ((NUM_THREADS > 1) && defined(XLINK))
-  crx_index = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			      + xlinklistalloc + topolistalloc
-			      + lpl_indexalloc + lplalloc);
-  crx = (int *restrict)((uint8_t *)buffer + dotsalloc + locmaskalloc
-			+ xlinklistalloc + topolistalloc + lpl_indexalloc
-			+ lpl_indexalloc + lplalloc + crx_indexalloc);
+  topolist = (int *restrict)((uint8_t *)buffer + state_size
+			     + xllothealloc + xlldownalloc
+			     + xllproballoc + xllsupalloc);
 #endif
 }
 
@@ -1140,15 +1257,22 @@ void read_fundamental_param() {
 
   // N
   d = get_infofile(infos, "N", 0); if (is_d_infofile != d.type) goto fail; N = d.d;
-  if (N % 16) {
-    fprintf(stderr, "N should be a multiple of %d\n", 16);
+  if ((N % 16) || (__builtin_popcount(N) != 1)) {
+    fprintf(stderr, "N should be a power of two greater than %d\n", 16);
     exit(-1);
   }
 
   // lambda
-  // D
   lambda = sqrt(5.0 / 3.0 / N);
-  D = 0.6 * (lambda);
+
+  // D
+  d = get_infofile(infos, "D", 0);
+  if (is_g_infofile == d.type) {
+    D = d.g;
+  } else {
+    D = 0.6 * lambda;
+    d.g = D; d.type = is_g_infofile; append_infofile(infos, "D", d);
+  }
 
   // cfgfile lplfile
   d = get_infofile(infos, "cfgfile", 0); if (is_s_infofile != d.type) goto fail; cfgfile = d.s;
@@ -1263,7 +1387,7 @@ void set_times() {
   if (is_llu_infofile == d.type)
     mc_time.CORRL_TIME = d.llu;
   else {
-    mc_time.CORRL_TIME = 2*458ULL * N * N;
+    mc_time.CORRL_TIME = 2*458ULL * N * N / 10;
     d.llu = mc_time.CORRL_TIME; d.type = is_llu_infofile; append_infofile(infos, "CORRL_TIME", d);
   }
 
@@ -1324,6 +1448,8 @@ void *simulazione(void *threadarg) {
   initialize_seed();
 
   allocate_memory();
+
+  populate_lookup_tables();
 
   // put laplacian online from file or automatically
   if (!strcmp(lplfile, "NULL"))
