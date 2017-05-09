@@ -126,15 +126,19 @@ int load_checkpoint(const char* hash,
   *toprint = *(unsigned long long int *)source; source += sizeof(unsigned long long int);
   // File offsets
 #if defined(GETXYZ)
+  fseeko(simufiles.xyzfile, 0, SEEK_END);
   fseeko(simufiles.xyzfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
 #endif
 #if defined(GETXLINK)
+  fseeko(simufiles.xlkfile, 0, SEEK_END);
   fseeko(simufiles.xlkfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
 #endif
 #if defined(GETPERF)
+  fseeko(simufiles.accfile, 0, SEEK_END);
   fseeko(simufiles.accfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
 #endif
 #if defined(GETENERGY)
+  fseeko(simufiles.ctxfile, 0, SEEK_END);
   fseeko(simufiles.ctxfile, *(off_t *)source, SEEK_SET);
 #endif
   //

@@ -1053,16 +1053,28 @@ char *out_filename(const char *ext) {
 static __attribute__ ((noinline))
 void openfiles() {
 #if defined(GETXYZ)
-  simufiles.xyzfile = fopen(out_filename(".xyz"), "w");
+  if ((simufiles.xyzfile = fopen(out_filename(".xlk"), "r+")) == NULL)
+    if ((simufiles.xyzfile = fopen(out_filename(".xlk"), "w")) == NULL) {
+      printf("Open failed, errno = %d\n", errno);
+    };
 #endif
 #if defined(GETXLINK)
-  simufiles.xlkfile = fopen(out_filename(".xlk"), "w");
+  if ((simufiles.xlkfile = fopen(out_filename(".xlk"), "r+")) == NULL)
+    if ((simufiles.xlkfile = fopen(out_filename(".xlk"), "w")) == NULL) {
+      printf("Open failed, errno = %d\n", errno);
+    };
 #endif
 #if defined(GETPERF)
-  simufiles.accfile = fopen(out_filename(".acc.dat"), "w");
+  if ((simufiles.accfile = fopen(out_filename(".xlk"), "r+")) == NULL)
+    if ((simufiles.accfile = fopen(out_filename(".xlk"), "w")) == NULL) {
+      printf("Open failed, errno = %d\n", errno);
+    };
 #endif
 #if defined(GETENERGY)
-  simufiles.ctcfile = fopen(out_filename(".ctc.dat"), "w");
+  if ((simufiles.ctcfile = fopen(out_filename(".xlk"), "r+")) == NULL)
+    if ((simufiles.ctcfile = fopen(out_filename(".xlk"), "w")) == NULL) {
+      printf("Open failed, errno = %d\n", errno);
+    };
 #endif
 
   if (
@@ -1087,17 +1099,18 @@ void openfiles() {
 
 __attribute__ ((noinline))
 void closefiles() {
+  FILE *thefile;
 #if defined(GETXYZ)
-  fclose(simufiles.xyzfile);
+  thefile = simufiles.xyzfile; fflush(thefile); ftruncate(fileno(thefile), ftello(thefile)); fclose(thefile);
 #endif
 #if defined(GETPERF)
-  fclose(simufiles.accfile);
+  thefile = simufiles.accfile; fflush(thefile); ftruncate(fileno(thefile), ftello(thefile)); fclose(thefile);
 #endif
 #if defined(GETENERGY)
-  fclose(simufiles.ctcfile);
+  thefile = simufiles.ctcfile; fflush(thefile); ftruncate(fileno(thefile), ftello(thefile)); fclose(thefile);
 #endif
 #if defined (GETXLINK)
-  fclose(simufiles.xlkfile);
+  thefile = simufiles.xlkfile; fflush(thefile); ftruncate(fileno(thefile), ftello(thefile)); fclose(thefile);
 #endif
   close_infofile(infos);
 }
