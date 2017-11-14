@@ -8,6 +8,10 @@
 #include <cstring>
 #include <ctime>
 #include <functional>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
 #define GL_GLEXT_PROTOTYPES
@@ -26,6 +30,8 @@
 #include <vector>
 
 float BackGround[4] = {1.0, 1.0, 1.0, 1.0};
+renderer::windower *Windower;
+
 
 namespace renderer {
 
@@ -52,15 +58,23 @@ namespace renderer {
     {  0.5f,      -0.5f,          -4.5f },
   };
 
-  static inline void transpose_data(float *restrict bufdest) {
-    for (int i = 0; i < N; i += 8) {
-      __m256 x = _mm256_load_ps(dots.x + i);
-      __m256 y = _mm256_load_ps(dots.y + i);
-      __m256 z = _mm256_load_ps(dots.z + i);
+  static inline float sum8(__m256 x) {
+    __m256 hsum = _mm256_hadd_ps(x, x);
+    hsum = _mm256_add_ps(hsum, _mm256_permute2f128_ps(hsum, hsum, 0x1));
+    return _mm_cvtss_f32(_mm_hadd_ps(_mm256_castps256_ps128(hsum),
+				     _mm256_castps256_ps128(hsum)));
+  }
 
-      // Transpose
+  static inline void transpose_data(float *restrict bufdest) {
+    float sums[3] = { 0.0f, 0.0f, 0.0f};
+
+    for (int i = 0; i < N; i += 8) {
       float  *p = bufdest + 3*i; // output pointer
       __m128 *m = (__m128*) p;
+
+      __m256 x = _mm256_load_ps(dots.x + i); sums[0] += sum8(x);
+      __m256 y = _mm256_load_ps(dots.y + i); sums[1] += sum8(y);
+      __m256 z = _mm256_load_ps(dots.z + i); sums[2] += sum8(z);
 
       __m256 rxy = _mm256_shuffle_ps(x,y, _MM_SHUFFLE(2,0,2,0)); 
       __m256 ryz = _mm256_shuffle_ps(y,z, _MM_SHUFFLE(3,1,3,1)); 
@@ -76,6 +90,12 @@ namespace renderer {
       m[3] = _mm256_extractf128_ps( r03 ,1);
       m[4] = _mm256_extractf128_ps( r14 ,1);
       m[5] = _mm256_extractf128_ps( r25 ,1);
+    }
+
+    for (int i = 0; i < 3 * N; i += 3) {
+      bufdest[i]   -= (sums[0] / N);
+      bufdest[i+1] -= (sums[1] / N);
+      bufdest[i+2] -= (sums[2] / N);
     }
   }
 
@@ -138,8 +158,36 @@ namespace renderer {
   }
 
   void keypress(windower *w, int t, int i) {
+    static int sshot_index = 0;
+    static char *tmpdir = getenv("TMP");
+
+    // Force quit
     if (i == 'q' && t == 0)
       pthread_exit(NULL);
+
+    // Screenshot
+    if (i == 's' && t == 0) {
+      int wx, wy;
+      Windower -> getWindowsize(&wx, &wy);
+
+      GLbyte *buffer = new GLbyte[256 + 3 * wx * wy];
+      GLbyte *pixels = buffer + snprintf((char *)buffer, 256, "P6\n%d %d\n255\n", wx, wy);
+      glReadPixels(0, 0, wx, wy, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+      char fname[256];
+      if (tmpdir)
+	snprintf(fname, sizeof(fname), "%s/%03d-sshot.ppm", tmpdir, sshot_index++);
+      else
+	snprintf(fname, sizeof(fname), "%s/%03d-sshot.ppm", ".", sshot_index++);
+
+      // We do not do error checks.. who care only screenshots
+      int fh = open(fname, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+      write(fh, buffer, 3 * wx * wy + (uint8_t)(pixels - buffer));
+      close(fh);
+      delete[] buffer;
+      printf("[%s (%dx%d)]\n", fname, wx, wy);
+      fflush(stdout);
+    }
   }
 
   void mousebutton(windower *w, int i, int t, double x, double y) {
@@ -227,12 +275,12 @@ extern "C" void *glumain(void *threadarg) {
   int argc = ((struct thread_data *) threadarg) -> argc;
   char **argv = ((struct thread_data *) threadarg) -> argv;
 
-  renderer::windower *Window = new renderer::glxwindower();
+  Windower = new renderer::glxwindower();
   
-  Window -> create_window(800, 800);
-  Window -> Reshaper = renderer::reshape;
-  Window -> Keyboarder = renderer::keypress;
-  Window -> Mouser = renderer::mousebutton;
+  Windower -> create_window(800, 800);
+  Windower -> Reshaper = renderer::reshape;
+  Windower -> Keyboarder = renderer::keypress;
+  Windower -> Mouser = renderer::mousebutton;
 
   // Implement zoom with the mouse
 
@@ -344,9 +392,9 @@ extern "C" void *glumain(void *threadarg) {
   offset = renderer::offsetVectors[1];
 
   Poly = new renderer::segments(renderer::perspectiveMatrix,
-			       offset, polydata[0], indexdata[0],
-			       new renderer::segments_params(.7f, .7f, .7f, 1.0f,
-							    1.0, 1, 0xFFFF));
+				offset, polydata[0], indexdata[0],
+				new renderer::segments_params(.7f, .7f, .7f, 1.0f,
+							      1.0, 1, 0xFFFF));
   renderer::objects.push_back(Poly);
 
   Sph = new renderer::sphere(renderer::perspectiveMatrix,
@@ -474,16 +522,16 @@ extern "C" void *glumain(void *threadarg) {
   struct timespec tim, tim2;
   while(true) {
 
-    Window -> process_events();
+    Windower -> process_events();
 
     renderer::display();
 
-    Window -> swap();
+    Windower -> swap();
     
     tim.tv_sec = 0L;
     tim.tv_nsec = 100000000L;
     nanosleep(&tim , &tim2);
   }
  
-  Window -> destroy();
+  Windower -> destroy();
 }

@@ -409,7 +409,8 @@ static void push_in_laplacian(int pos, int value) {
     crx_index[q]++;
 
   // static const double sec      = 0.00000291727643124534153139303105238677938482; // 52nm fiber
-  static const double sec      = 0.00004187003735954159004875449042606454184376; // Bystricky
+  //  static const double sec      = 0.00004187003735954159004875449042606454184376; // Bystricky
+  static const double sec = 0.0000003283564776432889423431753675885210637426;
   static unsigned long long int lasttime = 0;
   if ((crx_index[N] - 1) % 2 == 0) {
     if ((crx_index[N] - 1) % 20 == 0) {
@@ -460,6 +461,7 @@ static inline void crosslink_with_xllprob(int x, int y) {
   // calculate the probability
   unsigned long long int deltat =
     mc_time.DYN_STEPS - mc_time.t - ellapsedtime[x];
+  printf("Deltat: %llu\n", deltat);
 
   double prob;
   if (likely(deltat < 16384)) {

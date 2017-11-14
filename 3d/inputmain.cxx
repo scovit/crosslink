@@ -5,6 +5,10 @@
  #endif
 #endif
 
+// The source code in this file is really bad, in the long term we want to extend
+// the configuration file to be accessible from the command line.
+// Right now it does it's job
+
 #include <string>
 #include <vector>
 #include <cstdio>
@@ -20,6 +24,7 @@
 #include <boost/lexical_cast.hpp>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "glxwindower.hxx"
 
 extern pthread_spinlock_t spinsum;
 extern pthread_barrier_t startbarr;
@@ -257,9 +262,9 @@ extern "C" void *inputmain(void *threadarg) {
   std::string comando;
 
   char *prompt;
-  if (isatty(fileno(stdin)))
-    prompt = (char *)"] ";
-  else
+  //  if (isatty(fileno(stdin)))
+  //    prompt = (char *)"] ";
+  //  else
     prompt = (char *)"";
 
   while (comando != "exit") {
