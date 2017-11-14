@@ -8,9 +8,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <errno.h>
 #include <time.h>
 #include <math.h>
 #include <xmmintrin.h>
@@ -389,6 +391,21 @@ static void push_in_laplacian(int pos, int value) {
   crx[crx_index[pos + 1]] = value;
   for (int q = pos + 1; q <= N; q++)
     crx_index[q]++;
+
+  // static const double sec      = 0.00000291727643124534153139303105238677938482; // 52nm fiber
+  //  static const double sec      = 0.00004187003735954159004875449042606454184376; // Bystricky
+  static const double sec = 0.0000003283564776432889423431753675885210637426;
+  static unsigned long long int lasttime = 0;
+  if ((crx_index[N] - 1) % 2 == 0) {
+    if ((crx_index[N] - 1) % 20 == 0) {
+      printf("%g (mins), %d/%d (crxs), %g (crxs/mins)\n", (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME)*sec/60,
+             crx_index[N]/2, (ODGRMAX - 2) * N / 2,
+             10. * 60. / sec / (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME - lasttime));
+      lasttime =  mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME;
+    } else
+      printf("%g (mins), %d/%d (crxs)\n", (mc_time.DYN_STEPS - mc_time.t - mc_time.RELAX_TIME)*sec / 60,
+             crx_index[N]/ 2 , (ODGRMAX - 2) * N / 2);
+  }
 #endif
 }
 
