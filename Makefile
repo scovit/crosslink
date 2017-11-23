@@ -32,13 +32,13 @@ CPUFGL=${GPUF64}
 GLFILES=build/glumain.o build/gl-subs.o build/glxwindower.o build/segments.o build/sphere.o build/matrix.o build/inputmain.o
 GLLIBS=${GLFILES} -lpthread -lGL -lXi -lreadline
 
-all: nucleoid nucleoid.gl infofile/infotest
+all: crosslink crosslink.gl infofile/infotest
 
-nucleoid: build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o
-	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o nucleoid build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o -lm -lcrypto
+crosslink: build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o
+	${CC} ${CFLAGS} ${CPUF64} -DNUM_THREADS=1 -o crosslink build/simulazione.o build/main.o build/dSFMT.o build/hex.o build/checkpoint.o build/infofile.o build/parse.tab.o build/lex.yy.o -lm -lcrypto
 
-nucleoid.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLFILES}
-	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o nucleoid.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLLIBS} -lm -lX11 -lcrypto
+crosslink.gl: build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLFILES}
+	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o crosslink.gl build/simulazione.gl.o build/main.gl.o build/dSFMT.gl.o build/hex.gl.o build/checkpoint.gl.o build/infofile.gl.o build/parse.tab.gl.o build/lex.yy.gl.o ${GLLIBS} -lm -lX11 -lcrypto
 
 infofile/infotest: infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
 	${CC} ${CFLAGS} ${CPUF64} -o infofile/infotest infofile/infotest.c build/lex.yy.o build/parse.tab.o build/infofile.o
@@ -119,4 +119,4 @@ build/inputmain.o: 3d/inputmain.cxx
 	${CXX} ${CXXFLAGS} ${CPUFGL} -DNUM_THREADS=3 -o build/inputmain.o -c 3d/inputmain.cxx
 
 clean:
-	rm nucleoid nucleoid.gl infofile/infotest build/*.o build/*.c build/*.h
+	rm crosslink crosslink.gl infofile/infotest build/*.o build/*.c build/*.h
