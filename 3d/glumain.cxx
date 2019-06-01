@@ -277,7 +277,9 @@ extern "C" void *glumain(void *threadarg) {
 
   Windower = new renderer::glxwindower();
   
-  Windower -> create_window(800, 800);
+  if (Windower -> create_window(800, 800)) {
+    exit(1);
+  };
   Windower -> Reshaper = renderer::reshape;
   Windower -> Keyboarder = renderer::keypress;
   Windower -> Mouser = renderer::mousebutton;

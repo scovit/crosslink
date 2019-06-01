@@ -55,7 +55,7 @@ namespace renderer {
  
     if ( !display ) {
       printf( "Failed to open X display\n" );
-      exit(1);
+      return -1;
     }
  
     // Check for Xinput
@@ -64,14 +64,14 @@ namespace renderer {
     if (!XQueryExtension(display, "XInputExtension", &Xi_opcode,
 			 &event, &error)) {
       printf("X Input extension not available.\n");
-      exit(1);
+      return -2;
     }
 
     /* Which version of XI2? We support 2.0 */
     int major = 2, minor = 0;
     if (XIQueryVersion(display, &major, &minor) == BadRequest) {
       printf("XI2 not available. Server supports %d.%d\n", major, minor);
-      exit(1);
+      return -3;
     }
 
     int glx_major, glx_minor;
@@ -81,7 +81,7 @@ namespace renderer {
 	 ( ( glx_major == 1 ) && ( glx_minor < 3 ) ) || ( glx_major < 1 ) )
       {
 	printf( "Invalid GLX version" );
-	exit(1);
+	return -4;
       }
  
     // Get a matching FB config
@@ -109,7 +109,7 @@ namespace renderer {
     if ( !fbc )
       {
 	printf( "Failed to retrieve a framebuffer config\n" );
-	exit(1);
+	return -5;
       }
     // printf( "Found %d matching FB configs.\n", fbcount );
  
@@ -168,7 +168,7 @@ namespace renderer {
     if ( !win )
       {
 	printf( "Failed to create window.\n" );
-	exit(1);
+	return -6;
       }
 
     // Done with the visual info data
@@ -259,7 +259,7 @@ namespace renderer {
 	if ( ctxErrorOccurred || !ctx ) {
 	  printf( "Failed to create GL 2.1 context"
 		  " ... dieing\n" );
-	  exit(-1);
+	  return -7;
 	}
       }
  
@@ -272,7 +272,7 @@ namespace renderer {
     if ( ctxErrorOccurred || !ctx )
       {
 	printf( "Failed to create an OpenGL context\n" );
-	exit(1);
+	return -8;
       }
  
     // Verifying that context is a direct context
@@ -285,6 +285,8 @@ namespace renderer {
     glXMakeCurrent( display, win, ctx );
 
     is_created = true;
+
+    return 0;
   }
 
   void glxwindower::destroy() {
