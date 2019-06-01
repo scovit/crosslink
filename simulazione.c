@@ -1296,7 +1296,11 @@ void set_times() {
   if (is_d_infofile == d.type)
     mc_time.STATISTIC = d.d;
   else {
+#if defined(XLINK)
     mc_time.STATISTIC = (unsigned long long)(4. * 1./xlink_conc);
+#else
+    mc_time.STATISTIC = 4; // arbitrary default
+#endif
     d.d = mc_time.STATISTIC;  d.type = is_d_infofile; append_infofile(infos, "STATISTIC", d);
   }
 
