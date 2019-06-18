@@ -1133,9 +1133,27 @@ void closefiles() {
 }
 
 __attribute__ ((noinline))
+void truncatefiles() {
+  FILE *thefile;
+#if defined(GETXYZ)
+  thefile = simufiles.xyzfile; fflush(thefile); ftruncate(fileno(thefile), 0);
+#endif
+#if defined(GETPERF)
+  thefile = simufiles.accfile; fflush(thefile); ftruncate(fileno(thefile), 0);
+#endif
+#if defined(GETENERGY)
+  thefile = simufiles.ctcfile; fflush(thefile); ftruncate(fileno(thefile), 0);
+#endif
+#if defined (GETXLINK)
+  thefile = simufiles.xlkfile; fflush(thefile); ftruncate(fileno(thefile), 0);
+#endif
+}
+
+__attribute__ ((noinline))
 void flushfiles() {
   fflush(stderr);
   fflush(stdout);
+
 #if defined(GETXYZ)
   fflush(simufiles.xyzfile);
 #endif
@@ -1391,17 +1409,26 @@ void *simulazione(void *threadarg) {
   openfiles();
 
   // Checkpoint initialization
-  init_checkpoint(out_filename(".checkpoint"), toprint);
+  if (init_checkpoint(out_filename(".checkpoint"), toprint)) {
+    fprintf(stderr, "Error allocating memory for checkpointing\n");
+    exit(-8);
+  };
+
   // Is a checkpoint already there?
   {
     struct data_infofile d;
+    int chkloaded = -1;
   
     d = get_infofile(infos, "CHECKPOINT", -1);
-    if (is_list_infofile == d.type)
-      load_checkpoint((d.list -> next -> data).s, &toprint); // Yes
-    else {
-      // No
+    if (is_list_infofile == d.type) { // Found
+      chkloaded = load_checkpoint((d.list -> next -> data).s, &toprint);
+    }
+    if (chkloaded < -1)
+      exit(-9); // Error
+
+    if (chkloaded == -1) {
       d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "STARTTIME", d);
+      truncatefiles();
     }
   }
 

@@ -63,7 +63,7 @@ int prepare_checkpoint(unsigned long long int toprint) {
   *(off_t *)dest = ftello(simufiles.accfile); dest += sizeof(off_t);
 #endif
 #if defined(GETENERGY)
-  *(off_t *)dest = ftello(simufiles.ctcfile);
+  *(off_t *)dest = ftello(simufiles.ctcfile); dest += sizeof(off_t);
 #endif
   //
 
@@ -89,11 +89,16 @@ int load_checkpoint(const char* hash,
 #endif
 
   int fd = open(filename, O_RDONLY);
+
   struct stat buf;
-  fstat(fd, &buf);
+  if (fstat(fd, &buf)) {
+    fprintf(stderr, "Could not open checkpoint file\n");
+    return -1;
+  };
+
   if (checkpoint_size != buf.st_size) {
     fprintf(stderr, "Checkpoint size and file doesn't match\n");
-    exit(-9);
+    return -2;
   }
 
   read(fd, checkpoint, checkpoint_size);
@@ -111,8 +116,8 @@ int load_checkpoint(const char* hash,
 
   if (strcmp(checksum, hash) != 0) {
     fprintf(stderr, "Checkpoint hash doesn't match: %s %s\n", checksum, hash);
-    exit(-10);
-  };
+    return -3;
+  }
 
   // Parse it
   void *source = checkpoint;
@@ -139,7 +144,7 @@ int load_checkpoint(const char* hash,
 #endif
 #if defined(GETENERGY)
   fseeko(simufiles.ctxfile, 0, SEEK_END);
-  fseeko(simufiles.ctxfile, *(off_t *)source, SEEK_SET);
+  fseeko(simufiles.ctxfile, *(off_t *)source, SEEK_SET); source += sizeof(off_t);
 #endif
   //
 
@@ -227,11 +232,9 @@ int init_checkpoint(const char *fname,
     //
     0;
 
-  if(posix_memalign((void **)&checkpoint, 32,
-		    checkpoint_size)) {
-    fprintf(stderr, "Error allocating memory for checkpointing\n");
-    exit(-8);
-  }
+  if(posix_memalign((void **)&checkpoint, 32, checkpoint_size))
+    return -1;
+
   prepare_checkpoint(toprint);
   // Activate checkpoint signal
 #if NUM_THREADS > 1
