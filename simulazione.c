@@ -1407,7 +1407,7 @@ void thermalize(unsigned long long int toprint) {
 static __attribute__ ((noinline))
 void simulate(unsigned long long int toprint) {
 
-    for ( ; mc_time.t != 0; mc_time.t-- ) {
+  for ( ; mc_time.t != 0; mc_time.t-- ) {
 #if NUM_THREADS > 1
     pthread_spin_lock (&spinsum);
 #endif
