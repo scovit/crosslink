@@ -1326,6 +1326,113 @@ void set_times() {
     + mc_time.CORRL_TIME * mc_time.STATISTIC + 1;
 }
 
+static __attribute__ ((noinline))
+void thermalize() {
+  unsigned long long int end = mc_time.DYN_STEPS - mc_time.RELAX_TIME;
+
+  for ( ; mc_time.t != end; mc_time.t-- ) {
+#if NUM_THREADS > 1
+    pthread_spin_lock (&spinsum);
+#endif
+
+#if defined(GETPERF)
+    if (move_ele())
+      accepted++;
+    total++;
+#else
+    move_ele();
+#endif
+
+#if NUM_THREADS > 1
+    pthread_spin_unlock (&spinsum);
+#endif
+
+  }
+
+}
+
+static __attribute__ ((noinline))
+void simulate(unsigned long long int toprint) {
+
+    for ( ; mc_time.t != 0; mc_time.t-- ) {
+#if NUM_THREADS > 1
+    pthread_spin_lock (&spinsum);
+#endif
+    // TODO: - Extimate the correlation time and use it for measurements
+    //       - load with datafiles from fortran simulation
+
+    if ( unlikely(mc_time.t == toprint) ) {
+      toprint -= mc_time.CORRL_TIME;
+
+#if !defined(CONFINEMENT)
+      recenter();
+#endif
+
+#if defined(GETXYZ)
+      print_buffer(simufiles.xyzfile);
+#endif
+
+#if defined(GETPERF)
+      gettimeofday(now, NULL);
+      unsigned long long ellapsed_time = (now->tv_sec - then->tv_sec) *
+	1000000ULL + (now->tv_usec - then->tv_usec);
+      fprintf(simufiles.accfile, "%llu\t%d\t%d\t%g\t%llu\t%g\t%g\n",
+	      mc_time.DYN_STEPS - mc_time.t,
+	      accepted, total,
+	      (float)accepted / total, ellapsed_time,
+	      displ, displ / ellapsed_time);
+
+      displ = 0.0;
+      struct timeval *temp = now;
+      now = then; then = temp;
+
+      total = 0;
+      accepted = 0;
+#endif
+
+#if defined(GETENERGY)
+      fprintf(simufiles.ctcfile, "%llu\t%g\t%d\t%d\n",
+	      mc_time.DYN_STEPS - mc_time.t,
+	      energy(),
+#ifdef UNIFORM
+	      contacts,
+#else
+	      0,
+#endif
+#ifdef LOCALIZED
+	      contacts_loc
+#else
+              0
+#endif
+	      );
+#endif
+
+#if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED))
+      // Optimization, just finish
+      // but this is asking for troubles
+      if (lpl_index[N] >= ODGRMAX * N)
+	break;
+#endif
+
+      prepare_checkpoint(toprint);
+    }
+
+#if defined(GETPERF)
+    if (move_ele())
+      accepted++;
+    total++;
+#else
+    move_ele();
+#endif
+
+#if NUM_THREADS > 1
+    pthread_spin_unlock (&spinsum);
+#endif
+
+  }
+
+}
+
 void *simulazione(void *threadarg) {
 
   // This sets all denormal numbers to zero - DAZ and FTZ flags
@@ -1438,84 +1545,14 @@ void *simulazione(void *threadarg) {
   pthread_barrier_wait(&startbarr);
   pthread_barrier_wait(&firstbarr);
 #endif
-
-  for ( ; mc_time.t != 0; mc_time.t-- ) {
-#if NUM_THREADS > 1
-    pthread_spin_lock (&spinsum);
-#endif
-    // TODO: - Extimate the correlation time and use it for measurements
-    //       - load with datafiles from fortran simulation
-
-    if ( unlikely(mc_time.t == toprint) ) {
-      toprint -= mc_time.CORRL_TIME;
-
-#if !defined(CONFINEMENT)
-      recenter();
-#endif
-
-#if defined(GETXYZ)
-      print_buffer(simufiles.xyzfile);
-#endif
-
-#if defined(GETPERF)
-      gettimeofday(now, NULL);
-      unsigned long long ellapsed_time = (now->tv_sec - then->tv_sec) *
-	1000000ULL + (now->tv_usec - then->tv_usec);
-      fprintf(simufiles.accfile, "%llu\t%d\t%d\t%g\t%llu\t%g\t%g\n",
-	      mc_time.DYN_STEPS - mc_time.t,
-	      accepted, total,
-	      (float)accepted / total, ellapsed_time,
-	      displ, displ / ellapsed_time);
-
-      displ = 0.0;
-      struct timeval *temp = now;
-      now = then; then = temp;
-
-      total = 0;
-      accepted = 0;
-#endif
-
-#if defined(GETENERGY)
-      fprintf(simufiles.ctcfile, "%llu\t%g\t%d\t%d\n",
-	      mc_time.DYN_STEPS - mc_time.t,
-	      energy(),
-#ifdef UNIFORM
-	      contacts,
-#else
-	      0,
-#endif
-#ifdef LOCALIZED
-	      contacts_loc
-#else
-              0
-#endif
-	      );
-#endif
-
-#if (defined(XLINK) && !defined(UNIFORM) && !defined(LOCALIZED))
-      // Optimization, just finish
-      // but this is asking for troubles
-      if (lpl_index[N] >= ODGRMAX * N)
-	break;
-#endif
-
-      prepare_checkpoint(toprint);
-    }
-
-#if defined(GETPERF)
-    if (move_ele())
-      accepted++;
-    total++;
-#else
-    move_ele();
-#endif
-
-#if NUM_THREADS > 1
-    pthread_spin_unlock (&spinsum);
-#endif
-
+  
+  if (mc_time.t > mc_time.DYN_STEPS - mc_time.RELAX_TIME) {
+    thermalize();
+    prepare_checkpoint(toprint);
   }
 
+  simulate(toprint);
+  
   {
     struct data_infofile d;
     d.time = time(NULL); d.type = is_time_infofile; append_infofile(infos, "ENDTIME", d);
