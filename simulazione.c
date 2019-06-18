@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -931,6 +932,48 @@ void set_configuration_null() {
 }
 
 static __attribute__ ((noinline))
+int read_binary_conf(char *fn) {
+  size_t dotsalloc = (3 * N * sizeof(float));
+  int fd = open(fn, O_RDONLY);
+
+  if (fd == -1)
+    return -1;
+
+  struct stat buf;
+  if (fstat(fd, &buf)) {
+    close(fd);
+    return -2;
+  }
+
+  if (dotsalloc != buf.st_size) {
+    close(fd);
+    return -3;
+  }
+
+  if (read(fd, dots.x, dotsalloc) != dotsalloc)
+    exit(-24); // This causes corruption
+
+  return close(fd);
+}
+
+static __attribute__ ((noinline))
+int save_binary_conf(char *fn) {
+  size_t dotsalloc = (3 * N * sizeof(float));
+  int fd = open(fn, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH);
+
+  if (fd == -1)
+    return -1;
+
+  if (write(fd, dots.x, dotsalloc) != dotsalloc) {
+    close(fd);
+    return -2;
+  }
+
+  return close(fd);
+}
+
+
+static __attribute__ ((noinline))
 unsigned long long int load_configuration() {
   FILE *fd;
   unsigned long long int oldfiletime;
@@ -1556,7 +1599,29 @@ void *simulazione(void *threadarg) {
 #endif
   
   if (mc_time.t > mc_time.DYN_STEPS - mc_time.RELAX_TIME) {
-    thermalize(toprint);
+    char *rlxfile = NULL;
+
+    // Do we have a relax-file?
+    {
+      struct data_infofile d;
+  
+      d = get_infofile(infos, "RELAXFILE", -1);
+      if (is_s_infofile == d.type) // Yep
+	rlxfile = d.s;
+    }
+
+    // Can we read from it?
+    if (rlxfile && !read_binary_conf(rlxfile))
+      mc_time.t = mc_time.DYN_STEPS - mc_time.RELAX_TIME;
+    else {
+      
+      thermalize(toprint);
+
+      if (rlxfile)
+	if (save_binary_conf(rlxfile))
+	  unlink(rlxfile);
+    }
+
     toprint = mc_time.t - mc_time.CORRL_TIME;
     prepare_checkpoint(toprint);
   }

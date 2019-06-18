@@ -90,14 +90,19 @@ int load_checkpoint(const char* hash,
 
   int fd = open(filename, O_RDONLY);
 
+  if (fd == -1)
+    return -4;
+
   struct stat buf;
   if (fstat(fd, &buf)) {
     fprintf(stderr, "Could not open checkpoint file\n");
+    close(fd);
     return -1;
   };
 
   if (checkpoint_size != buf.st_size) {
     fprintf(stderr, "Checkpoint size and file doesn't match\n");
+    close(fd);
     return -2;
   }
 
