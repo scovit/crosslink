@@ -1327,13 +1327,23 @@ void set_times() {
 }
 
 static __attribute__ ((noinline))
-void thermalize() {
+void thermalize(unsigned long long int toprint) {
   unsigned long long int end = mc_time.DYN_STEPS - mc_time.RELAX_TIME;
 
   for ( ; mc_time.t != end; mc_time.t-- ) {
 #if NUM_THREADS > 1
     pthread_spin_lock (&spinsum);
 #endif
+
+    if ( unlikely(mc_time.t == toprint) ) {
+      toprint -= mc_time.CORRL_TIME;
+
+#if !defined(CONFINEMENT)
+      recenter();
+#endif
+
+      prepare_checkpoint(toprint);     
+    }
 
 #if defined(GETPERF)
     if (move_ele())
@@ -1510,8 +1520,7 @@ void *simulazione(void *threadarg) {
 
   mc_time.t = mc_time.DYN_STEPS;
 
-  unsigned long long int toprint = mc_time.t -
-    (mc_time.RELAX_TIME + mc_time.CORRL_TIME);
+  unsigned long long int toprint = mc_time.t - mc_time.CORRL_TIME;
 
   openfiles();
 
@@ -1547,7 +1556,8 @@ void *simulazione(void *threadarg) {
 #endif
   
   if (mc_time.t > mc_time.DYN_STEPS - mc_time.RELAX_TIME) {
-    thermalize();
+    thermalize(toprint);
+    toprint = mc_time.t - mc_time.CORRL_TIME;
     prepare_checkpoint(toprint);
   }
 
