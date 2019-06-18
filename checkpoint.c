@@ -187,7 +187,7 @@ int make_checkpoint() {
 
   // Write to file
   int fd = open(filename, O_CREAT | O_WRONLY | O_TRUNC,
-		S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
   write(fd, checkpoint, checkpoint_size);
   close(fd);
 
